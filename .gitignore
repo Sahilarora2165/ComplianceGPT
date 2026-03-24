@@ -1,0 +1,159 @@
+# ─────────────────────────────────────────────────────────────
+# PYTHON
+# ─────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments (CRITICAL - never commit)
+venv/
+env/
+ENV/
+.venv/
+.virtualenv/
+pyvenv.cfg
+
+# ─────────────────────────────────────────────────────────────
+# IDE & EDITORS
+# ─────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# ─────────────────────────────────────────────────────────────
+# ENVIRONMENT & SECRETS (CRITICAL for API Keys)
+# ─────────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.env
+config_secrets.py
+secrets.json
+credentials.json
+groq_api_key.txt
+api_keys.txt
+
+# ─────────────────────────────────────────────────────────────
+# VECTOR DATABASE (ChromaDB - Large Binary Files)
+# ─────────────────────────────────────────────────────────────
+chroma/
+chroma_db/
+vectorstore/
+vector_store/
+*.chroma
+.parquet
+
+# ─────────────────────────────────────────────────────────────
+# DOCUMENTS & DATA (PDFs - Keep Sample, Ignore Large Batches)
+# ─────────────────────────────────────────────────────────────
+# Ignore all PDFs by default
+data/pdfs/*.pdf
+documents/*.pdf
+docs/raw/*.pdf
+
+# BUT keep sample PDFs for demo (uncomment if needed)
+# !data/pdfs/sample_*.pdf
+# !documents/demo_*.pdf
+
+# OCR Cache & Temporary Files
+*.ocr
+*.tess
+tmp/
+temp/
+.cache/
+
+# ─────────────────────────────────────────────────────────────
+# LOGS & AUDIT TRAILS (Contains Query Data)
+# ─────────────────────────────────────────────────────────────
+logs/
+*.log
+audit_logs/
+*.jsonl
+query_logs/
+
+# ─────────────────────────────────────────────────────────────
+# STREAMLIT
+# ─────────────────────────────────────────────────────────────
+.streamlit/
+streamlit_app.log
+
+# ─────────────────────────────────────────────────────────────
+# MACHINE LEARNING & MODELS
+# ─────────────────────────────────────────────────────────────
+# Embedding model caches (large files)
+sentence_transformers/
+models/
+*.bin
+*.pt
+*.pth
+*.onnx
+
+# HuggingFace cache
+.huggingface/
+hf_cache/
+
+# ─────────────────────────────────────────────────────────────
+# TESTING & COVERAGE
+# ─────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+
+
+# ─────────────────────────────────────────────────────────────
+# OS FILES
+# ─────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ─────────────────────────────────────────────────────────────
+# SUBMISSION FILES (Don't commit video/docs to repo)
+# ─────────────────────────────────────────────────────────────
+submission/
+pitch_video.mp4
+architecture_doc.pdf
+impact_model.pdf
+*.mp4
+*.mov
+*.avi
+
+# ─────────────────────────────────────────────────────────────
+# BACKUP FILES
+# ─────────────────────────────────────────────────────────────
+*.bak
+*.backup
+*.old
