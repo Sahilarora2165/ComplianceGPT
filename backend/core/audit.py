@@ -3,8 +3,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 import sys
 
-# Safe path resolution regardless of working directory
-_BACKEND_DIR = Path(__file__).resolve().parent
+# audit.py lives at backend/core/audit.py
+# .parent        = backend/core/
+# .parent.parent = backend/   ← app root where config.py lives
+_BACKEND_DIR = Path(__file__).resolve().parent.parent   # FIX: was .parent (pointed to core/)
 sys.path.append(str(_BACKEND_DIR))
 
 from config import LOGS_DIR
@@ -21,11 +23,11 @@ def log_event(
     user_approval: bool = None
 ):
     event = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "agent": agent,
-        "action": action,
-        "details": details or {},
-        "citation": citation,
+        "timestamp":     datetime.now(timezone.utc).isoformat(),
+        "agent":         agent,
+        "action":        action,
+        "details":       details or {},
+        "citation":      citation,
         "user_approval": user_approval
     }
     with open(AUDIT_LOG_PATH, "a", encoding="utf-8") as f:

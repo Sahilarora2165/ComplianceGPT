@@ -1,0 +1,629 @@
+[
+  {
+    "id": "C1",
+    "name": "Arvind Textiles Pvt. Ltd.",
+    "business_type": "Textile Exporter",
+    "industry": "Manufacturing & Export",
+    "constitution": "Private Limited Company",
+    "incorporation_date": "2015-03-12",
+    "tags": ["GST", "RBI", "IncomeTax", "FEMA"],
+
+    "identifiers": {
+      "pan": "AABCA1234F",
+      "tan": "MUMA12345B",
+      "gstin": "27AABCA1234F1Z5",
+      "cin": "U17111MH2015PTC123456",
+      "iec": "0315012345"
+    },
+
+    "registered_address": {
+      "line1": "Plot 45, MIDC Industrial Area",
+      "city": "Bhiwandi",
+      "state": "Maharashtra",
+      "pincode": "421302"
+    },
+
+    "contact": {
+      "primary_person": "Arvind Shah",
+      "designation": "Director",
+      "email": "arvind.shah@arvindtextiles.com",
+      "phone": "+91-9876543210",
+      "alternate_email": "accounts@arvindtextiles.com"
+    },
+
+    "compliance": {
+      "gst_filing_frequency": "Monthly",
+      "tds_applicable": true,
+      "transfer_pricing_applicable": false,
+      "audit_required": true,
+      "audit_type": "Tax Audit + Statutory Audit",
+      "itr_form": "ITR-6",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "gstr1": "11th of next month",
+      "gstr3b": "20th of next month",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "October 31"
+    },
+
+    "bank": {
+      "bank_name": "HDFC Bank",
+      "branch": "Bhiwandi",
+      "account_type": "Current"
+    },
+
+    "notes": "Major exporter to UAE and EU. FEMA compliance critical. LUT filed every year under GST for exports."
+  },
+
+  {
+    "id": "C2",
+    "name": "Spice Garden Restaurant",
+    "business_type": "Restaurant",
+    "industry": "Food & Beverage",
+    "constitution": "Sole Proprietorship",
+    "incorporation_date": "2019-07-01",
+    "tags": ["GST", "IncomeTax"],
+
+    "identifiers": {
+      "pan": "BKRPS5678G",
+      "tan": null,
+      "gstin": "27BKRPS5678G1Z3",
+      "cin": null,
+      "iec": null
+    },
+
+    "registered_address": {
+      "line1": "Shop 12, FC Road",
+      "city": "Pune",
+      "state": "Maharashtra",
+      "pincode": "411004"
+    },
+
+    "contact": {
+      "primary_person": "Suresh Pillai",
+      "designation": "Proprietor",
+      "email": "suresh@spicegarden.in",
+      "phone": "+91-9823456789",
+      "alternate_email": null
+    },
+
+    "compliance": {
+      "gst_filing_frequency": "Quarterly",
+      "tds_applicable": false,
+      "transfer_pricing_applicable": false,
+      "audit_required": false,
+      "audit_type": null,
+      "itr_form": "ITR-3",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "gstr1": "13th of month after quarter end",
+      "gstr3b": "22nd of month after quarter end",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "July 31"
+    },
+
+    "bank": {
+      "bank_name": "SBI",
+      "branch": "FC Road Pune",
+      "account_type": "Current"
+    },
+
+    "notes": "Composition scheme not opted. Dine-in + Zomato/Swiggy aggregator sales. 5% GST applicable."
+  },
+
+  {
+    "id": "C3",
+    "name": "Mehta Pharma Distributors LLP",
+    "business_type": "Pharmaceutical Distributor",
+    "industry": "Healthcare & Pharma",
+    "constitution": "Limited Liability Partnership",
+    "incorporation_date": "2018-11-20",
+    "tags": ["GST", "IncomeTax", "MCA"],
+
+    "identifiers": {
+      "pan": "AACFM7890K",
+      "tan": "PNEM23456C",
+      "gstin": "27AACFM7890K1ZP",
+      "cin": null,
+      "llpin": "AAB-1234"
+    },
+
+    "registered_address": {
+      "line1": "Unit 7, Pharma Hub, Andheri East",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "pincode": "400069"
+    },
+
+    "contact": {
+      "primary_person": "Rajesh Mehta",
+      "designation": "Designated Partner",
+      "email": "rajesh@mehtapharma.com",
+      "phone": "+91-9812345670",
+      "alternate_email": "compliance@mehtapharma.com"
+    },
+
+    "compliance": {
+      "gst_filing_frequency": "Monthly",
+      "tds_applicable": true,
+      "transfer_pricing_applicable": false,
+      "audit_required": true,
+      "audit_type": "Tax Audit",
+      "itr_form": "ITR-5",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "gstr1": "11th of next month",
+      "gstr3b": "20th of next month",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "October 31",
+      "llp_annual_return": "May 30",
+      "form_8_filing": "October 30"
+    },
+
+    "bank": {
+      "bank_name": "ICICI Bank",
+      "branch": "Andheri East",
+      "account_type": "Current"
+    },
+
+    "notes": "LLP annual compliance (Form 8 + Form 11) must not be missed. Deals in Schedule H drugs — drug license compliance separate."
+  },
+
+  {
+    "id": "C4",
+    "name": "Kapoor Tech Solutions Pvt. Ltd.",
+    "business_type": "IT Services & Software Export",
+    "industry": "Information Technology",
+    "constitution": "Private Limited Company",
+    "incorporation_date": "2020-01-15",
+    "tags": ["GST", "IncomeTax", "RBI", "SEBI"],
+
+    "identifiers": {
+      "pan": "AAHCK2345L",
+      "tan": "DELK34567D",
+      "gstin": "07AAHCK2345L1Z8",
+      "cin": "U72200DL2020PTC112233",
+      "iec": "0720023456"
+    },
+
+    "registered_address": {
+      "line1": "Floor 3, Cyber Hub, DLF Phase 2",
+      "city": "Gurugram",
+      "state": "Haryana",
+      "pincode": "122002"
+    },
+
+    "contact": {
+      "primary_person": "Neha Kapoor",
+      "designation": "CEO & Director",
+      "email": "neha@kapoortech.io",
+      "phone": "+91-9911223344",
+      "alternate_email": "finance@kapoortech.io"
+    },
+
+    "compliance": {
+      "gst_filing_frequency": "Monthly",
+      "tds_applicable": true,
+      "transfer_pricing_applicable": true,
+      "audit_required": true,
+      "audit_type": "Tax Audit + Transfer Pricing Audit",
+      "itr_form": "ITR-6",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "gstr1": "11th of next month",
+      "gstr3b": "20th of next month",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "November 30",
+      "transfer_pricing_report": "October 31",
+      "rbi_softex_form": "Within 30 days of invoice"
+    },
+
+    "bank": {
+      "bank_name": "Kotak Mahindra Bank",
+      "branch": "Cyber Hub Gurugram",
+      "account_type": "Current"
+    },
+
+    "notes": "Software exports via STPI. RBI SOFTEX form mandatory for each export invoice. Transfer pricing applies due to foreign parent company."
+  },
+
+  {
+    "id": "C5",
+    "name": "Sunrise Finserv NBFC Ltd.",
+    "business_type": "Non-Banking Financial Company (NBFC)",
+    "industry": "Financial Services",
+    "constitution": "Public Limited Company",
+    "incorporation_date": "2016-08-10",
+    "tags": ["RBI", "IncomeTax", "MCA"],
+
+    "identifiers": {
+      "pan": "AACCS3456M",
+      "tan": "MUMCS6789E",
+      "gstin": null,
+      "cin": "U65910MH2016PLC289012",
+      "rbi_registration": "N-13.02341"
+    },
+
+    "registered_address": {
+      "line1": "901, Hubtown Solaris, Andheri East",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "pincode": "400069"
+    },
+
+    "contact": {
+      "primary_person": "Sunita Rao",
+      "designation": "Managing Director",
+      "email": "sunita.rao@sunrisefinserv.com",
+      "phone": "+91-9930112233",
+      "alternate_email": "compliance@sunrisefinserv.com"
+    },
+
+    "compliance": {
+      "gst_filing_frequency": null,
+      "tds_applicable": true,
+      "transfer_pricing_applicable": false,
+      "audit_required": true,
+      "audit_type": "Statutory Audit + Tax Audit",
+      "itr_form": "ITR-6",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "rbi_monthly_return": "7th of next month",
+      "rbi_annual_return": "June 30",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "October 31",
+      "mca_annual_return": "November 29"
+    },
+
+    "bank": {
+      "bank_name": "Axis Bank",
+      "branch": "Andheri East",
+      "account_type": "Current"
+    },
+
+    "notes": "Registered NBFC — Category: NBFC-ICC (Investment and Credit Company). Asset size < ₹1000 Cr. Subject to RBI prudential norms, fair practices code, KYC/AML directions. Exempt from GST on lending income but GST applicable on processing fees."
+  },
+
+  {
+    "id": "C6",
+    "name": "Nashik Merchant Urban Co-operative Bank Ltd.",
+    "business_type": "Urban Co-operative Bank",
+    "industry": "Banking & Financial Services",
+    "constitution": "Co-operative Society",
+    "incorporation_date": "2003-04-01",
+    "tags": ["RBI", "IncomeTax"],
+
+    "identifiers": {
+      "pan": "AABCN4567P",
+      "tan": "PUNB12398F",
+      "gstin": "27AABCN4567P1ZQ",
+      "cin": null,
+      "rbi_license": "UBD/MH/2003/UCB-112"
+    },
+
+    "registered_address": {
+      "line1": "15, CBS Road, Nashik Road",
+      "city": "Nashik",
+      "state": "Maharashtra",
+      "pincode": "422101"
+    },
+
+    "contact": {
+      "primary_person": "Prakash Kulkarni",
+      "designation": "Chief Executive Officer",
+      "email": "ceo@nashikmerchantbank.com",
+      "phone": "+91-9823100234",
+      "alternate_email": "compliance@nashikmerchantbank.com"
+    },
+
+    "compliance": {
+      "gst_filing_frequency": "Monthly",
+      "tds_applicable": true,
+      "transfer_pricing_applicable": false,
+      "audit_required": true,
+      "audit_type": "Statutory Audit + Concurrent Audit",
+      "itr_form": "ITR-6",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "gstr1": "11th of next month",
+      "gstr3b": "20th of next month",
+      "rbi_statutory_return": "21st of next month",
+      "priority_sector_report": "15th of next month",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "October 31"
+    },
+
+    "bank": {
+      "bank_name": "RBI (settlement)",
+      "branch": "Nashik",
+      "account_type": "Current"
+    },
+
+    "notes": "Urban co-operative bank licensed under Banking Regulation Act, 1949 (AACS). Subject to RBI directions on UCBs — KYC, priority sector lending, CRR/SLR norms, and Section 35A directions. Amalgamation watch: track RBI orders on weak UCBs."
+  },
+
+  {
+    "id": "C7",
+    "name": "Patel Global Imports Pvt. Ltd.",
+    "business_type": "Importer & Trading Company",
+    "industry": "Trading & Distribution",
+    "constitution": "Private Limited Company",
+    "incorporation_date": "2017-05-22",
+    "tags": ["GST", "IncomeTax", "FEMA", "RBI"],
+
+    "identifiers": {
+      "pan": "AAFCP8901Q",
+      "tan": "SRTCP34512G",
+      "gstin": "24AAFCP8901Q1Z2",
+      "cin": "U51909GJ2017PTC098765",
+      "iec": "0817056789"
+    },
+
+    "registered_address": {
+      "line1": "B-204, GIDC Estate, Sachin",
+      "city": "Surat",
+      "state": "Gujarat",
+      "pincode": "394230"
+    },
+
+    "contact": {
+      "primary_person": "Kiran Patel",
+      "designation": "Director",
+      "email": "kiran@patelimports.com",
+      "phone": "+91-9898001122",
+      "alternate_email": "forex@patelimports.com"
+    },
+
+    "compliance": {
+      "gst_filing_frequency": "Monthly",
+      "tds_applicable": true,
+      "transfer_pricing_applicable": false,
+      "audit_required": true,
+      "audit_type": "Tax Audit",
+      "itr_form": "ITR-6",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "gstr1": "11th of next month",
+      "gstr3b": "20th of next month",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "October 31",
+      "fema_import_payment": "Within 6 months of shipment date",
+      "bill_of_entry_filing": "Within 30 days of arrival"
+    },
+
+    "bank": {
+      "bank_name": "Bank of Baroda",
+      "branch": "Surat Main",
+      "account_type": "Current"
+    },
+
+    "notes": "Imports electronic components and machinery from China, Taiwan, and South Korea. FEMA compliance critical for import payments — all foreign remittances must be within 6-month timeline. AD bank handles forex. No exports — import-only entity. Advance authorisation and EPCG not applicable."
+  },
+
+  {
+    "id": "C8",
+    "name": "Galaxy Securities Pvt. Ltd.",
+    "business_type": "Stock Broker & DP",
+    "industry": "Capital Markets",
+    "constitution": "Private Limited Company",
+    "incorporation_date": "2012-09-30",
+    "tags": ["SEBI", "GST", "IncomeTax", "MCA"],
+
+    "identifiers": {
+      "pan": "AABCG5678R",
+      "tan": "DELG45678H",
+      "gstin": "07AABCG5678R1Z1",
+      "cin": "U67120DL2012PTC234567",
+      "sebi_reg_broker": "INZ000123456",
+      "sebi_reg_dp": "IN-DP-123-2016"
+    },
+
+    "registered_address": {
+      "line1": "801, Antriksh Bhawan, KG Marg",
+      "city": "New Delhi",
+      "state": "Delhi",
+      "pincode": "110001"
+    },
+
+    "contact": {
+      "primary_person": "Amit Verma",
+      "designation": "CEO & Compliance Officer",
+      "email": "amit@galaxysecurities.in",
+      "phone": "+91-9810045678",
+      "alternate_email": "compliance@galaxysecurities.in"
+    },
+
+    "compliance": {
+      "gst_filing_frequency": "Monthly",
+      "tds_applicable": true,
+      "transfer_pricing_applicable": false,
+      "audit_required": true,
+      "audit_type": "Tax Audit + SEBI Internal Audit",
+      "itr_form": "ITR-6",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "gstr1": "11th of next month",
+      "gstr3b": "20th of next month",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "October 31",
+      "sebi_half_yearly_audit": "April 30 and October 31",
+      "nse_bse_monthly_report": "7th of next month",
+      "investor_grievance_report": "Quarterly"
+    },
+
+    "bank": {
+      "bank_name": "HDFC Bank",
+      "branch": "Connaught Place",
+      "account_type": "Current"
+    },
+
+    "notes": "SEBI-registered stockbroker on NSE + BSE (equity, F&O, currency). Also DP with CDSL. Subject to SEBI circulars on margin norms, client fund segregation, KYC, and investor protection. Compliance officer must submit quarterly reports to SEBI. Any SEBI circular on broker operations, margin pledging, or DP rules is critical."
+  },
+
+  {
+    "id": "C9",
+    "name": "Greenfield Realty Pvt. Ltd.",
+    "business_type": "Real Estate Developer",
+    "industry": "Real Estate & Construction",
+    "constitution": "Private Limited Company",
+    "incorporation_date": "2014-06-18",
+    "tags": ["GST", "IncomeTax", "MCA"],
+
+    "identifiers": {
+      "pan": "AABCG6789S",
+      "tan": "PUNR56789J",
+      "gstin": "27AABCG6789S1ZT",
+      "cin": "U45200MH2014PTC276543",
+      "rera_registration": "P52100023456"
+    },
+
+    "registered_address": {
+      "line1": "Level 2, Baner Business Bay",
+      "city": "Pune",
+      "state": "Maharashtra",
+      "pincode": "411045"
+    },
+
+    "contact": {
+      "primary_person": "Deepak Joshi",
+      "designation": "Managing Director",
+      "email": "deepak@greenfieldrealty.in",
+      "phone": "+91-9763001234",
+      "alternate_email": "legal@greenfieldrealty.in"
+    },
+
+    "compliance": {
+      "gst_filing_frequency": "Monthly",
+      "tds_applicable": true,
+      "transfer_pricing_applicable": false,
+      "audit_required": true,
+      "audit_type": "Tax Audit + Statutory Audit",
+      "itr_form": "ITR-6",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "gstr1": "11th of next month",
+      "gstr3b": "20th of next month",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "October 31",
+      "rera_quarterly_update": "Quarterly",
+      "mca_annual_return": "November 29"
+    },
+
+    "bank": {
+      "bank_name": "Punjab National Bank",
+      "branch": "Baner Pune",
+      "account_type": "Current"
+    },
+
+    "notes": "Active RERA-registered developer with 2 ongoing projects in Pune. GST at 5% on under-construction units (no ITC). TDS on land acquisition payments. Buyer TDS u/s 194-IA (1%) must be tracked. MCA annual filing mandatory. Watch GST circulars on real estate, ITC rules, and RERA amendment notifications."
+  },
+
+  {
+    "id": "C10",
+    "name": "Bharat Kirana E-Commerce Pvt. Ltd.",
+    "business_type": "E-Commerce Operator",
+    "industry": "Retail & E-Commerce",
+    "constitution": "Private Limited Company",
+    "incorporation_date": "2021-03-01",
+    "tags": ["GST", "IncomeTax", "MCA"],
+
+    "identifiers": {
+      "pan": "AAGCB7890T",
+      "tan": "BNAB67890K",
+      "gstin": "19AAGCB7890T1Z5",
+      "cin": "U52100WB2021PTC234890",
+      "iec": null
+    },
+
+    "registered_address": {
+      "line1": "4th Floor, Merlin Infinite, DN-51, Sector V",
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "pincode": "700091"
+    },
+
+    "contact": {
+      "primary_person": "Priya Ghosh",
+      "designation": "Founder & CEO",
+      "email": "priya@bharatkirana.com",
+      "phone": "+91-9830234567",
+      "alternate_email": "finance@bharatkirana.com"
+    },
+
+    "compliance": {
+      "gst_filing_frequency": "Monthly",
+      "tds_applicable": true,
+      "transfer_pricing_applicable": false,
+      "audit_required": true,
+      "audit_type": "Tax Audit",
+      "itr_form": "ITR-6",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "gstr1": "11th of next month",
+      "gstr3b": "20th of next month",
+      "gstr8_tcs": "10th of next month",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "October 31",
+      "tds_194o": "7th of next month",
+      "mca_annual_return": "November 29"
+    },
+
+    "bank": {
+      "bank_name": "ICICI Bank",
+      "branch": "Salt Lake Kolkata",
+      "account_type": "Current"
+    },
+
+    "notes": "E-commerce operator under GST — liable to collect TCS at 1% (GSTR-8 mandatory). Also deducts TDS u/s 194-O on seller payouts. Platform sells grocery & FMCG. Any GST advisory on e-commerce operators (IMS, e-invoicing threshold, TCS rate changes) is critical. DPIIT startup recognition holds."
+  }
+]

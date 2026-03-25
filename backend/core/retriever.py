@@ -16,7 +16,7 @@ from config import (
     GROQ_API_KEY, GROQ_MODEL,
     MIN_RELEVANCE_SCORE
 )
-from audit import log_event
+from core.audit import log_event
 
 # Cross-encoder for reranking — loads once at module level (not per query)
 # ms-marco-MiniLM-L-6-v2: small, fast, accurate, free, runs locally

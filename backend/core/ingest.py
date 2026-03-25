@@ -9,7 +9,7 @@ sys.path.append(str(_BACKEND_DIR))
 import fitz
 import pytesseract
 from pdf2image import convert_from_path
-from langchain.schema import Document
+from langchain_core.documents import Document
 from sentence_transformers import SentenceTransformer
 import chromadb
 
@@ -18,7 +18,7 @@ from config import (
     CHROMA_COLLECTION, CHUNK_SIZE, CHUNK_OVERLAP,
     OCR_CHAR_THRESHOLD, REGULATOR_KEYWORDS, REGULATOR_FILENAME_MAP
 )
-from audit import log_event
+from core.audit import log_event
 
 
 # ── Regulator Detection ───────────────────────────────────────────────────────
