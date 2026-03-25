@@ -1,53 +1,34 @@
-"""
-monitoring_agent.py — ComplianceGPT Monitoring Agent
-Scrapes RBI, GST, Income Tax, MCA portals for new circulars/PDFs.
-Falls back to simulate mode if scraping fails or is explicitly triggered.
-"""
+
 
 import sys
+import re
 import hashlib
 import json
 import time
-import random
 import requests
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional
-
 from bs4 import BeautifulSoup
 
-# ── Path bootstrap (mirrors your existing files) ─────────────────────────────
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(_BACKEND_DIR))
 
 from config import PDF_DIR, LOGS_DIR
 from core.audit import log_event
-# ── Constants ─────────────────────────────────────────────────────────────────
-HASH_DB_PATH   = LOGS_DIR / "seen_documents.json"   # Persists seen file hashes
-SCRAPE_DELAY   = 5                                   # Seconds between requests (ethical)
+
+HASH_DB_PATH    = LOGS_DIR / "seen_documents.json"
+SCRAPE_DELAY    = 5
 REQUEST_TIMEOUT = 15
 HEADERS = {
     "User-Agent": (
-        "Mozilla/5.0 (ComplianceGPT-Bot/1.0; "
-        "Hackathon Research Tool; respects robots.txt)"
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
     )
 }
 
-# ── Portal Configurations ─────────────────────────────────────────────────────
-# Each portal defines: url, regulator tag, CSS selectors to find PDF links.
-# list_selector  → selects the container rows/items on the page
-# link_selector  → selects the <a> tag with the PDF href inside each row
-# title_selector → selects the human-readable title text inside each row
 PORTALS = [
-    {
-        "regulator": "RBI",
-        "name":      "RBI Press Releases",
-        "url":       "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx",
-        "list_selector":  "tr",
-        "link_selector":  "a[href*='.PDF'], a[href*='.pdf']",
-        "title_selector": "td",
-        "base_url":       "https://rbidocs.rbi.org.in",
-    },
     {
         "regulator": "GST",
         "name":      "GST Circulars",
@@ -77,13 +58,10 @@ PORTALS = [
     },
 ]
 
-# ── Simulated Documents (Demo Fallback) ───────────────────────────────────────
-# These are used when real scraping fails or simulate_mode=True is passed.
-# Structured to mimic exactly what real scraping would produce.
 SIMULATED_DOCUMENTS = [
     {
         "regulator": "RBI",
-        "title":     "RBI Circular: FEMA Compliance Deadline Extended – March 2026",
+        "title":     "RBI Circular: FEMA Compliance Deadline Extended - March 2026",
         "url":       "https://www.rbi.org.in/sample/fema_circular_march2026.pdf",
         "filename":  "rbi_fema_circular_march2026.pdf",
         "priority":  "HIGH",
@@ -91,7 +69,7 @@ SIMULATED_DOCUMENTS = [
     },
     {
         "regulator": "GST",
-        "title":     "GST Advisory: New Invoice Management System (IMS) – April 2026",
+        "title":     "GST Advisory: New Invoice Management System (IMS) - April 2026",
         "url":       "https://www.gst.gov.in/sample/ims_advisory_april2026.pdf",
         "filename":  "gst_ims_advisory_april2026.pdf",
         "priority":  "HIGH",
@@ -99,7 +77,7 @@ SIMULATED_DOCUMENTS = [
     },
     {
         "regulator": "IncomeTax",
-        "title":     "CBDT Circular: TDS Rate Revision – FY 2026-27",
+        "title":     "CBDT Circular: TDS Rate Revision - FY 2026-27",
         "url":       "https://incometaxindia.gov.in/sample/tds_revision_2026.pdf",
         "filename":  "incometax_tds_revision_2026.pdf",
         "priority":  "MEDIUM",
@@ -107,7 +85,7 @@ SIMULATED_DOCUMENTS = [
     },
     {
         "regulator": "MCA",
-        "title":     "MCA Notification: LLP Annual Filing Deadline – FY 2025-26",
+        "title":     "MCA Notification: LLP Annual Filing Deadline - FY 2025-26",
         "url":       "https://www.mca.gov.in/sample/llp_filing_2025_26.pdf",
         "filename":  "mca_llp_filing_2025_26.pdf",
         "priority":  "MEDIUM",
@@ -124,10 +102,7 @@ SIMULATED_DOCUMENTS = [
 ]
 
 
-# ── Hash Database Helpers ─────────────────────────────────────────────────────
-
 def _load_hash_db() -> dict:
-    """Load the persisted dictionary of {url: content_hash}."""
     if HASH_DB_PATH.exists():
         try:
             return json.loads(HASH_DB_PATH.read_text(encoding="utf-8"))
@@ -141,329 +116,366 @@ def _save_hash_db(db: dict) -> None:
     HASH_DB_PATH.write_text(json.dumps(db, indent=2), encoding="utf-8")
 
 
-def _hash_content(content: bytes) -> str:
-    return hashlib.sha256(content).hexdigest()
+def _hash_content(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
-def _is_new_document(url: str, content: bytes, db: dict) -> bool:
-    """Return True if this URL/content has not been seen before."""
-    new_hash = _hash_content(content)
+def _is_new_document(url: str, data: bytes, db: dict) -> bool:
+    new_hash = _hash_content(data)
     if db.get(url) == new_hash:
         return False
-    db[url] = new_hash          # Mutates in place; caller must save
+    db[url] = new_hash
     return True
 
 
-# ── PDF Downloader ────────────────────────────────────────────────────────────
+def _is_html(data: bytes) -> bool:
+    sniff = data[:20].lower()
+    return sniff.startswith(b"<!doctype") or sniff.startswith(b"<html")
 
-def _download_pdf(pdf_url: str, filename: str) -> Optional[Path]:
-    """
-    Download a PDF to PDF_DIR.
-    Returns the local Path on success, None on failure.
-    """
-    dest = PDF_DIR / filename
-    if dest.exists():
-        print(f"    📁 Already on disk: {filename}")
-        return dest
+
+def _clean_bad_downloads() -> int:
+    removed = 0
+    for f in PDF_DIR.glob("*.pdf"):
+        try:
+            if _is_html(f.read_bytes()):
+                print(f"  Removing fake PDF: {f.name}")
+                f.unlink()
+                removed += 1
+        except Exception:
+            pass
+    if removed:
+        print(f"  Cleaned {removed} bad file(s)")
+    return removed
+
+
+def _infer_priority(title: str) -> str:
+    t = title.lower()
+    if any(k in t for k in ["deadline", "extension", "penalty", "mandatory", "fema", "urgent"]):
+        return "HIGH"
+    if any(k in t for k in ["esg", "advisory", "clarification", "faqs"]):
+        return "LOW"
+    return "MEDIUM"
+
+
+def _scrape_rbi_playwright(hash_db: dict) -> list[dict]:
+    print("\n  Scraping [RBI] via Playwright ...")
+    new_docs = []
 
     try:
-        resp = requests.get(
-            pdf_url, headers=HEADERS,
-            timeout=REQUEST_TIMEOUT, stream=True
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("  Playwright not installed")
+        return []
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 800},
         )
+        page = context.new_page()
+
+        try:
+            print("    Loading RBI press releases page ...")
+            page.goto(
+                "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx",
+                wait_until="networkidle",
+                timeout=40000,
+            )
+            page.wait_for_selector("tr", timeout=15000)
+        except Exception as e:
+            print(f"    Page load failed: {e}")
+            browser.close()
+            return []
+
+        links = page.eval_on_selector_all(
+            "a[href*='.PDF'], a[href*='.pdf']",
+            "els => els.map(e => ({href: e.href, text: (e.closest('tr') ? e.closest('tr').innerText : e.innerText).trim()}))"
+        )
+        print(f"    Found {len(links)} PDF link(s)")
+
+        for link in links[:20]:
+            href  = link.get("href", "").strip()
+            title = link.get("text", "").strip()
+            title = re.sub(r'\s*\d+\s*kb\s*$', '', title, flags=re.IGNORECASE).strip()
+            title = title[:120] or href
+
+            if not href or ".pdf" not in href.lower():
+                continue
+
+            if not _is_new_document(href, href.encode(), hash_db):
+                print(f"    Already seen: {Path(href).name}")
+                continue
+
+            stem     = Path(href.split("?")[0]).stem[:60]
+            filename = f"rbi_{stem}.pdf"
+            dest     = PDF_DIR / filename
+
+            if dest.exists():
+                print(f"    Already on disk: {filename}")
+                new_docs.append({
+                    "regulator": "RBI",
+                    "title":     title,
+                    "url":       href,
+                    "filename":  filename,
+                    "priority":  _infer_priority(title),
+                    "summary":   "",
+                    "source":    "real_scrape",
+                })
+                continue
+
+            try:
+                print(f"    Downloading: {filename} ...")
+                resp      = context.request.get(href, timeout=20000)
+                pdf_bytes = resp.body()
+
+                if _is_html(pdf_bytes):
+                    print(f"    Bot challenge for {filename} — skipping")
+                    continue
+
+                if not pdf_bytes.startswith(b"%PDF"):
+                    print(f"    Not a valid PDF — skipping {filename}")
+                    continue
+
+                PDF_DIR.mkdir(parents=True, exist_ok=True)
+                dest.write_bytes(pdf_bytes)
+                print(f"    Saved: {filename} ({len(pdf_bytes) // 1024} KB)")
+
+                new_docs.append({
+                    "regulator": "RBI",
+                    "title":     title,
+                    "url":       href,
+                    "filename":  filename,
+                    "priority":  _infer_priority(title),
+                    "summary":   "",
+                    "source":    "real_scrape",
+                })
+
+            except Exception as e:
+                print(f"    Download failed for {filename}: {e}")
+
+            time.sleep(1)
+
+        browser.close()
+
+    print(f"    RBI: {len(new_docs)} new document(s) found")
+    return new_docs
+
+
+_sessions: dict = {}
+
+def _get_session(base_url: str) -> requests.Session:
+    if base_url not in _sessions:
+        session = requests.Session()
+        session.headers.update(HEADERS)
+        try:
+            session.get(base_url, timeout=REQUEST_TIMEOUT)
+        except Exception:
+            pass
+        _sessions[base_url] = session
+    return _sessions[base_url]
+
+
+def _download_pdf(pdf_url: str, filename: str, base_url: str) -> Optional[Path]:
+    dest = PDF_DIR / filename
+    if dest.exists():
+        if _is_html(dest.read_bytes()):
+            dest.unlink()
+        else:
+            print(f"    Already on disk: {filename}")
+            return dest
+    try:
+        session   = _get_session(base_url)
+        resp      = session.get(pdf_url, timeout=REQUEST_TIMEOUT)
         resp.raise_for_status()
+        pdf_bytes = resp.content
+        if _is_html(pdf_bytes) or not pdf_bytes.startswith(b"%PDF"):
+            print(f"    Not a valid PDF — skipping {filename}")
+            return None
         PDF_DIR.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(resp.content)
-        print(f"    ⬇️  Downloaded: {filename} ({len(resp.content)//1024} KB)")
+        dest.write_bytes(pdf_bytes)
+        print(f"    Downloaded: {filename} ({len(pdf_bytes) // 1024} KB)")
         return dest
     except Exception as e:
-        print(f"    ❌ Download failed for {filename}: {e}")
+        print(f"    Download failed for {filename}: {e}")
         return None
 
 
-# ── Real Scraper ──────────────────────────────────────────────────────────────
-
 def _scrape_portal(portal: dict, hash_db: dict) -> list[dict]:
-    """
-    Scrape a single portal for new PDFs.
-    Returns list of new-document dicts.
-    """
     new_docs = []
-    print(f"\n  🌐 Scraping [{portal['regulator']}] {portal['name']} ...")
-
+    print(f"\n  Scraping [{portal['regulator']}] {portal['name']} ...")
     try:
-        resp = requests.get(
-            portal["url"], headers=HEADERS,
-            timeout=REQUEST_TIMEOUT
-        )
+        resp = requests.get(portal["url"], headers=HEADERS, timeout=REQUEST_TIMEOUT)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.content, "html.parser")
-
         rows = soup.select(portal["list_selector"])
         print(f"    Found {len(rows)} rows")
-
-        for row in rows[:20]:          # Cap at 20 rows per portal
-            link_tag  = row.select_one(portal["link_selector"])
-            title_tag = row.select_one(portal["title_selector"])
+        for row in rows[:20]:
+            link_tag = row.select_one(portal["link_selector"])
             if not link_tag:
                 continue
-
             href  = link_tag.get("href", "")
-            title = row.get_text(strip=True) if hasattr(row, 'get_text') else link_tag.get_text(strip=True)
-            import re
+            title = row.get_text(strip=True)[:120]
             title = re.sub(r'\s*\d+\s*kb\s*$', '', title, flags=re.IGNORECASE).strip()
-            title = title[:120] if title else link_tag.get('href', '')
-
-
-            # Build absolute URL
             if href.startswith("http"):
                 pdf_url = href
             elif href.startswith("/"):
                 pdf_url = portal["base_url"] + href
             else:
                 pdf_url = portal["base_url"] + "/" + href
-
-            if not pdf_url.lower().endswith(".pdf") and ".pdf" not in pdf_url.lower():
+            if ".pdf" not in pdf_url.lower():
                 continue
-
-            # Check if new
             try:
-                head = requests.head(
-                    pdf_url, headers=HEADERS,
-                    timeout=REQUEST_TIMEOUT, allow_redirects=True
-                )
+                head           = requests.head(pdf_url, headers=HEADERS, timeout=REQUEST_TIMEOUT, allow_redirects=True)
                 content_sample = head.headers.get("ETag", pdf_url).encode()
             except Exception:
                 content_sample = pdf_url.encode()
-
             if not _is_new_document(pdf_url, content_sample, hash_db):
                 continue
-
-            # Derive a clean filename
             stem     = Path(pdf_url.split("?")[0]).stem[:60]
             filename = f"{portal['regulator'].lower()}_{stem}.pdf"
-
             new_docs.append({
                 "regulator": portal["regulator"],
-                "title":     title or filename,
+                "title":     title,
                 "url":       pdf_url,
                 "filename":  filename,
                 "priority":  _infer_priority(title),
-                "summary":   "",           # Filled after ingest
+                "summary":   "",
                 "source":    "real_scrape",
             })
-
-        time.sleep(SCRAPE_DELAY)        # Ethical rate limiting
-
+        time.sleep(SCRAPE_DELAY)
     except Exception as e:
-        print(f"    ⚠️  Scrape failed for {portal['name']}: {e}")
-
+        print(f"    Scrape failed for {portal['name']}: {e}")
     return new_docs
 
 
-def _infer_priority(title: str) -> str:
-    """Heuristic priority from title keywords."""
-    title_lower = title.lower()
-    high_kw  = ["deadline", "extension", "penalty", "mandatory", "fema", "urgent", "immediate"]
-    low_kw   = ["esg", "advisory", "clarification", "faqs"]
-    if any(k in title_lower for k in high_kw):
-        return "HIGH"
-    if any(k in title_lower for k in low_kw):
-        return "LOW"
-    return "MEDIUM"
-
-
-# ── Simulate Mode ─────────────────────────────────────────────────────────────
-
-def _simulate_new_documents(hash_db: dict, regulators: list[str] = None) -> list[dict]:
-    """
-    Return simulated new documents, filtered to unseen ones only.
-    Optionally filter by regulator list.
-    """
+def _simulate_new_documents(hash_db: dict, regulators: list = None) -> list[dict]:
     new_docs = []
     pool = SIMULATED_DOCUMENTS
     if regulators:
         pool = [d for d in pool if d["regulator"] in regulators]
-
     for doc in pool:
-        key     = f"sim::{doc['url']}"
-        content = doc["url"].encode()
-        if _is_new_document(key, content, hash_db):
+        key = f"sim::{doc['url']}"
+        if _is_new_document(key, doc["url"].encode(), hash_db):
             new_docs.append({**doc, "source": "simulated"})
-
     return new_docs
 
 
-# ── Orchestrator ──────────────────────────────────────────────────────────────
-
 def run_monitoring_agent(
     simulate_mode: bool = False,
-    regulators: list[str] = None,
+    regulators: list = None,
     auto_ingest: bool = True,
 ) -> list[dict]:
-    """
-    Main entry point for the Monitoring Agent.
-
-    Args:
-        simulate_mode: If True, skip real scraping and use SIMULATED_DOCUMENTS.
-        regulators:    Optional list e.g. ["RBI", "GST"] to filter portals.
-        auto_ingest:   If True, download PDFs and trigger ingest pipeline.
-
-    Returns:
-        List of new-document dicts (with keys: regulator, title, url,
-        filename, priority, summary, source).
-    """
-    print("\n" + "═" * 60)
-    print("🔍 ComplianceGPT — Monitoring Agent")
-    print(f"   Mode      : {'🎭 SIMULATE' if simulate_mode else '🌐 REAL SCRAPE'}")
+    print("\n" + "=" * 60)
+    print("ComplianceGPT - Monitoring Agent")
+    print(f"   Mode      : {'SIMULATE' if simulate_mode else 'REAL SCRAPE'}")
     print(f"   Regulators: {regulators or 'ALL'}")
     print(f"   Time      : {datetime.now(timezone.utc).isoformat()}")
-    print("═" * 60)
+    print("=" * 60)
 
+    _clean_bad_downloads()
     hash_db  = _load_hash_db()
     new_docs = []
 
     if simulate_mode:
-        # ── Simulate path ──────────────────────────────────────────────────
-        print("\n🎭 Running in SIMULATE mode — using pre-built documents")
+        print("\nRunning in SIMULATE mode")
         new_docs = _simulate_new_documents(hash_db, regulators)
-
     else:
-        # ── Real scraping path ─────────────────────────────────────────────
-        portals_to_check = PORTALS
-        if regulators:
-            portals_to_check = [p for p in PORTALS if p["regulator"] in regulators]
+        if not regulators or "RBI" in regulators:
+            new_docs.extend(_scrape_rbi_playwright(hash_db))
 
-        for portal in portals_to_check:
-            docs = _scrape_portal(portal, hash_db)
-            new_docs.extend(docs)
+        other_portals = [p for p in PORTALS if not regulators or p["regulator"] in regulators]
+        for portal in other_portals:
+            new_docs.extend(_scrape_portal(portal, hash_db))
 
-        # Fall back to simulate if real scraping yielded nothing
         if not new_docs:
-            print("\n⚠️  Real scraping found no new documents — falling back to SIMULATE")
-            log_event(
-                agent="MonitoringAgent",
-                action="scrape_fallback",
-                details={"reason": "no_new_docs_from_real_scrape"}
-            )
+            print("\nReal scraping found nothing — falling back to SIMULATE")
+            log_event(agent="MonitoringAgent", action="scrape_fallback", details={"reason": "no_new_docs"})
             new_docs = _simulate_new_documents(hash_db, regulators)
 
-    # ── Process new documents ──────────────────────────────────────────────
     if not new_docs:
-        print("\n✅ No new documents found — system is up to date.")
-        log_event(
-            agent="MonitoringAgent",
-            action="monitor_complete",
-            details={"new_docs": 0}
-        )
+        print("\nNo new documents found.")
+        log_event(agent="MonitoringAgent", action="monitor_complete", details={"new_docs": 0})
         _save_hash_db(hash_db)
         return []
 
-    print(f"\n📋 {len(new_docs)} new document(s) detected:\n")
+    print(f"\n{len(new_docs)} new document(s) detected:\n")
     for i, doc in enumerate(new_docs, 1):
         print(f"  {i}. [{doc['regulator']}] {doc['title']}")
         print(f"     Priority : {doc['priority']}")
         print(f"     Source   : {doc['source']}")
 
-    # ── Download + ingest ──────────────────────────────────────────────────
     if auto_ingest:
-        print("\n⬇️  Downloading & ingesting new documents...")
+        print("\nDownloading & ingesting new documents...")
         _ingest_new_docs(new_docs)
 
-    # ── Persist hash DB ────────────────────────────────────────────────────
     _save_hash_db(hash_db)
-
     log_event(
         agent="MonitoringAgent",
         action="monitor_complete",
         details={
             "mode":     "simulate" if simulate_mode else "real",
             "new_docs": len(new_docs),
-            "docs":     [{"title": d["title"], "regulator": d["regulator"],
-                          "priority": d["priority"]} for d in new_docs],
+            "docs":     [{"title": d["title"], "regulator": d["regulator"], "priority": d["priority"]} for d in new_docs],
         }
     )
-
-    print(f"\n✅ Monitoring complete — {len(new_docs)} new document(s) processed.")
+    print(f"\nMonitoring complete - {len(new_docs)} new document(s) processed.")
     return new_docs
 
 
-def _ingest_new_docs(new_docs: list[dict]) -> None:
-    """
-    Download PDFs and hand off to ingest pipeline.
-    For simulated docs, creates a placeholder text file instead.
-    """
-    # Lazy import to avoid circular deps; ingest.py is a sibling module
+def _ingest_new_docs(new_docs: list) -> None:
     try:
         from agents.ingest import ingest_pdf
     except ImportError:
         try:
             from ingest import ingest_pdf
         except ImportError:
-            print("  ⚠️  Could not import ingest_pdf — skipping auto-ingest")
+            print("  Could not import ingest_pdf — skipping")
             return
 
     for doc in new_docs:
-        print(f"\n  📄 Processing: {doc['filename']}")
+        print(f"\n  Processing: {doc['filename']}")
 
         if doc["source"] == "simulated":
-            # Create a realistic placeholder PDF text file for demo
             dest = PDF_DIR / doc["filename"].replace(".pdf", "_sim.txt")
             PDF_DIR.mkdir(parents=True, exist_ok=True)
             dest.write_text(
-                f"SIMULATED DOCUMENT\n"
-                f"Regulator : {doc['regulator']}\n"
-                f"Title     : {doc['title']}\n"
-                f"Summary   : {doc['summary']}\n"
-                f"URL       : {doc['url']}\n"
+                f"SIMULATED DOCUMENT\nRegulator : {doc['regulator']}\nTitle     : {doc['title']}\n"
+                f"Summary   : {doc['summary']}\nURL       : {doc['url']}\n"
                 f"Generated : {datetime.now(timezone.utc).isoformat()}\n",
                 encoding="utf-8"
             )
-            print(f"    📝 Placeholder created: {dest.name}")
-            log_event(
-                agent="MonitoringAgent",
-                action="doc_simulated",
-                details={"filename": doc["filename"], "regulator": doc["regulator"]},
-                citation=doc["title"]
-            )
+            print(f"    Placeholder created: {dest.name}")
+            log_event(agent="MonitoringAgent", action="doc_simulated",
+                      details={"filename": doc["filename"], "regulator": doc["regulator"]},
+                      citation=doc["title"])
             continue
 
-        # Real download + ingest
-        local_path = _download_pdf(doc["url"], doc["filename"])
-        if local_path:
+        local_path = PDF_DIR / doc["filename"]
+        if not local_path.exists():
+            if doc["regulator"] == "RBI":
+                print(f"    RBI file not on disk (Playwright failed) — skipping ingest")
+                continue
+            base_url   = f"https://{doc['url'].split('/')[2]}"
+            local_path = _download_pdf(doc["url"], doc["filename"], base_url)
+
+        if local_path and local_path.exists():
             try:
                 ingest_pdf(str(local_path))
             except Exception as e:
-                print(f"    ⚠️  Ingest failed: {e}")
-                log_event(
-                    agent="MonitoringAgent",
-                    action="ingest_failed",
-                    details={"filename": doc["filename"], "error": str(e)}
-                )
+                print(f"    Ingest failed: {e}")
+                log_event(agent="MonitoringAgent", action="ingest_failed",
+                          details={"filename": doc["filename"], "error": str(e)})
 
-
-# ── CLI Entry Point ───────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     import argparse
-
     parser = argparse.ArgumentParser(description="ComplianceGPT Monitoring Agent")
-    parser.add_argument(
-        "--simulate", action="store_true",
-        help="Use simulated documents instead of real scraping"
-    )
-    parser.add_argument(
-        "--regulators", nargs="+",
-        choices=["RBI", "GST", "IncomeTax", "MCA", "SEBI"],
-        help="Filter to specific regulators"
-    )
-    parser.add_argument(
-        "--no-ingest", action="store_true",
-        help="Detect new docs but skip download/ingest"
-    )
+    parser.add_argument("--simulate", action="store_true")
+    parser.add_argument("--regulators", nargs="+", choices=["RBI", "GST", "IncomeTax", "MCA", "SEBI"])
+    parser.add_argument("--no-ingest", action="store_true")
     args = parser.parse_args()
-
-    results = run_monitoring_agent(
+    run_monitoring_agent(
         simulate_mode=args.simulate,
         regulators=args.regulators,
         auto_ingest=not args.no_ingest,
