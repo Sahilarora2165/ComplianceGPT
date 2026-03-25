@@ -1,0 +1,17 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: compliancegpt-backend
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - pdf_data:/app/data/pdfs
+      - vectorstore_data:/app/vectorstore
+    restart: unless-stopped
+
+volumes:
+  pdf_data:
+  vectorstore_data:

@@ -1,0 +1,6 @@
+__pycache__
+*.pyc
+.env
+vectorstore/
+data/pdfs/
+*.egg-info

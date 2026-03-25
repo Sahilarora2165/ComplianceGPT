@@ -1,7 +1,0 @@
-pymupdf==1.24.5
-langchain==0.3.25
-langchain-community==0.3.23
-langchain-groq==0.3.2
-sentence-transformers==3.4.1
-chromadb==0.6.3
-python-dotenv==1.1.0
