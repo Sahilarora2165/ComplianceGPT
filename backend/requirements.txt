@@ -13,4 +13,6 @@ pypdf==6.9.2
 python-multipart
 beautifulsoup4
 apscheduler
-
+python-multipart
+beautifulsoup4
+apscheduler

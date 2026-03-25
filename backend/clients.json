@@ -1,0 +1,249 @@
+[
+  {
+    "id": "C1",
+    "name": "Arvind Textiles Pvt. Ltd.",
+    "business_type": "Textile Exporter",
+    "industry": "Manufacturing & Export",
+    "constitution": "Private Limited Company",
+    "incorporation_date": "2015-03-12",
+    "tags": ["GST", "RBI", "IncomeTax", "FEMA"],
+
+    "identifiers": {
+      "pan": "AABCA1234F",
+      "tan": "MUMA12345B",
+      "gstin": "27AABCA1234F1Z5",
+      "cin": "U17111MH2015PTC123456",
+      "iec": "0315012345"
+    },
+
+    "registered_address": {
+      "line1": "Plot 45, MIDC Industrial Area",
+      "city": "Bhiwandi",
+      "state": "Maharashtra",
+      "pincode": "421302"
+    },
+
+    "contact": {
+      "primary_person": "Arvind Shah",
+      "designation": "Director",
+      "email": "arvind.shah@arvindtextiles.com",
+      "phone": "+91-9876543210",
+      "alternate_email": "accounts@arvindtextiles.com"
+    },
+
+    "compliance": {
+      "gst_filing_frequency": "Monthly",
+      "tds_applicable": true,
+      "transfer_pricing_applicable": false,
+      "audit_required": true,
+      "audit_type": "Tax Audit + Statutory Audit",
+      "itr_form": "ITR-6",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "gstr1": "11th of next month",
+      "gstr3b": "20th of next month",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "October 31"
+    },
+
+    "bank": {
+      "bank_name": "HDFC Bank",
+      "branch": "Bhiwandi",
+      "account_type": "Current"
+    },
+
+    "notes": "Major exporter to UAE and EU. FEMA compliance critical. LUT filed every year under GST for exports."
+  },
+
+  {
+    "id": "C2",
+    "name": "Spice Garden Restaurant",
+    "business_type": "Restaurant",
+    "industry": "Food & Beverage",
+    "constitution": "Sole Proprietorship",
+    "incorporation_date": "2019-07-01",
+    "tags": ["GST", "IncomeTax"],
+
+    "identifiers": {
+      "pan": "BKRPS5678G",
+      "tan": null,
+      "gstin": "27BKRPS5678G1Z3",
+      "cin": null,
+      "iec": null
+    },
+
+    "registered_address": {
+      "line1": "Shop 12, FC Road",
+      "city": "Pune",
+      "state": "Maharashtra",
+      "pincode": "411004"
+    },
+
+    "contact": {
+      "primary_person": "Suresh Pillai",
+      "designation": "Proprietor",
+      "email": "suresh@spicegarden.in",
+      "phone": "+91-9823456789",
+      "alternate_email": null
+    },
+
+    "compliance": {
+      "gst_filing_frequency": "Quarterly",
+      "tds_applicable": false,
+      "transfer_pricing_applicable": false,
+      "audit_required": false,
+      "audit_type": null,
+      "itr_form": "ITR-3",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "gstr1": "13th of month after quarter end",
+      "gstr3b": "22nd of month after quarter end",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "July 31"
+    },
+
+    "bank": {
+      "bank_name": "SBI",
+      "branch": "FC Road Pune",
+      "account_type": "Current"
+    },
+
+    "notes": "Composition scheme not opted. Dine-in + Zomato/Swiggy aggregator sales. 5% GST applicable."
+  },
+
+  {
+    "id": "C3",
+    "name": "Mehta Pharma Distributors LLP",
+    "business_type": "Pharmaceutical Distributor",
+    "industry": "Healthcare & Pharma",
+    "constitution": "Limited Liability Partnership",
+    "incorporation_date": "2018-11-20",
+    "tags": ["GST", "IncomeTax", "MCA"],
+
+    "identifiers": {
+      "pan": "AACFM7890K",
+      "tan": "PNEM23456C",
+      "gstin": "27AACFM7890K1ZP",
+      "cin": null,
+      "llpin": "AAB-1234"
+    },
+
+    "registered_address": {
+      "line1": "Unit 7, Pharma Hub, Andheri East",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "pincode": "400069"
+    },
+
+    "contact": {
+      "primary_person": "Rajesh Mehta",
+      "designation": "Designated Partner",
+      "email": "rajesh@mehtapharma.com",
+      "phone": "+91-9812345670",
+      "alternate_email": "compliance@mehtapharma.com"
+    },
+
+    "compliance": {
+      "gst_filing_frequency": "Monthly",
+      "tds_applicable": true,
+      "transfer_pricing_applicable": false,
+      "audit_required": true,
+      "audit_type": "Tax Audit",
+      "itr_form": "ITR-5",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "gstr1": "11th of next month",
+      "gstr3b": "20th of next month",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "October 31",
+      "llp_annual_return": "May 30",
+      "form_8_filing": "October 30"
+    },
+
+    "bank": {
+      "bank_name": "ICICI Bank",
+      "branch": "Andheri East",
+      "account_type": "Current"
+    },
+
+    "notes": "LLP annual compliance (Form 8 + Form 11) must not be missed. Deals in Schedule H drugs — drug license compliance separate."
+  },
+
+  {
+    "id": "C4",
+    "name": "Kapoor Tech Solutions Pvt. Ltd.",
+    "business_type": "IT Services & Software Export",
+    "industry": "Information Technology",
+    "constitution": "Private Limited Company",
+    "incorporation_date": "2020-01-15",
+    "tags": ["GST", "IncomeTax", "RBI", "SEBI"],
+
+    "identifiers": {
+      "pan": "AAHCK2345L",
+      "tan": "DELK34567D",
+      "gstin": "07AAHCK2345L1Z8",
+      "cin": "U72200DL2020PTC112233",
+      "iec": "0720023456"
+    },
+
+    "registered_address": {
+      "line1": "Floor 3, Cyber Hub, DLF Phase 2",
+      "city": "Gurugram",
+      "state": "Haryana",
+      "pincode": "122002"
+    },
+
+    "contact": {
+      "primary_person": "Neha Kapoor",
+      "designation": "CEO & Director",
+      "email": "neha@kapoortech.io",
+      "phone": "+91-9911223344",
+      "alternate_email": "finance@kapoortech.io"
+    },
+
+    "compliance": {
+      "gst_filing_frequency": "Monthly",
+      "tds_applicable": true,
+      "transfer_pricing_applicable": true,
+      "audit_required": true,
+      "audit_type": "Tax Audit + Transfer Pricing Audit",
+      "itr_form": "ITR-6",
+      "financial_year_end": "March 31"
+    },
+
+    "key_deadlines": {
+      "gstr1": "11th of next month",
+      "gstr3b": "20th of next month",
+      "advance_tax_q1": "June 15",
+      "advance_tax_q2": "September 15",
+      "advance_tax_q3": "December 15",
+      "advance_tax_q4": "March 15",
+      "itr_due": "November 30",
+      "transfer_pricing_report": "October 31",
+      "rbi_softex_form": "Within 30 days of invoice"
+    },
+
+    "bank": {
+      "bank_name": "Kotak Mahindra Bank",
+      "branch": "Cyber Hub Gurugram",
+      "account_type": "Current"
+    },
+
+    "notes": "Software exports via STPI. RBI SOFTEX form mandatory for each export invoice. Transfer pricing applies due to foreign parent company."
+  }
+]
