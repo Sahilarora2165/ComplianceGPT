@@ -5,8 +5,9 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
+    poppler-utils \
+    tesseract-ocr \
     && rm -rf /var/lib/apt/lists/*
-
 # Install CPU-only torch first separately
 RUN pip install --no-cache-dir torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
 

@@ -18,7 +18,7 @@ from config import (
     CHROMA_COLLECTION, CHUNK_SIZE, CHUNK_OVERLAP,
     OCR_CHAR_THRESHOLD, REGULATOR_KEYWORDS, REGULATOR_FILENAME_MAP
 )
-from audit import log_event
+from core.audit import log_event
 
 
 # ── Regulator Detection ───────────────────────────────────────────────────────
