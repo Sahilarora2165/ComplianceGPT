@@ -8,11 +8,17 @@ RUN apt-get update && apt-get install -y \
     poppler-utils \
     tesseract-ocr \
     && rm -rf /var/lib/apt/lists/*
+
 # Install CPU-only torch first separately
 RUN pip install --no-cache-dir torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Playwright + Chromium for RBI scraping (bypasses F5 bot protection)
+RUN pip install --no-cache-dir playwright
+RUN playwright install chromium
+RUN playwright install-deps chromium
 
 COPY . .
 
