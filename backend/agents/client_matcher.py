@@ -52,6 +52,148 @@ def _load_clients() -> list[dict]:
 #   - nested key (dot):      "compliance.tds_applicable"
 #   - tags list membership:  "tags:GST"
 
+# ─────────────────────────────────────────────
+# CONTENT-BASED FILTERING
+# ─────────────────────────────────────────────
+
+# Circular titles/summaries matching these → market ops / statistical data.
+# They carry no compliance obligation for non-banking businesses → skip entirely.
+_MARKET_OPS_SKIP: dict[str, list[str]] = {
+    "RBI": [
+        "auction result",
+        "t-bill",
+        "treasury bill",
+        "91-day",
+        "182-day",
+        "364-day",
+        "reserve money",
+        "money supply",
+        "cut-off",
+        "state government securit",   # "securities" / "security"
+        "state development loan",
+        "open market operation",
+        "liquidity adjustment facility",
+        "fortnight ended",             # periodic statistical releases
+        "weekly statistical supplement",
+        "ways and means advance",
+    ],
+}
+
+# Content rules per regulator: if the circular text matches a keyword group,
+# the client must also satisfy the tag/business check to be included.
+# Rules are evaluated in order; first keyword match wins.
+# If NO rule's keywords match, the circular is treated as generic for that
+# regulator and the regulator-level tag match (from _MATCH_RULES) stands.
+_CONTENT_RULES: dict[str, list[dict]] = {
+    "RBI": [
+        {
+            "keywords": [
+                "fema", "foreign exchange management", "foreign transaction",
+                "export realisation", "iec", "softex", "lrs", "liberalised remittance",
+                "ecb", "external commercial borrowing", "nri", "fcnr",
+                "import payment", "overseas direct investment", "odi",
+            ],
+            "required_tags": ["FEMA"],
+            "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        },
+        {
+            "keywords": [
+                "nbfc", "non-banking financial", "microfinance institution",
+                "mfi", "housing finance company",
+            ],
+            "required_tags": ["RBI"],
+            "business_contains": ["nbfc", "microfinance", "housing finance"],
+            "reason": "NBFC/microfinance circular — applicable to NBFC-type clients",
+        },
+        {
+            "keywords": [
+                "co-operative bank", "cooperative bank", "urban co-op",
+                "urban cooperative", "credit cooperative", "mahila co-operative",
+            ],
+            "required_tags": ["RBI"],
+            "business_contains": ["bank", "cooperative", "credit society"],
+            "reason": "Co-operative bank circular — applicable to cooperative banking clients",
+        },
+        {
+            "keywords": [
+                "kyc", "know your customer", "anti-money laundering",
+                "aml", "pmla", "beneficial owner", "customer due diligence",
+            ],
+            "required_tags": ["RBI"],
+            "reason": "KYC/AML circular — applicable to RBI-regulated entities",
+        },
+        {
+            "keywords": [
+                "section 35a", "directions under section", "banking regulation act",
+                "enforcement action", "corrective action plan", "amalgamat",
+                "voluntary amalgamation",
+            ],
+            "required_tags": ["RBI"],
+            "business_contains": ["bank", "cooperative", "financial", "nbfc"],
+            "reason": "Banking enforcement/amalgamation — applicable to banking/financial clients",
+        },
+        {
+            "keywords": [
+                "priority sector", "agricultural credit", "msme lending",
+                "kisan credit", "crop loan",
+            ],
+            "required_tags": ["RBI"],
+            "business_contains": ["bank", "cooperative", "nbfc", "microfinance"],
+            "reason": "Priority sector lending circular — applicable to RBI-regulated lenders",
+        },
+    ],
+}
+
+
+def _matches_any(text: str, keywords: list) -> bool:
+    return any(kw in text for kw in keywords)
+
+
+def _is_market_ops(title: str, summary: str, regulator: str) -> bool:
+    """True if this circular is a market/statistical release with no compliance obligation."""
+    patterns = _MARKET_OPS_SKIP.get(regulator, [])
+    if not patterns:
+        return False
+    text = (title + " " + summary).lower()
+    return _matches_any(text, patterns)
+
+
+def _content_match(title: str, summary: str, client: dict, regulator: str) -> tuple[bool, str]:
+    """
+    Content-based relevance check, called after the regulator-level tag check passes.
+    Returns (matched, reason).
+    If no content rule's keywords match the circular, returns (True, "") — treating
+    it as a generic circular and deferring to the regulator-level reason.
+    """
+    rules = _CONTENT_RULES.get(regulator, [])
+    if not rules:
+        return True, ""
+
+    text = (title + " " + summary).lower()
+    client_tags = [t.upper() for t in client.get("tags", [])]
+    biz = client.get("business_type", "").lower()
+
+    for rule in rules:
+        if not _matches_any(text, rule["keywords"]):
+            continue
+
+        # Keywords matched — check required client tags
+        required_tags = rule.get("required_tags", [])
+        if required_tags and not any(t.upper() in client_tags for t in required_tags):
+            return False, ""
+
+        # Optionally narrow by business type
+        biz_kws = rule.get("business_contains", [])
+        if biz_kws and not _matches_any(biz, biz_kws):
+            return False, ""
+
+        return True, rule["reason"]
+
+    # No content rule matched → generic circular, pass through
+    return True, ""
+
+
+# ─────────────────────────────────────────────
 _MATCH_RULES: dict[str, list[dict]] = {
     "RBI": [
         {
@@ -195,20 +337,41 @@ def _client_matches_rule(client: dict, rule: dict) -> tuple[bool, str]:
     return matched, reason
 
 
-def _match_client_to_circular(client: dict, regulator: str) -> tuple[bool, str]:
+def _match_client_to_circular(
+    client: dict, regulator: str, title: str = "", summary: str = ""
+) -> tuple[bool, str]:
     """
     Check if a client is affected by a circular from a given regulator.
-    Tries all rules for that regulator — returns on first match (OR logic).
+
+    Three-stage filter:
+      1. Skip market-ops / statistical releases (no compliance obligation).
+      2. Check regulator-level tag rules (OR logic).
+      3. Content-based check: narrow by circular topic vs client profile.
+
     Returns (matched: bool, reason: str)
     """
-    rules = _MATCH_RULES.get(regulator, [])
+    # Stage 1 — skip market ops
+    if _is_market_ops(title, summary, regulator):
+        return False, ""
 
+    # Stage 2 — regulator-level tag check
+    rules = _MATCH_RULES.get(regulator, [])
+    matched_reason = ""
     for rule in rules:
         matched, reason = _client_matches_rule(client, rule)
         if matched:
-            return True, reason
+            matched_reason = reason
+            break
 
-    return False, ""
+    if not matched_reason:
+        return False, ""
+
+    # Stage 3 — content relevance check
+    content_ok, content_reason = _content_match(title, summary, client, regulator)
+    if not content_ok:
+        return False, ""
+
+    return True, content_reason or matched_reason
 
 
 # ─────────────────────────────────────────────
@@ -268,7 +431,7 @@ def match_clients(documents: list[dict]) -> list[dict]:
         affected: list[dict] = []
 
         for client in clients:
-            matched, reason = _match_client_to_circular(client, regulator)
+            matched, reason = _match_client_to_circular(client, regulator, title=title, summary=summary)
             if matched:
                 affected.append({
                     "client_id": client["id"],
@@ -357,7 +520,7 @@ if __name__ == "__main__":
 
     results = match_clients(_SIMULATED_DOCS)
 
-    priority_icon = {"HIGH": "🔴", "MEDIUM": "🟡", "LOW": "⚪"}
+    priority_icon = {"HIGH": "python /app/orchestrator.py --schedule🔴", "MEDIUM": "🟡", "LOW": "⚪"}
 
     for r in results:
         icon = priority_icon.get(r["priority"], "⚪")

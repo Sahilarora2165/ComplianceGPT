@@ -404,6 +404,8 @@ def draft_single(circular: dict, client: dict) -> dict:
     # Step 2: extract obligations
     obligations = _extract_obligations(circular, client, context)
     print(f"     ✅ {len(obligations['actions'])} action(s) | Risk: {obligations['risk_level']} | Deadline: {obligations['deadline']}")
+    for i, action in enumerate(obligations["actions"], 1):
+        print(f"        {i}. {action}")
 
     # Step 3: draft email
     subject, body = _draft_email(circular, client, obligations)

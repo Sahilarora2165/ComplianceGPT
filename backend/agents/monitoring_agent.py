@@ -1,5 +1,6 @@
 
 
+import re                          # FIX 1: moved to top — was inside for-loop
 import sys
 import re
 import hashlib
@@ -11,6 +12,8 @@ from datetime import datetime, timezone
 from typing import Optional
 from bs4 import BeautifulSoup
 
+# ── Path bootstrap ─────────────────────────────────────────────────────────────
+# agents/monitoring_agent.py → parent = agents/ → parent = backend/ (app root)
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(_BACKEND_DIR))
 
@@ -39,18 +42,18 @@ PORTALS = [
         "base_url":       "https://www.cbic-gst.gov.in",
     },
     {
-        "regulator": "IncomeTax",
-        "name":      "Income Tax Circulars",
-        "url":       "https://incometaxindia.gov.in/Pages/communications/circulars.aspx",
+        "regulator":      "IncomeTax",
+        "name":           "Income Tax Circulars",
+        "url":            "https://incometaxindia.gov.in/Pages/communications/circulars.aspx",
         "list_selector":  "table.GridView tr",
         "link_selector":  "a[href$='.pdf']",
         "title_selector": "td:first-child",
         "base_url":       "https://incometaxindia.gov.in",
     },
     {
-        "regulator": "MCA",
-        "name":      "MCA Circulars",
-        "url":       "https://www.mca.gov.in/Ministry/pdf/GeneralCircular.pdf",
+        "regulator":      "MCA",
+        "name":           "MCA Circulars",
+        "url":            "https://www.mca.gov.in/Ministry/pdf/GeneralCircular.pdf",
         "list_selector":  "table tr",
         "link_selector":  "a[href$='.pdf']",
         "title_selector": "td:first-child",
@@ -262,6 +265,168 @@ def _scrape_rbi_playwright(hash_db: dict) -> list[dict]:
     return new_docs
 
 
+_CIRCULAR_NAV_SKIP = {
+    "notifications", "accessibility statement", "disclaimer",
+    "sitemap", "contact us", "feedback", "right to information",
+    "utkarsh", "core purpose", "values and vision", "careers",
+    "tenders", "media", "statistics", "publications", "home",
+}
+
+def _is_valid_circular_title(title: str) -> bool:
+    """Filter out navigation/footer links masquerading as circulars."""
+    if len(title) < 15:
+        return False
+    tl = title.lower()
+    if any(skip in tl for skip in _CIRCULAR_NAV_SKIP):
+        return False
+    return True
+
+
+def _scrape_rbi_circulars_playwright(hash_db: dict) -> list[dict]:
+    """
+    Scrapes RBI Circulars & Notifications — where FEMA, KYC, banking
+    directions and NBFC rules are published.
+
+    Strategy:
+      1. Load BS_CircularIndexDisplay.aspx
+      2. Click the most recent year to expand the circular list
+      3. Extract NotificationUser.aspx?Id=XXXX links
+      4. For each new circular, visit the page and download its PDF
+    """
+    print("\n  Scraping [RBI] Circulars & Notifications via Playwright ...")
+    new_docs = []
+
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("  Playwright not installed")
+        return []
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/120.0.0.0 Safari/537.36"
+            ),
+            viewport={"width": 1280, "height": 800},
+        )
+        page = context.new_page()
+
+        try:
+            print("    Loading RBI circulars index ...")
+            page.goto(
+                "https://www.rbi.org.in/Scripts/BS_CircularIndexDisplay.aspx",
+                wait_until="networkidle",
+                timeout=40000,
+            )
+            # Wait for any link to appear (DOM-attached), not "visible" — the
+            # year-nav table is empty until a year is clicked, so the default
+            # visible state check times out.
+            page.wait_for_selector("a", timeout=15000, state="attached")
+        except Exception as e:
+            print(f"    Page load failed: {e}")
+            browser.close()
+            return []
+
+        # The page shows a year table. Click the most recent year to load circulars.
+        try:
+            current_year = str(datetime.now().year)
+            prev_year    = str(datetime.now().year - 1)
+
+            year_link = (
+                page.query_selector(f"a:text('{current_year}')") or
+                page.query_selector(f"a:text('{prev_year}')")
+            )
+            if year_link:
+                print(f"    Clicking year: {year_link.inner_text().strip()} ...")
+                year_link.click()
+                page.wait_for_load_state("networkidle", timeout=20000)
+            else:
+                print("    Year link not found — using page as-is")
+        except Exception as e:
+            print(f"    Year click failed: {e} — using page as-is")
+
+        # Only pick NotificationUser links that have a numeric Id parameter
+        links = page.eval_on_selector_all(
+            "a[href*='NotificationUser.aspx']",
+            """els => els
+                .filter(e => /[?&]Id=\\d+/i.test(e.href))
+                .map(e => ({
+                    href: e.href,
+                    text: (e.closest('tr') ? e.closest('tr').innerText : e.innerText).trim()
+                }))"""
+        )
+        print(f"    Found {len(links)} notification link(s)")
+
+        for link in links[:20]:
+            href  = link.get("href", "").strip()
+            title = link.get("text", "").strip()
+            title = re.sub(r'\s*\d+\s*kb\s*$', '', title, flags=re.IGNORECASE).strip()
+            title = re.sub(r'\s+', ' ', title)[:120]
+
+            if not href or not _is_valid_circular_title(title):
+                continue
+
+            if not _is_new_document(href, href.encode(), hash_db):
+                print(f"    Already seen: {title[:70]}")
+                continue
+
+            print(f"    New circular: {title[:70]}")
+
+            # Visit the notification page and download its PDF
+            id_match = re.search(r'Id=(\d+)', href, re.IGNORECASE)
+            notif_id = id_match.group(1) if id_match else re.sub(r'\W+', '_', title[:20])
+            filename = f"rbi_circ_{notif_id}.pdf"
+            dest     = PDF_DIR / filename
+
+            if dest.exists():
+                print(f"    Already on disk: {filename}")
+            else:
+                try:
+                    notif_page = context.new_page()
+                    notif_page.goto(href, wait_until="networkidle", timeout=30000)
+                    pdf_links = notif_page.eval_on_selector_all(
+                        "a[href*='.PDF'], a[href*='.pdf']",
+                        "els => els.map(e => e.href)"
+                    )
+                    notif_page.close()
+
+                    if pdf_links:
+                        resp      = context.request.get(pdf_links[0], timeout=20000)
+                        pdf_bytes = resp.body()
+                        if pdf_bytes.startswith(b"%PDF") and not _is_html(pdf_bytes):
+                            PDF_DIR.mkdir(parents=True, exist_ok=True)
+                            dest.write_bytes(pdf_bytes)
+                            print(f"    Saved: {filename} ({len(pdf_bytes) // 1024} KB)")
+                        else:
+                            filename = ""
+                    else:
+                        print(f"    No PDF on notification page — LLM fallback")
+                        filename = ""
+                except Exception as e:
+                    print(f"    Could not fetch notification page: {e}")
+                    filename = ""
+
+            new_docs.append({
+                "regulator": "RBI",
+                "title":     title,
+                "url":       href,
+                "filename":  filename,
+                "priority":  _infer_priority(title),
+                "summary":   "",
+                "source":    "real_scrape",
+            })
+
+            time.sleep(1)
+
+        browser.close()
+
+    print(f"    RBI Circulars: {len(new_docs)} new document(s) found")
+    return new_docs
+
+
 _sessions: dict = {}
 
 def _get_session(base_url: str) -> requests.Session:
@@ -349,7 +514,9 @@ def _scrape_portal(portal: dict, hash_db: dict) -> list[dict]:
     return new_docs
 
 
-def _simulate_new_documents(hash_db: dict, regulators: list = None) -> list[dict]:
+# ── Simulate Mode ──────────────────────────────────────────────────────────────
+
+def _simulate_new_documents(hash_db: dict, regulators: list[str] = None) -> list[dict]:
     new_docs = []
     pool = SIMULATED_DOCUMENTS
     if regulators:
@@ -383,6 +550,7 @@ def run_monitoring_agent(
     else:
         if not regulators or "RBI" in regulators:
             new_docs.extend(_scrape_rbi_playwright(hash_db))
+            new_docs.extend(_scrape_rbi_circulars_playwright(hash_db))
 
         other_portals = [p for p in PORTALS if not regulators or p["regulator"] in regulators]
         for portal in other_portals:
@@ -434,6 +602,10 @@ def _ingest_new_docs(new_docs: list) -> None:
             return
 
     for doc in new_docs:
+        if not doc.get("filename"):
+            print(f"\n  Skipping ingest (no PDF): {doc['title'][:70]}")
+            continue
+
         print(f"\n  Processing: {doc['filename']}")
 
         if doc["source"] == "simulated":
