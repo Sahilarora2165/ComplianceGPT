@@ -10,7 +10,7 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Optional
-
+from agents.deadline_agent import scan_deadlines, get_latest_alerts, deadline_summary
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -68,6 +68,22 @@ def _run_monitoring_job():
         logger.error(f"❌ Monitoring job failed: {e}")
 
 
+def _run_deadline_job():
+        try:
+            logger.info("⏰ Deadline Watch Agent running...")
+            alerts = scan_deadlines()
+            summary = deadline_summary(alerts)
+            logger.info(
+                f"✅ Deadline scan complete — "
+                f"{summary['missed']} missed, "
+                f"{summary['critical']} critical, "
+                f"{summary['warning']} warnings. "
+                f"Total exposure: ₹{summary['total_exposure']:,.0f}"
+            )
+        except Exception as e:
+            logger.error(f"❌ Deadline job failed: {e}")
+
+
 scheduler = BackgroundScheduler()
 
 @app.on_event("startup")
@@ -77,6 +93,13 @@ def start_scheduler():
         trigger=IntervalTrigger(hours=6),
         id="monitoring_job",
         name="Regulatory Monitoring — every 6 hours",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        _run_deadline_job,
+        trigger=IntervalTrigger(hours=6),
+        id="deadline_job",
+        name="Deadline Watch — every 6 hours",
         replace_existing=True,
     )
     scheduler.start()
@@ -277,6 +300,51 @@ def list_clients():
     if not clients_path.exists():
         raise HTTPException(status_code=404, detail="clients.json not found")
     return {"clients": json.loads(clients_path.read_text(encoding="utf-8"))}
+
+
+
+# ─────────────────────────────────────────────
+# DEADLINE WATCH AGENT
+# ─────────────────────────────────────────────
+ 
+@app.get("/deadlines")
+def get_deadlines(level: Optional[str] = None, client_id: Optional[str] = None):
+    alerts = get_latest_alerts()
+    if level:
+        alerts = [a for a in alerts if a["level"].upper() == level.upper()]
+    if client_id:
+        alerts = [a for a in alerts if a["client_id"] == client_id]
+    from agents.deadline_agent import deadline_summary as _ds
+    summary = _ds(alerts)
+    return {
+        "alerts":     alerts,
+        "total":      len(alerts),
+        "summary":    summary,
+        "scanned_at": alerts[0]["generated_at"] if alerts else None,
+    }
+ 
+ 
+@app.post("/deadlines/scan")
+def trigger_deadline_scan():
+    alerts = scan_deadlines()
+    from agents.deadline_agent import deadline_summary as _ds
+    summary = _ds(alerts)
+    return {
+        "message": f"Scan complete — {len(alerts)} alert(s) found",
+        "summary": summary,
+        "alerts":  alerts,
+    }
+ 
+ 
+@app.get("/deadlines/summary")
+def get_deadline_summary():
+    alerts = get_latest_alerts()
+    from agents.deadline_agent import deadline_summary as _ds
+    summary = _ds(alerts)
+    return {
+        "summary":          summary,
+        "exposure_display": f"₹{summary['total_exposure']:,.0f} at risk across {summary['total_alerts']} obligation(s)",
+    }
 
 
 # ─────────────────────────────────────────────

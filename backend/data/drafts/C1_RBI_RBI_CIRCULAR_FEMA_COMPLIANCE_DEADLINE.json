@@ -1,0 +1,55 @@
+{
+  "draft_id": "C1_RBI_RBI_CIRCULAR_FEMA_COMPLIANCE_DEADLINE",
+  "client_id": "C1",
+  "client_name": "Arvind Textiles Pvt. Ltd.",
+  "client_email": "arvind.shah@arvindtextiles.com",
+  "client_contact": "Arvind Shah",
+  "circular_id": "RBI_RBI_CIRCULAR_FEMA_COMPLIANCE_DEADLINE",
+  "circular_title": "RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+  "regulator": "RBI",
+  "priority": "HIGH",
+  "circular_summary": "FEMA reporting deadline for foreign transactions extended by 30 days.",
+  "actions": [
+    "Submit updated FEMA reports for foreign transactions within the extended 30-day deadline"
+  ],
+  "deadline": "30 days from the original deadline, exact date not specified in the circular",
+  "risk_level": "MEDIUM",
+  "penalty_if_missed": "Not specified",
+  "applicable_sections": [
+    "Foreign Exchange Management (Permissible Capital Account Transactions) Regulations, 2000"
+  ],
+  "email_subject": "Compliance Advisory: RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+  "email_body": "{\n  \"subject\": \"Action Required: FEMA Compliance Deadline Extension for Arvind Textiles Pvt. Ltd.\",\n  \"body\": \"Dear Arvind Shah, \n\nAs a manufacturing and export company, Arvind Textiles Pvt. Ltd. is required to comply with the Foreign Exchange Management Act (FEMA) regulations, which necessitate the submission of updated reports for foreign transactions. This applies to your company specifically due to its involvement in international trade.\n\nTo ensure compliance, please take the following actions:\n1. Submit updated FEMA reports for foreign transactions within the extended deadline.\n\nThe deadline for submission is 30 days from the original deadline. \n\nWe recommend prompt attention to this matter to avoid any potential penalties. \n\nPlease do not hesitate to contact us if you require any assistance with the submission process. We are here to help.\n\nBest regards,\nCompliance Advisory Team\"\n}",
+  "internal_notes": "Cross-check with client's export transactions to ensure all foreign transactions are reported within the extended deadline, review client's compliance with FEMA regulations",
+  "source_chunks": [
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 0,
+      "score": 0.1247
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 10,
+      "score": 0.0917
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 16,
+      "score": 0.0762
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 1,
+      "score": 0.0608
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 1,
+      "score": 0.0364
+    }
+  ],
+  "model_used": "llama-3.3-70b-versatile",
+  "generated_at": "2026-03-26T15:56:15.660990+00:00",
+  "version": "v1",
+  "status": "pending_review"
+}

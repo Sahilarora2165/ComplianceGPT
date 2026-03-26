@@ -1,0 +1,53 @@
+{
+  "draft_id": "C5_MCA_MCA_NOTIFICATION_LLP_ANNUAL_FILING",
+  "client_id": "C5",
+  "client_name": "Galaxy Securities Pvt. Ltd.",
+  "client_email": "amit@galaxysecurities.in",
+  "client_contact": "Amit Verma",
+  "circular_id": "MCA_MCA_NOTIFICATION_LLP_ANNUAL_FILING",
+  "circular_title": "MCA Notification: LLP Annual Filing Deadline - FY 2025-26",
+  "regulator": "MCA",
+  "priority": "MEDIUM",
+  "circular_summary": "LLP Form 11 annual return due date extended to July 15, 2026.",
+  "actions": [
+    "Note for awareness — no immediate action required for Galaxy Securities Pvt. Ltd."
+  ],
+  "deadline": "No specific deadline",
+  "risk_level": "LOW",
+  "penalty_if_missed": "Not specified",
+  "applicable_sections": [],
+  "email_subject": "Compliance Advisory: MCA Notification: LLP Annual Filing Deadline - FY 2025-26",
+  "email_body": "{\n  \"subject\": \"MCA Notification: LLP Annual Filing Deadline - FY 2025-26\",\n  \"body\": \"Dear Amit Verma, \n\nWe are bringing to your attention the MCA notification regarding the LLP annual filing deadline for FY 2025-26, as Galaxy Securities Pvt. Ltd. is a stock broker and may have associated entities or interests that could be impacted by this notification.\n\nThe required actions for your company are:\n1. Note for awareness — no immediate action required for Galaxy Securities Pvt. Ltd.\n\nThere is no specific deadline for this notification. As the risk level is LOW, no penalty has been specified for missing this deadline.\n\nPlease be assured that we are monitoring this situation and will inform you if any further action is required. If you have any questions or concerns, please do not hesitate to reach out to us.\n\nWe are here to assist you with any compliance matters. \n\nBest regards,\nCompliance Advisory Team\"\n}",
+  "internal_notes": "No specific compliance obligations for this client based on the provided circular, which primarily deals with Reserve Bank of India (Rupee Interest Rate Derivatives) Directions, 2025, and does not directly impact a stock broker private limited company.",
+  "source_chunks": [
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 1,
+      "score": 0.0018
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 16,
+      "score": 0.0008
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 0,
+      "score": 0.0006
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 14,
+      "score": 0.0005
+    },
+    {
+      "source": "Hackathon Problem Statement.pdf",
+      "page": 6,
+      "score": 0.0003
+    }
+  ],
+  "model_used": "llama-3.3-70b-versatile",
+  "generated_at": "2026-03-26T15:58:03.179090+00:00",
+  "version": "v1",
+  "status": "pending_review"
+}

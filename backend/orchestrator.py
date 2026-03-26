@@ -5,6 +5,7 @@ Runs the full agent pipeline in sequence:
   1. MonitoringAgent  → detect new circulars
   2. ClientMatcher    → match circulars to clients
   3. DrafterAgent     → generate advisory drafts
+  4. DeadlineWatch    → scan for upcoming client deadlines
 
 Can be run:
   - Once manually:   python orchestrator.py --run-now
@@ -44,6 +45,7 @@ def run_pipeline(simulate_mode: bool = False) -> dict:
         "new_docs":      0,
         "matches":       0,
         "drafts":        0,
+        "deadline_alerts": 0,
         "errors":        [],
     }
 
@@ -132,17 +134,44 @@ def run_pipeline(simulate_mode: bool = False) -> dict:
             for i, action in enumerate(d["actions"], 1):
                 print(f"          {i}. {action}")
 
+    # ── Step 4: Deadline Watch Agent ───────────────────────────────────────
+    print("\n[4/4] ⚠️  Running Deadline Watch Agent ...")
+    deadline_alerts = []
+    try:
+        from agents.deadline_agent import scan_deadlines, deadline_summary
+        deadline_alerts = scan_deadlines()
+        summary["deadline_alerts"] = len(deadline_alerts)
+        
+        d_summary = deadline_summary(deadline_alerts)
+        print(f"  ✅ Deadline scan complete — {d_summary['total_alerts']} alert(s)")
+        print(f"     MISSED: {d_summary['missed']} | CRITICAL: {d_summary['critical']} | WARNING: {d_summary['warning']}")
+        if d_summary['total_exposure'] > 0:
+            print(f"     Total exposure: ₹{d_summary['total_exposure']:,.0f}")
+        
+        # Print critical alerts
+        critical_alerts = [a for a in deadline_alerts if a["level"] in ("MISSED", "CRITICAL")]
+        if critical_alerts:
+            print(f"  ⚠️  {len(critical_alerts)} URGENT deadline(s) require attention:")
+            for alert in critical_alerts:
+                icon = "💀" if alert["level"] == "MISSED" else "🔴"
+                print(f"     {icon} [{alert['level']}] {alert['client_name']} — {alert['obligation_type']} ({alert['due_date']})")
+    except Exception as e:
+        msg = f"DeadlineWatchAgent failed: {e}"
+        print(f"  ❌ {msg}")
+        summary["errors"].append(msg)
+
     # ── Final summary ──────────────────────────────────────────────────────
     summary["finished_at"] = datetime.now(timezone.utc).isoformat()
     _log_pipeline(summary)
 
     print("\n" + "=" * 60)
     print("  Pipeline Complete")
-    print(f"  New docs    : {summary['new_docs']}")
-    print(f"  Matches     : {summary['matches']}")
-    print(f"  Drafts      : {summary['drafts']}")
+    print(f"  New docs       : {summary['new_docs']}")
+    print(f"  Matches        : {summary['matches']}")
+    print(f"  Drafts         : {summary['drafts']}")
+    print(f"  Deadline Alerts: {summary['deadline_alerts']}")
     if summary["errors"]:
-        print(f"  Errors      : {len(summary['errors'])}")
+        print(f"  Errors         : {len(summary['errors'])}")
         for e in summary["errors"]:
             print(f"    - {e}")
     print("=" * 60 + "\n")

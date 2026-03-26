@@ -1,0 +1,53 @@
+{
+  "draft_id": "C1_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+  "client_id": "C1",
+  "client_name": "Arvind Textiles Pvt. Ltd.",
+  "client_email": "arvind.shah@arvindtextiles.com",
+  "client_contact": "Arvind Shah",
+  "circular_id": "INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+  "circular_title": "CBDT Circular: TDS Rate Revision - FY 2026-27",
+  "regulator": "IncomeTax",
+  "priority": "MEDIUM",
+  "circular_summary": "TDS rates revised for Section 194C and 194J effective April 2026.",
+  "actions": [
+    "Note for awareness — no immediate action required for Arvind Textiles Pvt. Ltd."
+  ],
+  "deadline": "No specific deadline",
+  "risk_level": "LOW",
+  "penalty_if_missed": "Not specified",
+  "applicable_sections": [],
+  "email_subject": "Compliance Advisory: CBDT Circular: TDS Rate Revision - FY 2026-27",
+  "email_body": "{\n  \"subject\": \"CBDT Circular: TDS Rate Revision - FY 2026-27\",\n  \"body\": \"Dear Arvind Shah, \n\nWe are writing to inform you of the recent CBDT Circular regarding the TDS rate revision for FY 2026-27, which applies to Arvind Textiles Pvt. Ltd. as it is a manufacturing and export entity subject to income tax regulations. This circular is relevant to your company as it may impact your tax compliance and withholding obligations.\n\nThe required actions for your company are:\n1. Note for awareness — no immediate action required for Arvind Textiles Pvt. Ltd.\n\nThere is no specific deadline for this circular, and the risk level is considered LOW. As the risk level is LOW, there is no penalty specified for non-compliance in this instance.\n\nIf you have any questions or concerns, please do not hesitate to reach out to us. We are here to assist you with any compliance matters.\n\nBest regards,\nCompliance Advisory Team\"\n}",
+  "internal_notes": "No specific compliance obligations identified for this client based on the provided circular.",
+  "source_chunks": [
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 14,
+      "score": 0.0529
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 14,
+      "score": 0.0196
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 1,
+      "score": 0.0014
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 2,
+      "score": 0.0012
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 0,
+      "score": 0.0011
+    }
+  ],
+  "model_used": "llama-3.3-70b-versatile",
+  "generated_at": "2026-03-26T15:56:40.031362+00:00",
+  "version": "v1",
+  "status": "pending_review"
+}

@@ -1,0 +1,53 @@
+{
+  "draft_id": "C5_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+  "client_id": "C5",
+  "client_name": "Galaxy Securities Pvt. Ltd.",
+  "client_email": "amit@galaxysecurities.in",
+  "client_contact": "Amit Verma",
+  "circular_id": "INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+  "circular_title": "CBDT Circular: TDS Rate Revision - FY 2026-27",
+  "regulator": "IncomeTax",
+  "priority": "MEDIUM",
+  "circular_summary": "TDS rates revised for Section 194C and 194J effective April 2026.",
+  "actions": [
+    "Note for awareness — no immediate action required for Galaxy Securities Pvt. Ltd."
+  ],
+  "deadline": "No specific deadline",
+  "risk_level": "LOW",
+  "penalty_if_missed": "Not specified",
+  "applicable_sections": [],
+  "email_subject": "Compliance Advisory: CBDT Circular: TDS Rate Revision - FY 2026-27",
+  "email_body": "{\n  \"subject\": \"CBDT Circular: TDS Rate Revision - FY 2026-27\",\n  \"body\": \"Dear Amit Verma,\n\nWe are writing to inform you of the recent CBDT Circular regarding the TDS rate revision for FY 2026-27, which applies to Galaxy Securities Pvt. Ltd. as a stock broker, and thus, it is essential for your awareness. This circular may have implications for your business operations in the future.\n\nThe required actions for your company are:\n1. Note for awareness — no immediate action required for Galaxy Securities Pvt. Ltd.\n\nThere is no specific deadline for this circular, and the risk level is considered LOW. As the risk level is LOW, there is no penalty specified for missing any deadlines.\n\nIf you have any questions or require assistance, please do not hesitate to contact us. We are here to help.\n\nBest regards,\nCompliance Advisory Team\"\n}",
+  "internal_notes": "No specific compliance requirements identified for this client based on the provided circular",
+  "source_chunks": [
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 14,
+      "score": 0.0475
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 14,
+      "score": 0.0193
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 1,
+      "score": 0.001
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 10,
+      "score": 0.0009
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 2,
+      "score": 0.0009
+    }
+  ],
+  "model_used": "llama-3.3-70b-versatile",
+  "generated_at": "2026-03-26T15:57:21.298557+00:00",
+  "version": "v1",
+  "status": "pending_review"
+}

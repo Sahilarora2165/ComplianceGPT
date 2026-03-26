@@ -1,0 +1,53 @@
+{
+  "draft_id": "C2_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+  "client_id": "C2",
+  "client_name": "Spice Garden Restaurant",
+  "client_email": "suresh@spicegarden.in",
+  "client_contact": "Suresh Pillai",
+  "circular_id": "INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+  "circular_title": "CBDT Circular: TDS Rate Revision - FY 2026-27",
+  "regulator": "IncomeTax",
+  "priority": "MEDIUM",
+  "circular_summary": "TDS rates revised for Section 194C and 194J effective April 2026.",
+  "actions": [
+    "Note for awareness — no immediate action required for Spice Garden Restaurant"
+  ],
+  "deadline": "No specific deadline",
+  "risk_level": "LOW",
+  "penalty_if_missed": "Not specified",
+  "applicable_sections": [],
+  "email_subject": "Compliance Advisory: CBDT Circular: TDS Rate Revision - FY 2026-27",
+  "email_body": "{\n  \"subject\": \"CBDT Circular: TDS Rate Revision - FY 2026-27\",\n  \"body\": \"Dear Suresh Pillai,\n\nWe are writing to inform you of the recent CBDT Circular regarding the TDS rate revision for FY 2026-27, which applies to Spice Garden Restaurant as it is a business entity subject to tax deductions. As a food and beverage establishment, it is essential to be aware of these updates to ensure compliance with Income Tax regulations.\n\nThe required actions for your company are:\n1. Note for awareness — no immediate action required for Spice Garden Restaurant\n\nThere is no specific deadline for this notification. As the risk level is LOW, no penalty is specified for non-compliance in this context.\n\nPlease be assured that we will continue to monitor and advise on any developments that may affect your business. If you have any questions or require assistance, do not hesitate to contact us.\n\nBest regards,\nCompliance Advisory Team\"\n}",
+  "internal_notes": "No specific TDS obligations for this client, review of circular does not indicate any direct impact on Spice Garden Restaurant",
+  "source_chunks": [
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 14,
+      "score": 0.0436
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 14,
+      "score": 0.0155
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 2,
+      "score": 0.0009
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 1,
+      "score": 0.0008
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 0,
+      "score": 0.0008
+    }
+  ],
+  "model_used": "llama-3.3-70b-versatile",
+  "generated_at": "2026-03-26T15:56:44.947184+00:00",
+  "version": "v1",
+  "status": "pending_review"
+}

@@ -1,0 +1,53 @@
+{
+  "draft_id": "C5_SEBI_SEBI_CIRCULAR_ESG_DISCLOSURE_NORMS",
+  "client_id": "C5",
+  "client_name": "Galaxy Securities Pvt. Ltd.",
+  "client_email": "amit@galaxysecurities.in",
+  "client_contact": "Amit Verma",
+  "circular_id": "SEBI_SEBI_CIRCULAR_ESG_DISCLOSURE_NORMS",
+  "circular_title": "SEBI Circular: ESG Disclosure Norms for Listed Companies",
+  "regulator": "SEBI",
+  "priority": "LOW",
+  "circular_summary": "Enhanced ESG disclosures mandatory for top 1000 listed companies.",
+  "actions": [
+    "Note for awareness — no immediate action required for Galaxy Securities Pvt. Ltd."
+  ],
+  "deadline": "No specific deadline",
+  "risk_level": "LOW",
+  "penalty_if_missed": "Not specified",
+  "applicable_sections": [],
+  "email_subject": "Compliance Advisory: SEBI Circular: ESG Disclosure Norms for Listed Companies",
+  "email_body": "{\n  \"subject\": \"SEBI Circular: ESG Disclosure Norms for Listed Companies - Awareness Note\",\n  \"body\": \"Dear Amit Verma,\n\nWe are bringing to your attention the recent SEBI Circular regarding ESG Disclosure Norms for Listed Companies, as it is relevant to Galaxy Securities Pvt. Ltd. due to its role as a stock broker and potential interactions with listed companies. This circular may impact the companies you deal with, and thus it is essential for your awareness.\n\nThe required actions for Galaxy Securities Pvt. Ltd. are:\n1. Note this circular for awareness purposes.\n\nThere is no specific deadline for this circular, and the risk level is considered LOW. As the risk level is LOW, there is no specified penalty for missing any deadlines.\n\nIf you have any questions or need assistance, please do not hesitate to reach out to us. We are here to help.\n\nBest regards,\nCompliance Advisory Team\"\n}",
+  "internal_notes": "No specific obligations for stock broker under the provided SEBI circular, general awareness only",
+  "source_chunks": [
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 5,
+      "score": 0.008
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 6,
+      "score": 0.0012
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 12,
+      "score": 0.0009
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 5,
+      "score": 0.0003
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 10,
+      "score": 0.0003
+    }
+  ],
+  "model_used": "llama-3.3-70b-versatile",
+  "generated_at": "2026-03-26T15:58:14.749551+00:00",
+  "version": "v1",
+  "status": "pending_review"
+}

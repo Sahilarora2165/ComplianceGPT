@@ -1,0 +1,55 @@
+{
+  "draft_id": "C5_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+  "client_id": "C5",
+  "client_name": "Galaxy Securities Pvt. Ltd.",
+  "client_email": "amit@galaxysecurities.in",
+  "client_contact": "Amit Verma",
+  "circular_id": "GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+  "circular_title": "GST Advisory: New Invoice Management System (IMS) - April 2026",
+  "regulator": "GST",
+  "priority": "HIGH",
+  "circular_summary": "Invoice Management System mandatory from April 1, 2026 for all GST filers.",
+  "actions": [
+    "Implement the new Invoice Management System (IMS) for GST compliance from April 1, 2026"
+  ],
+  "deadline": "2026-04-01",
+  "risk_level": "HIGH",
+  "penalty_if_missed": "Not specified, but potential penalty for non-compliance with GST regulations",
+  "applicable_sections": [
+    "GST Act and Rules"
+  ],
+  "email_subject": "Compliance Advisory: GST Advisory: New Invoice Management System (IMS) - April 2026",
+  "email_body": "{\n  \"subject\": \"GST Advisory: Implementation of New Invoice Management System (IMS) for Galaxy Securities Pvt. Ltd.\",\n  \"body\": \"Dear Amit Verma, \n\nAs a stock broker, Galaxy Securities Pvt. Ltd. is required to comply with the GST regulations, and the new Invoice Management System (IMS) is a crucial aspect of this compliance. The new IMS applies to your company specifically because it will enable accurate and efficient tracking of invoices, which is essential for GST returns and audits.\n\nTo ensure compliance with the GST regulations, the following actions are required:\n1. Implement the new Invoice Management System (IMS) for GST compliance from April 1, 2026\n\nThe deadline for implementing the new IMS is **April 1, 2026**. Given the high risk level associated with non-compliance, it is essential to meet this deadline to avoid potential penalties.\n\nPlease do not hesitate to contact us if you require any assistance with the implementation of the new IMS. We are committed to supporting you in maintaining compliance with the GST regulations.\n\nBest regards,\nCompliance Advisory Team\"\n}",
+  "internal_notes": "Verify that the client's accounting system is compatible with the new IMS and ensure timely implementation to avoid any potential penalties or compliance issues",
+  "source_chunks": [
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 0,
+      "score": 0.0123
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 1,
+      "score": 0.0064
+    },
+    {
+      "source": "Hackathon Problem Statement.pdf",
+      "page": 4,
+      "score": 0.0008
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 16,
+      "score": 0.0004
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 14,
+      "score": 0.0004
+    }
+  ],
+  "model_used": "llama-3.3-70b-versatile",
+  "generated_at": "2026-03-26T15:56:35.128975+00:00",
+  "version": "v1",
+  "status": "pending_review"
+}
