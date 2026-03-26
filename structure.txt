@@ -1,0 +1,48 @@
+.
+├── README.md
+├── backend
+│   ├── Dockerfile
+│   ├── agents
+│   │   ├── __init__.py
+│   │   ├── client_matcher.py
+│   │   ├── drafter_agent.py
+│   │   └── monitoring_agent.py
+│   ├── app.py
+│   ├── check_db.py
+│   ├── clients.json
+│   ├── config.py
+│   ├── core
+│   │   ├── __init__.py
+│   │   ├── audit.py
+│   │   ├── ingest.py
+│   │   └── retriever.py
+│   ├── data
+│   │   ├── drafts
+│   │   └── pdfs
+│   │       └── 281MD4079EF84173847849A50F7A00FB229F5.pdf
+│   ├── dockerignore
+│   ├── logs
+│   │   └── seen_documents.json
+│   ├── orchestrator.py
+│   ├── requirements.txt
+│   └── vectorstore
+│       ├── 20e869db-320b-4a44-97ca-69085d69a216
+│       │   ├── data_level0.bin
+│       │   ├── header.bin
+│       │   ├── length.bin
+│       │   └── link_lists.bin
+│       ├── 3cd241dd-f0f7-49ac-b329-fb9f2164ec6a
+│       │   ├── data_level0.bin
+│       │   ├── header.bin
+│       │   ├── length.bin
+│       │   └── link_lists.bin
+│       └── chroma.sqlite3
+├── docker-compose.yml
+├── frontend
+│   └── Dockerfile
+├── src
+│   ├── ingest.py
+│   └── query.py
+└── structure.txt
+
+13 directories, 33 files

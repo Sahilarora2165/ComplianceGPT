@@ -1,8 +1,5 @@
-
-
-import re                          # FIX 1: moved to top — was inside for-loop
+import re                          
 import sys
-import re
 import hashlib
 import json
 import time
@@ -593,7 +590,7 @@ def run_monitoring_agent(
 
 def _ingest_new_docs(new_docs: list) -> None:
     try:
-        from agents.ingest import ingest_pdf
+        from core.ingest import ingest_pdf
     except ImportError:
         try:
             from ingest import ingest_pdf

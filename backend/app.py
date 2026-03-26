@@ -1,118 +1,360 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+"""
+app.py — ComplianceGPT FastAPI Backend
+────────────────────────────────────────
+Run: uvicorn app:app --reload --port 8000
+"""
+
+import json
+import logging
+import shutil
+import sys
+from pathlib import Path
+from typing import Optional
+
+from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import shutil
-from pathlib import Path
-import sys
-import logging
 
 sys.path.append(str(Path(__file__).parent))
-from config import PDF_DIR
-from core.ingest import ingest_pdf
-from core.retriever import query_rag
 
-# ── Scheduler ─────────────────────────────────────────────────────────────────
+from config import PDF_DIR, LOGS_DIR
+from core.ingest    import ingest_pdf
+from core.retriever import query_rag
+from core.audit     import read_audit_log, log_event
+from agents.monitoring_agent import run_monitoring_agent, HASH_DB_PATH, SIMULATED_DOCUMENTS
+from agents.client_matcher   import match_clients
+from agents.drafter_agent    import draft_advisories, draft_single, approve_draft, DRAFTS_DIR
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="ComplianceGPT", version="1.0.0")
+app = FastAPI(
+    title="ComplianceGPT API",
+    description="Autonomous compliance agent system for Indian CA firms",
+    version="1.0.0"
+)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173", "http://localhost:3000", "*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ── Scheduled Job ─────────────────────────────────────────────────────────────
-def run_monitoring_job():
-    """Runs every 6 hours automatically. Scrapes RBI, falls back to simulate."""
+# ── In-memory state (latest pipeline result) ──────────────────────────────────
+_latest_result: dict = {
+    "new_documents":  [],
+    "match_results":  [],
+    "drafts":         [],
+    "total_circulars": 0,
+    "total_matches":  0,
+    "total_drafts":   0,
+    "last_run":       None,
+    "run_mode":       None,
+}
+
+
+# ── Scheduler ─────────────────────────────────────────────────────────────────
+
+def _run_monitoring_job():
     try:
-        logger.info("⏰ Scheduler triggered — running Monitoring Agent...")
-        from agents.monitoring_agent import run_monitoring_agent
-        new_docs = run_monitoring_agent(
-            simulate_mode=False,   # Try real scraping first
-            auto_ingest=True       # Download + ingest new PDFs
-        )
+        logger.info("⏰ Scheduler — running Monitoring Agent...")
+        new_docs = run_monitoring_agent(simulate_mode=False, auto_ingest=True)
         logger.info(f"✅ Monitoring job complete — {len(new_docs)} new document(s)")
     except Exception as e:
         logger.error(f"❌ Monitoring job failed: {e}")
 
 
-# ── Startup / Shutdown ────────────────────────────────────────────────────────
 scheduler = BackgroundScheduler()
 
 @app.on_event("startup")
 def start_scheduler():
     scheduler.add_job(
-        run_monitoring_job,
+        _run_monitoring_job,
         trigger=IntervalTrigger(hours=6),
         id="monitoring_job",
         name="Regulatory Monitoring — every 6 hours",
         replace_existing=True,
     )
     scheduler.start()
-    logger.info("⏰ Scheduler started — Monitoring Agent will run every 6 hours")
-    # Run once immediately on startup so you see results right away
-    run_monitoring_job()
+    logger.info("⏰ Scheduler started — runs every 6 hours")
 
 @app.on_event("shutdown")
 def stop_scheduler():
     scheduler.shutdown()
-    logger.info("⏰ Scheduler stopped")
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# ── Pydantic models ────────────────────────────────────────────────────────────
+
 class QueryRequest(BaseModel):
     question: str
 
+class ApproveRequest(BaseModel):
+    approved: bool
+    ca_name:  str = "CA"
+
+class PipelineRequest(BaseModel):
+    simulate_mode: bool = True
+    regulators:    Optional[list[str]] = None
+    reset:         bool = False
+
+
+# ─────────────────────────────────────────────
+# HEALTH
+# ─────────────────────────────────────────────
+
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "version": "1.0.0"}
 
-@app.get("/scheduler/status")
-def scheduler_status():
-    """Check when the next monitoring run is scheduled."""
-    jobs = []
-    for job in scheduler.get_jobs():
-        jobs.append({
-            "id":       job.id,
-            "name":     job.name,
-            "next_run": str(job.next_run_time),
-        })
-    return {"scheduler_running": scheduler.running, "jobs": jobs}
 
-@app.post("/scheduler/trigger")
-def trigger_now():
-    """Manually trigger a monitoring run right now (for demo/testing)."""
+# ─────────────────────────────────────────────
+# PIPELINE — runs all 3 agents in sequence
+# ─────────────────────────────────────────────
+
+@app.post("/pipeline/run")
+def run_full_pipeline(req: PipelineRequest, background_tasks: BackgroundTasks):
+    """
+    Trigger the full pipeline: Monitor → Match → Draft.
+    Runs in background so the UI doesn't time out.
+    Returns immediately with a job_id.
+    """
+    background_tasks.add_task(
+        _execute_pipeline,
+        simulate_mode=req.simulate_mode,
+        regulators=req.regulators,
+        reset=req.reset,
+    )
+    return {"message": "Pipeline started", "simulate_mode": req.simulate_mode}
+
+
+def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
+    global _latest_result
     try:
-        from agents.monitoring_agent import run_monitoring_agent
-        new_docs = run_monitoring_agent(simulate_mode=True, auto_ingest=False)
-        return {
-            "message":   f"Monitoring triggered — {len(new_docs)} new document(s) found",
-            "documents": [{"title": d["title"], "regulator": d["regulator"],
-                           "priority": d["priority"]} for d in new_docs]
+        if reset and HASH_DB_PATH.exists():
+            HASH_DB_PATH.unlink()
+            logger.info("🔄 Hash DB reset")
+
+        # Stage 1
+        new_docs = run_monitoring_agent(
+            simulate_mode=simulate_mode,
+            regulators=regulators,
+            auto_ingest=False
+        )
+        if not new_docs:
+            _latest_result.update({"new_documents":[],"match_results":[],"drafts":[],
+                                    "total_circulars":0,"total_matches":0,"total_drafts":0,
+                                    "last_run": _now(), "run_mode": "simulate" if simulate_mode else "real"})
+            return
+
+        # Stage 2
+        match_results = match_clients(new_docs)
+        total_matches = sum(r["match_count"] for r in match_results)
+
+        # Stage 3
+        actionable = [r for r in match_results if r["match_count"] > 0]
+        drafts     = draft_advisories(actionable) if actionable else []
+
+        _latest_result = {
+            "new_documents":   new_docs,
+            "match_results":   match_results,
+            "drafts":          drafts,
+            "total_circulars": len(new_docs),
+            "total_matches":   total_matches,
+            "total_drafts":    len(drafts),
+            "last_run":        _now(),
+            "run_mode":        "simulate" if simulate_mode else "real",
         }
+        logger.info(f"✅ Pipeline complete — {len(new_docs)} circulars, {total_matches} matches, {len(drafts)} drafts")
+    except Exception as e:
+        logger.error(f"❌ Pipeline error: {e}")
+
+
+@app.get("/pipeline/status")
+def pipeline_status():
+    """Get the latest pipeline run result."""
+    return _latest_result
+
+
+@app.post("/pipeline/reset")
+def reset_pipeline():
+    """Clear seen_documents.json so monitoring agent finds fresh circulars."""
+    if HASH_DB_PATH.exists():
+        HASH_DB_PATH.unlink()
+        return {"message": "Reset complete — monitoring agent will detect all circulars as new"}
+    return {"message": "Nothing to reset"}
+
+
+# ─────────────────────────────────────────────
+# CIRCULARS
+# ─────────────────────────────────────────────
+
+@app.get("/circulars")
+def get_circulars():
+    """Return latest detected circulars with match counts."""
+    return {"circulars": _latest_result.get("match_results", [])}
+
+
+@app.get("/circulars/simulate")
+def get_simulated_circulars():
+    """Return the 5 simulated circulars — always available for demo."""
+    docs = run_monitoring_agent(simulate_mode=True, auto_ingest=False)
+    matches = match_clients(docs)
+    return {"circulars": matches}
+
+
+# ─────────────────────────────────────────────
+# DRAFTS
+# ─────────────────────────────────────────────
+
+@app.get("/drafts")
+def list_drafts(status: Optional[str] = None):
+    """
+    List all draft files from backend/data/drafts/.
+    Optionally filter by status: pending_review | approved | rejected
+    """
+    if not DRAFTS_DIR.exists():
+        return {"drafts": []}
+
+    drafts = []
+    for path in sorted(DRAFTS_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+        try:
+            draft = json.loads(path.read_text(encoding="utf-8"))
+            if status is None or draft.get("status") == status:
+                drafts.append(draft)
+        except Exception:
+            continue
+
+    return {"drafts": drafts, "total": len(drafts)}
+
+
+@app.get("/drafts/{draft_id}")
+def get_draft(draft_id: str):
+    """Get a single draft by ID."""
+    path = DRAFTS_DIR / f"{draft_id}.json"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail=f"Draft not found: {draft_id}")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@app.post("/drafts/{draft_id}/approve")
+def approve_draft_endpoint(draft_id: str, req: ApproveRequest):
+    """CA approves or rejects a draft. Updates status + logs to audit trail."""
+    try:
+        updated = approve_draft(draft_id=draft_id, approved=req.approved, ca_name=req.ca_name)
+        return {
+            "message":  f"Draft {'approved' if req.approved else 'rejected'} by {req.ca_name}",
+            "draft_id": draft_id,
+            "status":   updated["status"],
+        }
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Draft not found: {draft_id}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.delete("/drafts/{draft_id}")
+def delete_draft(draft_id: str):
+    """Delete a draft file."""
+    path = DRAFTS_DIR / f"{draft_id}.json"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail=f"Draft not found: {draft_id}")
+    path.unlink()
+    return {"message": f"Draft {draft_id} deleted"}
+
+
+# ─────────────────────────────────────────────
+# CLIENTS
+# ─────────────────────────────────────────────
+
+@app.get("/clients")
+def list_clients():
+    """Return all clients from clients.json."""
+    clients_path = Path(__file__).parent / "clients.json"
+    if not clients_path.exists():
+        raise HTTPException(status_code=404, detail="clients.json not found")
+    return {"clients": json.loads(clients_path.read_text(encoding="utf-8"))}
+
+
+# ─────────────────────────────────────────────
+# RAG QUERY
+# ─────────────────────────────────────────────
+
 @app.post("/query")
 def query(req: QueryRequest):
+    """Ask a compliance question — answered via RAG pipeline."""
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty")
-    result = query_rag(req.question)
-    return result
+    return query_rag(req.question)
+
+
+# ─────────────────────────────────────────────
+# INGEST
+# ─────────────────────────────────────────────
 
 @app.post("/ingest")
 def ingest(file: UploadFile = File(...)):
+    """Upload and ingest a PDF into ChromaDB."""
     if not file.filename.endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF files are accepted")
+        raise HTTPException(status_code=400, detail="Only PDF files accepted")
     dest = PDF_DIR / file.filename
     PDF_DIR.mkdir(parents=True, exist_ok=True)
     with open(dest, "wb") as f:
         shutil.copyfileobj(file.file, f)
     ingest_pdf(str(dest))
     return {"message": f"{file.filename} ingested successfully"}
+
+
+# ─────────────────────────────────────────────
+# AUDIT TRAIL
+# ─────────────────────────────────────────────
+
+@app.get("/audit")
+def get_audit_log(limit: int = 100, agent: Optional[str] = None):
+    """
+    Return audit log entries, newest first.
+    Optionally filter by agent name.
+    """
+    events = read_audit_log()
+    if agent:
+        events = [e for e in events if e.get("agent") == agent]
+    return {
+        "events": events[:limit],
+        "total":  len(events),
+    }
+
+
+# ─────────────────────────────────────────────
+# SCHEDULER STATUS
+# ─────────────────────────────────────────────
+
+@app.get("/scheduler/status")
+def scheduler_status():
+    jobs = []
+    for job in scheduler.get_jobs():
+        jobs.append({"id":job.id,"name":job.name,"next_run":str(job.next_run_time)})
+    return {"scheduler_running": scheduler.running, "jobs": jobs}
+
+@app.post("/scheduler/trigger")
+def trigger_now():
+    """Manually trigger monitoring agent (simulate mode, no ingest)."""
+    try:
+        new_docs = run_monitoring_agent(simulate_mode=True, auto_ingest=False)
+        return {
+            "message":   f"Triggered — {len(new_docs)} new document(s) found",
+            "documents": [{"title":d["title"],"regulator":d["regulator"],"priority":d["priority"]} for d in new_docs]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─────────────────────────────────────────────
+# HELPERS
+# ─────────────────────────────────────────────
+
+def _now() -> str:
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).isoformat()

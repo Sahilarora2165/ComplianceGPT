@@ -1,18 +1,40 @@
+# === Core Web Framework ===
+fastapi==0.115.12
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+pydantic==2.12.5
+starlette==0.46.2
+typing-extensions==4.15.0
+
+# === Environment & Config ===
 python-dotenv==1.1.0
+
+# === PDF Processing ===
 pymupdf==1.25.2
-pytesseract==0.3.13
+pypdf==6.9.2
 pdf2image==1.17.0
 pillow==12.1.1
+
+# === OCR ===
+pytesseract==0.3.13
+
+# === NLP & Embeddings ===
 sentence-transformers==3.4.1
-chromadb==0.6.3
-groq==0.37.1
 langchain==0.3.25
 langchain-community==0.3.23
+
+# === Vector DB ===
+chromadb==0.6.3
+
+# === LLM ===
+groq==0.37.1
+
+# === Search & Ranking ===
 rank_bm25==0.2.2
-pypdf==6.9.2
-python-multipart
-beautifulsoup4
-apscheduler
-python-multipart
-beautifulsoup4
-apscheduler
+
+# === Scheduling ===
+apscheduler==3.11.0
+
+# === Web Scraping ===
+beautifulsoup4==4.13.3
+playwright==1.51.0  # Added for RBI scraping in Dockerfile

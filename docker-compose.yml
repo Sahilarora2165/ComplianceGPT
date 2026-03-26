@@ -1,17 +1,76 @@
+version: "3.9"
+
 services:
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: compliancegpt-backend
-    env_file: .env
+
+    env_file:
+      - .env
+
     ports:
       - "8000:8000"
+
     volumes:
       - pdf_data:/app/data/pdfs
       - vectorstore_data:/app/vectorstore
+
     restart: unless-stopped
 
+    # -----------------------------
+    # Resource control (CRITICAL)
+    # -----------------------------
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 512M
+
+    # -----------------------------
+    # Health awareness
+    # -----------------------------
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+    # -----------------------------
+    # Logging (basic control)
+    # -----------------------------
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # -----------------------------
+    # Security (baseline)
+    # -----------------------------
+    security_opt:
+      - no-new-privileges:true
+
+    # -----------------------------
+    # Network isolation
+    # -----------------------------
+    networks:
+      - backend_net
+
+# -----------------------------
+# Volumes (persistent storage)
+# -----------------------------
 volumes:
   pdf_data:
   vectorstore_data:
+
+# -----------------------------
+# Network (explicit control)
+# -----------------------------
+networks:
+  backend_net:
+    driver: bridge

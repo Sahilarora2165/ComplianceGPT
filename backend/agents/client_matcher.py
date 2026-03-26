@@ -520,7 +520,7 @@ if __name__ == "__main__":
 
     results = match_clients(_SIMULATED_DOCS)
 
-    priority_icon = {"HIGH": "python /app/orchestrator.py --schedule🔴", "MEDIUM": "🟡", "LOW": "⚪"}
+    priority_icon = {"HIGH": "🔴", "MEDIUM": "🟡", "LOW": "⚪"}
 
     for r in results:
         icon = priority_icon.get(r["priority"], "⚪")
