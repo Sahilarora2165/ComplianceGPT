@@ -97,11 +97,31 @@ def run_pipeline(simulate_mode: bool = False) -> dict:
         _log_pipeline(summary)
         return summary
 
+    # Cap drafts per run to avoid LLM rate limits — HIGH priority first
+    MAX_DRAFTS_PER_RUN = 20
+    _priority_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
+    actionable.sort(key=lambda r: _priority_order.get(r["priority"], 3))
+    trimmed, total = [], 0
+    for r in actionable:
+        if total >= MAX_DRAFTS_PER_RUN:
+            break
+        trimmed.append(r)
+        total += r["match_count"]
+    if len(trimmed) < len(actionable):
+        print(f"  ⚠️  Capped at {MAX_DRAFTS_PER_RUN} drafts — {len(actionable) - len(trimmed)} lower-priority item(s) skipped")
+    actionable = trimmed
+
     # ── Step 3: Drafter Agent ──────────────────────────────────────────────
     print("\n[3/3] ✍️  Running Drafter Agent ...")
+    drafts = []
     try:
         from agents.drafter_agent import draft_advisories
         drafts = draft_advisories(actionable)
+    except Exception as e:
+        msg = f"DrafterAgent failed: {e}"
+        print(f"  ❌ {msg}")
+        summary["errors"].append(msg)
+    finally:
         summary["drafts"] = len(drafts)
         print(f"  ✅ Drafting complete — {len(drafts)} draft(s) generated")
 
@@ -111,12 +131,6 @@ def run_pipeline(simulate_mode: bool = False) -> dict:
             print(f"     {icon} [{d['risk_level']}] {d['client_name']} × {d['regulator']} | Deadline: {d['deadline']}")
             for i, action in enumerate(d["actions"], 1):
                 print(f"          {i}. {action}")
-
-    except Exception as e:
-        msg = f"DrafterAgent failed: {e}"
-        print(f"  ❌ {msg}")
-        summary["errors"].append(msg)
-        drafts = []
 
     # ── Final summary ──────────────────────────────────────────────────────
     summary["finished_at"] = datetime.now(timezone.utc).isoformat()

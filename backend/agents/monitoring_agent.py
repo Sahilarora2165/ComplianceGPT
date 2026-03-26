@@ -28,35 +28,7 @@ HEADERS = {
     )
 }
 
-PORTALS = [
-    {
-        "regulator": "GST",
-        "name":      "GST Circulars",
-        "url":       "https://www.cbic-gst.gov.in/gst-goods-services-rates.html",
-        "list_selector":  "table tr",
-        "link_selector":  "a[href$='.pdf']",
-        "title_selector": "td:first-child",
-        "base_url":       "https://www.cbic-gst.gov.in",
-    },
-    {
-        "regulator":      "IncomeTax",
-        "name":           "Income Tax Circulars",
-        "url":            "https://incometaxindia.gov.in/Pages/communications/circulars.aspx",
-        "list_selector":  "table.GridView tr",
-        "link_selector":  "a[href$='.pdf']",
-        "title_selector": "td:first-child",
-        "base_url":       "https://incometaxindia.gov.in",
-    },
-    {
-        "regulator":      "MCA",
-        "name":           "MCA Circulars",
-        "url":            "https://www.mca.gov.in/Ministry/pdf/GeneralCircular.pdf",
-        "list_selector":  "table tr",
-        "link_selector":  "a[href$='.pdf']",
-        "title_selector": "td:first-child",
-        "base_url":       "https://www.mca.gov.in",
-    },
-]
+PORTALS = []   # All portals now use dedicated Playwright scrapers below
 
 SIMULATED_DOCUMENTS = [
     {
@@ -424,6 +396,227 @@ def _scrape_rbi_circulars_playwright(hash_db: dict) -> list[dict]:
     return new_docs
 
 
+def _scrape_gst_playwright(hash_db: dict) -> list[dict]:
+    """
+    GST Council CGST Circulars — https://gstcouncil.gov.in/cgst-circulars
+    Table structure: Sr. No | Circular No | Circular File (PDF) | Date of issue | Subject
+    Page 1 shows most recent first — no sorting needed.
+    """
+    print("\n  Scraping [GST] GST Council Circulars via Playwright ...")
+    new_docs = []
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("  Playwright not installed"); return []
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 800},
+        )
+        page = context.new_page()
+        try:
+            print("    Loading GST Council circulars page ...")
+            page.goto("https://gstcouncil.gov.in/cgst-circulars", wait_until="domcontentloaded", timeout=40000)
+            page.wait_for_selector("table", timeout=15000, state="attached")
+        except Exception as e:
+            print(f"    Page load failed: {e}"); browser.close(); return []
+
+        rows = page.eval_on_selector_all(
+            "table tr",
+            """rows => rows
+                .filter(r => r.querySelector('td'))
+                .map(r => {
+                    const tds = r.querySelectorAll('td');
+                    const a = tds[2] ? tds[2].querySelector('a') : null;
+                    return {
+                        href:        a ? a.href : '',
+                        circular_no: tds[1] ? tds[1].innerText.trim() : '',
+                        date:        tds[3] ? tds[3].innerText.trim() : '',
+                        subject:     tds[4] ? tds[4].innerText.trim() : '',
+                    };
+                })
+                .filter(r => r.href && r.href.toLowerCase().includes('.pdf'))"""
+        )
+        print(f"    Found {len(rows)} circular(s)")
+
+        for row in rows[:15]:
+            href  = row.get("href", "").strip()
+            title = f"{row.get('circular_no','').strip()} | {row.get('subject','').strip()}"
+            title = re.sub(r'\s+', ' ', title).strip()[:120] or href
+            if not href or not _is_new_document(href, href.encode(), hash_db):
+                if href: print(f"    Already seen: {row.get('circular_no','')}")
+                continue
+            stem     = Path(href.split("?")[0]).stem[:60]
+            filename = f"gst_{stem}.pdf"
+            dest     = PDF_DIR / filename
+            print(f"    New circular: {title[:70]}")
+            if not dest.exists():
+                try:
+                    pdf_bytes = context.request.get(href, timeout=20000).body()
+                    if pdf_bytes.startswith(b"%PDF") and not _is_html(pdf_bytes):
+                        PDF_DIR.mkdir(parents=True, exist_ok=True)
+                        dest.write_bytes(pdf_bytes)
+                        print(f"    Saved: {filename} ({len(pdf_bytes)//1024} KB)")
+                    else:
+                        filename = ""
+                except Exception as e:
+                    print(f"    Download failed: {e}"); filename = ""
+            new_docs.append({"regulator": "GST", "title": title, "url": href,
+                             "filename": filename, "priority": _infer_priority(title),
+                             "summary": "", "source": "real_scrape"})
+            time.sleep(1)
+        browser.close()
+
+    print(f"    GST: {len(new_docs)} new document(s) found")
+    return new_docs
+
+
+def _scrape_incometax_playwright(hash_db: dict) -> list[dict]:
+    """
+    CBDT Income Tax Circulars — https://www.incometaxindia.gov.in/circulars
+    Structure: List of items with direct PDF links and circular titles
+    """
+    print("\n  Scraping [IncomeTax] CBDT Circulars via Playwright ...")
+    new_docs = []
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("  Playwright not installed"); return []
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 800},
+        )
+        page = context.new_page()
+        try:
+            print("    Loading Income Tax circulars page ...")
+            page.goto("https://www.incometaxindia.gov.in/circulars", wait_until="domcontentloaded", timeout=60000)
+            page.wait_for_selector("body", timeout=20000, state="attached")
+            page.wait_for_timeout(3000)   # extra settle time for JS-rendered content
+        except Exception as e:
+            print(f"    Page load failed: {e}"); browser.close(); return []
+
+        links = page.eval_on_selector_all(
+            "a[href*='.pdf'], a[href*='.PDF']",
+            """els => els.map(e => ({
+                href: e.href,
+                text: (e.closest('li') || e.closest('p') || e.closest('div') || e.parentElement)
+                          ?.innerText?.trim() || e.innerText.trim()
+            }))"""
+        )
+        print(f"    Found {len(links)} link(s)")
+
+        for link in links[:15]:
+            href  = link.get("href", "").strip()
+            title = re.sub(r'\s+', ' ', link.get("text", "")).strip()[:120]
+            if not href or ".pdf" not in href.lower():
+                continue
+            if not _is_new_document(href, href.encode(), hash_db):
+                print(f"    Already seen: {title[:60]}")
+                continue
+            stem     = Path(href.split("?")[0]).stem[:60]
+            filename = f"incometax_{stem}.pdf"
+            dest     = PDF_DIR / filename
+            print(f"    New circular: {title[:70]}")
+            if not dest.exists():
+                try:
+                    pdf_bytes = context.request.get(href, timeout=20000).body()
+                    if pdf_bytes.startswith(b"%PDF") and not _is_html(pdf_bytes):
+                        PDF_DIR.mkdir(parents=True, exist_ok=True)
+                        dest.write_bytes(pdf_bytes)
+                        print(f"    Saved: {filename} ({len(pdf_bytes)//1024} KB)")
+                    else:
+                        filename = ""
+                except Exception as e:
+                    print(f"    Download failed: {e}"); filename = ""
+            new_docs.append({"regulator": "IncomeTax", "title": title, "url": href,
+                             "filename": filename, "priority": _infer_priority(title),
+                             "summary": "", "source": "real_scrape"})
+            time.sleep(1)
+        browser.close()
+
+    print(f"    IncomeTax: {len(new_docs)} new document(s) found")
+    return new_docs
+
+
+def _scrape_mca_playwright(hash_db: dict) -> list[dict]:
+    """
+    MCA General Circulars — https://www.mca.gov.in/content/mca/global/en/acts-rules/ebooks/circulars.html
+    Structure: Direct PDF links on page
+    """
+    print("\n  Scraping [MCA] Circulars via Playwright ...")
+    new_docs = []
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("  Playwright not installed"); return []
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 800},
+        )
+        page = context.new_page()
+        try:
+            print("    Loading MCA circulars page ...")
+            page.goto(
+                "https://www.mca.gov.in/content/mca/global/en/acts-rules/ebooks/circulars.html",
+                wait_until="domcontentloaded", timeout=60000,
+            )
+            page.wait_for_selector("body", timeout=20000, state="attached")
+            page.wait_for_timeout(3000)   # extra settle time for JS-rendered content
+        except Exception as e:
+            print(f"    Page load failed: {e}"); browser.close(); return []
+
+        links = page.eval_on_selector_all(
+            "a[href*='.pdf'], a[href*='.PDF']",
+            """els => els.map(e => ({
+                href: e.href,
+                text: (e.closest('tr') ? e.closest('tr').innerText
+                      : e.closest('li') ? e.closest('li').innerText
+                      : e.innerText).trim()
+            }))"""
+        )
+        print(f"    Found {len(links)} link(s)")
+
+        for link in links[:15]:
+            href  = link.get("href", "").strip()
+            title = re.sub(r'\s+', ' ', link.get("text", "")).strip()[:120]
+            if not href:
+                continue
+            if not _is_new_document(href, href.encode(), hash_db):
+                print(f"    Already seen: {title[:60]}")
+                continue
+            stem     = Path(href.split("?")[0]).stem[:60]
+            filename = f"mca_{stem}.pdf"
+            dest     = PDF_DIR / filename
+            print(f"    New circular: {title[:70]}")
+            if not dest.exists():
+                try:
+                    pdf_bytes = context.request.get(href, timeout=20000).body()
+                    if pdf_bytes.startswith(b"%PDF") and not _is_html(pdf_bytes):
+                        PDF_DIR.mkdir(parents=True, exist_ok=True)
+                        dest.write_bytes(pdf_bytes)
+                        print(f"    Saved: {filename} ({len(pdf_bytes)//1024} KB)")
+                    else:
+                        filename = ""
+                except Exception as e:
+                    print(f"    Download failed: {e}"); filename = ""
+            new_docs.append({"regulator": "MCA", "title": title, "url": href,
+                             "filename": filename, "priority": _infer_priority(title),
+                             "summary": "", "source": "real_scrape"})
+            time.sleep(1)
+        browser.close()
+
+    print(f"    MCA: {len(new_docs)} new document(s) found")
+    return new_docs
+
+
 _sessions: dict = {}
 
 def _get_session(base_url: str) -> requests.Session:
@@ -549,9 +742,12 @@ def run_monitoring_agent(
             new_docs.extend(_scrape_rbi_playwright(hash_db))
             new_docs.extend(_scrape_rbi_circulars_playwright(hash_db))
 
-        other_portals = [p for p in PORTALS if not regulators or p["regulator"] in regulators]
-        for portal in other_portals:
-            new_docs.extend(_scrape_portal(portal, hash_db))
+        if not regulators or "GST" in regulators:
+            new_docs.extend(_scrape_gst_playwright(hash_db))
+        if not regulators or "IncomeTax" in regulators:
+            new_docs.extend(_scrape_incometax_playwright(hash_db))
+        if not regulators or "MCA" in regulators:
+            new_docs.extend(_scrape_mca_playwright(hash_db))
 
         if not new_docs:
             print("\nReal scraping found nothing — falling back to SIMULATE")
@@ -641,7 +837,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="ComplianceGPT Monitoring Agent")
     parser.add_argument("--simulate", action="store_true")
-    parser.add_argument("--regulators", nargs="+", choices=["RBI", "GST", "IncomeTax", "MCA", "SEBI"])
+    parser.add_argument("--regulators", nargs="+", choices=["RBI", "GST", "IncomeTax", "MCA", "SEBI", "EPFO", "SEBI", "IBBI"])
     parser.add_argument("--no-ingest", action="store_true")
     args = parser.parse_args()
     run_monitoring_agent(

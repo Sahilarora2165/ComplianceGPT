@@ -196,6 +196,7 @@ Tags              : {', '.join(client.get('tags', []))}
 Notes             : {client.get('notes', '')}
 """.strip()
 
+    compliance_str = ", ".join(f"{k}={v}" for k, v in client.get("compliance", {}).items())
     has_context = bool(context.strip())
     context_section = f"""
 REGULATORY DOCUMENT EXCERPTS (from ingested PDFs):
@@ -219,16 +220,23 @@ CLIENT PROFILE:
 {context_section}
 
 TASK:
-Based on the circular and client profile above, extract SPECIFIC EXECUTABLE obligations for this client.
+Based on the circular and client profile above, extract SPECIFIC EXECUTABLE obligations for THIS client only.
 
 RULES:
-1. Actions must be SPECIFIC — include form names, section numbers, deadlines where available
-2. Bad: "Comply with RBI guidelines"
-   Good: "Submit updated KYC documents to bank before June 30, 2026"
-3. Each action must be something a CA can put on a task list TODAY
-4. Deadline must be extracted from the circular text if available, else estimate based on regulator norms
-5. Risk level: HIGH if penalty > ₹1L or license risk, MEDIUM if filing risk, LOW if advisory only
-6. internal_notes must flag anything the CA team needs to know that the client doesn't need to see
+1. Actions must be SPECIFIC to THIS client — include form names, section numbers, deadlines where available
+2. Bad: "Comply with RBI guidelines" / "Review the circular" / "File appeals if applicable"
+   Good: "Submit SOFTEX form for each export invoice to the bank within 30 days — required as Arvind Textiles is a goods exporter under FEMA"
+3. Each action must be something a CA can put on a task list TODAY for this specific client
+4. Think about what makes this client DIFFERENT:
+   - Industry: {client['industry']}
+   - Constitution: {client['constitution']}
+   - Compliance profile: {compliance_str}
+   - Special notes: {client.get('notes', 'None')}
+5. SKIP any action that would be IDENTICAL for every GST/RBI registered business — those are not client-specific advisories
+6. If this circular has NO direct, specific impact on this client beyond general awareness, return exactly ONE action: "Note for awareness — no immediate action required for {client['name']}"
+7. Deadline must be extracted from the circular text if available, else estimate based on regulator norms
+8. Risk level: HIGH if penalty > ₹1L or license risk, MEDIUM if specific filing/action required, LOW if advisory/awareness only
+9. internal_notes must flag CA-only red flags — cross-checks needed, potential exposures, dependencies
 
 Return ONLY valid JSON, no explanation, no markdown:
 {{
@@ -393,7 +401,11 @@ def draft_single(circular: dict, client: dict) -> dict:
     print(f"\n  ✍️  Drafting: {client['name']} × {circular['regulator']}")
 
     # Step 1: retrieve relevant context from ChromaDB
-    query   = f"{circular['regulator']} {circular['title']} {circular['summary']}"
+    # Include client industry/type so each client pulls different, relevant chunks
+    query   = (
+        f"{circular['regulator']} {circular['title']} {circular['summary']} "
+        f"{client['industry']} {client['business_type']}"
+    )
     context, sources = _retrieve_context(query)
 
     if sources:
