@@ -183,19 +183,33 @@ def _extract_obligations(
     """
     groq = Groq(api_key=GROQ_API_KEY)
 
+    # Support both old and new client.json structures
+    compliance = client.get("compliance", {})
+    if not compliance:
+        # New structure uses regulatory_profile and risk_profile
+        regulatory = client.get("regulatory_profile", {})
+        risk = client.get("risk_profile", {})
+        compliance = {
+            "gst_filing_frequency": regulatory.get("gst", ["N/A"])[0] if regulatory.get("gst") else "N/A",
+            "tds_applicable": "TDS" in client.get("tags", []),
+            "transfer_pricing_applicable": "Transfer Pricing" in regulatory.get("income_tax", []) or "TP" in str(regulatory.get("income_tax", [])),
+            "audit_required": risk.get("compliance_score", 100) < 90
+        }
+
     client_profile = f"""
 Client Name       : {client['name']}
-Business Type     : {client['business_type']}
+Business Type     : {client.get('business_type') or client.get('industry', 'Unknown')}
 Constitution      : {client['constitution']}
 Industry          : {client['industry']}
-GST Filing        : {client['compliance'].get('gst_filing_frequency', 'N/A')}
-TDS Applicable    : {client['compliance'].get('tds_applicable', False)}
-Transfer Pricing  : {client['compliance'].get('transfer_pricing_applicable', False)}
-Audit Required    : {client['compliance'].get('audit_required', False)}
+GST Filing        : {compliance.get('gst_filing_frequency', 'N/A')}
+TDS Applicable    : {compliance.get('tds_applicable', False)}
+Transfer Pricing  : {compliance.get('transfer_pricing_applicable', False)}
+Audit Required    : {compliance.get('audit_required', False)}
 Tags              : {', '.join(client.get('tags', []))}
 Notes             : {client.get('notes', '')}
 """.strip()
 
+    compliance_str = ", ".join(f"{k}={v}" for k, v in client.get("compliance", {}).items())
     has_context = bool(context.strip())
     context_section = f"""
 REGULATORY DOCUMENT EXCERPTS (from ingested PDFs):
@@ -219,16 +233,23 @@ CLIENT PROFILE:
 {context_section}
 
 TASK:
-Based on the circular and client profile above, extract SPECIFIC EXECUTABLE obligations for this client.
+Based on the circular and client profile above, extract SPECIFIC EXECUTABLE obligations for THIS client only.
 
 RULES:
-1. Actions must be SPECIFIC — include form names, section numbers, deadlines where available
-2. Bad: "Comply with RBI guidelines"
-   Good: "Submit updated KYC documents to bank before June 30, 2026"
-3. Each action must be something a CA can put on a task list TODAY
-4. Deadline must be extracted from the circular text if available, else estimate based on regulator norms
-5. Risk level: HIGH if penalty > ₹1L or license risk, MEDIUM if filing risk, LOW if advisory only
-6. internal_notes must flag anything the CA team needs to know that the client doesn't need to see
+1. Actions must be SPECIFIC to THIS client — include form names, section numbers, deadlines where available
+2. Bad: "Comply with RBI guidelines" / "Review the circular" / "File appeals if applicable"
+   Good: "Submit SOFTEX form for each export invoice to the bank within 30 days — required as Arvind Textiles is a goods exporter under FEMA"
+3. Each action must be something a CA can put on a task list TODAY for this specific client
+4. Think about what makes this client DIFFERENT:
+   - Industry: {client['industry']}
+   - Constitution: {client['constitution']}
+   - Compliance profile: {compliance_str}
+   - Special notes: {client.get('notes', 'None')}
+5. SKIP any action that would be IDENTICAL for every GST/RBI registered business — those are not client-specific advisories
+6. If this circular has NO direct, specific impact on this client beyond general awareness, return exactly ONE action: "Note for awareness — no immediate action required for {client['name']}"
+7. Deadline must be extracted from the circular text if available, else estimate based on regulator norms
+8. Risk level: HIGH if penalty > ₹1L or license risk, MEDIUM if specific filing/action required, LOW if advisory/awareness only
+9. internal_notes must flag CA-only red flags — cross-checks needed, potential exposures, dependencies
 
 Return ONLY valid JSON, no explanation, no markdown:
 {{
@@ -287,12 +308,17 @@ def _draft_email(
 
     actions_text = "\n".join(f"  {i+1}. {a}" for i, a in enumerate(obligations["actions"]))
 
+    # Support both old and new client.json structures
+    contact = client.get("contact", {})
+    primary_person = contact.get("primary_person") or contact.get("name", "Sir/Madam")
+    designation = contact.get("designation", "")
+
     prompt = f"""You are a CA (Chartered Accountant) writing a formal compliance advisory email to a client.
 
 CIRCULAR: {circular['title']}
 REGULATOR: {circular['regulator']}
-CLIENT: {client['name']} ({client['business_type']})
-CONTACT PERSON: {client['contact']['primary_person']} ({client['contact']['designation']})
+CLIENT: {client['name']} ({client.get('business_type') or client.get('industry', 'Unknown')})
+CONTACT PERSON: {primary_person} ({designation})
 
 REQUIRED ACTIONS FOR THIS CLIENT:
 {actions_text}
@@ -393,7 +419,11 @@ def draft_single(circular: dict, client: dict) -> dict:
     print(f"\n  ✍️  Drafting: {client['name']} × {circular['regulator']}")
 
     # Step 1: retrieve relevant context from ChromaDB
-    query   = f"{circular['regulator']} {circular['title']} {circular['summary']}"
+    # Include client industry/type so each client pulls different, relevant chunks
+    query   = (
+        f"{circular['regulator']} {circular['title']} {circular['summary']} "
+        f"{client['industry']} {client.get('business_type') or client.get('industry', '')}"
+    )
     context, sources = _retrieve_context(query)
 
     if sources:
@@ -411,12 +441,13 @@ def draft_single(circular: dict, client: dict) -> dict:
     subject, body = _draft_email(circular, client, obligations)
 
     # Step 4: assemble full draft
+    contact = client.get("contact", {})
     draft = {
         "draft_id":            draft_id,
         "client_id":           client_id,
         "client_name":         client["name"],
-        "client_email":        client["contact"]["email"],
-        "client_contact":      client["contact"]["primary_person"],
+        "client_email":        contact.get("email", ""),
+        "client_contact":      contact.get("primary_person") or contact.get("name", "Unknown"),
         "circular_id":         circular_id,
         "circular_title":      circular["title"],
         "regulator":           circular["regulator"],

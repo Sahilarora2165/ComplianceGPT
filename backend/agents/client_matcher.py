@@ -171,7 +171,8 @@ def _content_match(title: str, summary: str, client: dict, regulator: str) -> tu
 
     text = (title + " " + summary).lower()
     client_tags = [t.upper() for t in client.get("tags", [])]
-    biz = client.get("business_type", "").lower()
+    # Support both 'business_type' and 'industry' fields for backward compatibility
+    biz = (client.get("business_type") or client.get("industry", "")).lower()
 
     for rule in rules:
         if not _matches_any(text, rule["keywords"]):
@@ -436,7 +437,7 @@ def match_clients(documents: list[dict]) -> list[dict]:
                 affected.append({
                     "client_id": client["id"],
                     "name":      client["name"],
-                    "business_type": client["business_type"],
+                    "business_type": client.get("business_type") or client.get("industry", "Unknown"),
                     "contact_email": client["contact"]["email"],
                     "reason":    reason,
                     "urgent":    urgent

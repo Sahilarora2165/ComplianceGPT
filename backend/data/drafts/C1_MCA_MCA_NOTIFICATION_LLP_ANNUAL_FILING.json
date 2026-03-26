@@ -1,0 +1,53 @@
+{
+  "draft_id": "C1_MCA_MCA_NOTIFICATION_LLP_ANNUAL_FILING",
+  "client_id": "C1",
+  "client_name": "Arvind Textiles Pvt. Ltd.",
+  "client_email": "arvind.shah@arvindtextiles.com",
+  "client_contact": "Arvind Shah",
+  "circular_id": "MCA_MCA_NOTIFICATION_LLP_ANNUAL_FILING",
+  "circular_title": "MCA Notification: LLP Annual Filing Deadline - FY 2025-26",
+  "regulator": "MCA",
+  "priority": "MEDIUM",
+  "circular_summary": "LLP Form 11 annual return due date extended to July 15, 2026.",
+  "actions": [
+    "Note for awareness — no immediate action required for Arvind Textiles Pvt. Ltd."
+  ],
+  "deadline": "No specific deadline",
+  "risk_level": "LOW",
+  "penalty_if_missed": "Not specified",
+  "applicable_sections": [],
+  "email_subject": "Compliance Advisory: MCA Notification: LLP Annual Filing Deadline - FY 2025-26",
+  "email_body": "{\n  \"subject\": \"MCA Notification: LLP Annual Filing Deadline - FY 2025-26\",\n  \"body\": \"Dear Arvind Shah, \n\nWe are writing to inform you of the MCA notification regarding the LLP annual filing deadline for FY 2025-26, which is relevant to your company, Arvind Textiles Pvt. Ltd., as it is a related update for companies involved in manufacturing and export. Although this notification is primarily for LLPs, we are bringing it to your attention for awareness purposes.\n\nThe required actions for your company are:\n1. Note this update for awareness purposes.\n\nThere is no specific deadline for this notification. As the risk level is LOW, there is no penalty specified for missing any deadline.\n\nPlease be assured that we are monitoring this situation and will inform you if any action is required from your end. If you have any questions or need assistance, please do not hesitate to contact us.\n\nBest regards,\nCompliance Advisory Team\"\n}",
+  "internal_notes": "No specific compliance obligations for this client based on the provided circular, general awareness of RBI guidelines is sufficient",
+  "source_chunks": [
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 1,
+      "score": 0.0021
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 0,
+      "score": 0.0012
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 16,
+      "score": 0.0009
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 14,
+      "score": 0.0005
+    },
+    {
+      "source": "Hackathon Problem Statement.pdf",
+      "page": 6,
+      "score": 0.0004
+    }
+  ],
+  "model_used": "llama-3.3-70b-versatile",
+  "generated_at": "2026-03-26T15:57:30.515719+00:00",
+  "version": "v1",
+  "status": "pending_review"
+}

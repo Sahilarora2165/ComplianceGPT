@@ -2,6 +2,8 @@ FROM python:3.13-slim
 
 WORKDIR /app
 
+ENV PYTHONUNBUFFERED=1
+
 # -----------------------------
 # 1. System dependencies (single clean layer)
 # -----------------------------

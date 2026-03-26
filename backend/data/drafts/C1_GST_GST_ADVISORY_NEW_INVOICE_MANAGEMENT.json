@@ -1,0 +1,55 @@
+{
+  "draft_id": "C1_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+  "client_id": "C1",
+  "client_name": "Arvind Textiles Pvt. Ltd.",
+  "client_email": "arvind.shah@arvindtextiles.com",
+  "client_contact": "Arvind Shah",
+  "circular_id": "GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+  "circular_title": "GST Advisory: New Invoice Management System (IMS) - April 2026",
+  "regulator": "GST",
+  "priority": "HIGH",
+  "circular_summary": "Invoice Management System mandatory from April 1, 2026 for all GST filers.",
+  "actions": [
+    "Implement the new Invoice Management System (IMS) for GST filing from April 1, 2026, as it is mandatory for all GST filers, including Arvind Textiles Pvt. Ltd."
+  ],
+  "deadline": "2026-04-01",
+  "risk_level": "HIGH",
+  "penalty_if_missed": "Not specified, but non-compliance may lead to penalties under GST laws",
+  "applicable_sections": [
+    "GST Act"
+  ],
+  "email_subject": "Compliance Advisory: GST Advisory: New Invoice Management System (IMS) - April 2026",
+  "email_body": "{\n  \"subject\": \"GST Advisory: Implementation of New Invoice Management System (IMS) - April 2026\",\n  \"body\": \"Dear Arvind Shah, \n\nAs a GST filer and a manufacturing and export company, Arvind Textiles Pvt. Ltd. is required to comply with the new regulations set by the GST regulator. This applies to your company specifically because it is mandatory for all GST filers, including those in the manufacturing and export sector.\n\nTo ensure compliance, the following actions are required:\n1. Implement the new Invoice Management System (IMS) for GST filing from April 1, 2026.\n\nThe deadline for implementation is **April 1, 2026**. Given the high risk level of non-compliance, it is essential to meet this deadline to avoid potential penalties under GST laws.\n\nPlease do not hesitate to contact us if you require any assistance with the implementation process. We are here to help.\n\nBest regards,\nCompliance Advisory Team\"\n}",
+  "internal_notes": "Cross-check with the client's current invoicing system to ensure seamless integration with the new IMS, verify GSTIN and other compliance details",
+  "source_chunks": [
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 0,
+      "score": 0.043
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 1,
+      "score": 0.0106
+    },
+    {
+      "source": "Hackathon Problem Statement.pdf",
+      "page": 4,
+      "score": 0.0017
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 16,
+      "score": 0.0014
+    },
+    {
+      "source": "281MD4079EF84173847849A50F7A00FB229F5.pdf",
+      "page": 15,
+      "score": 0.001
+    }
+  ],
+  "model_used": "llama-3.3-70b-versatile",
+  "generated_at": "2026-03-26T15:56:20.576962+00:00",
+  "version": "v1",
+  "status": "pending_review"
+}

@@ -1,0 +1,6 @@
+SIMULATED DOCUMENT
+Regulator : SEBI
+Title     : SEBI Circular: ESG Disclosure Norms for Listed Companies
+Summary   : Enhanced ESG disclosures mandatory for top 1000 listed companies.
+URL       : https://www.sebi.gov.in/sample/esg_disclosure_2026.pdf
+Generated : 2026-03-26T15:56:04.714455+00:00
