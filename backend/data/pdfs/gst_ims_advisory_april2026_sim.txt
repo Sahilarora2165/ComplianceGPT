@@ -3,4 +3,4 @@ Regulator : GST
 Title     : GST Advisory: New Invoice Management System (IMS) - April 2026
 Summary   : Invoice Management System mandatory from April 1, 2026 for all GST filers.
 URL       : https://www.gst.gov.in/sample/ims_advisory_april2026.pdf
-Generated : 2026-03-26T15:56:04.713774+00:00
+Generated : 2026-03-27T01:38:45.870514+00:00

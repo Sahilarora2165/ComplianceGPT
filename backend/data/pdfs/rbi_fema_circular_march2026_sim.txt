@@ -3,4 +3,4 @@ Regulator : RBI
 Title     : RBI Circular: FEMA Compliance Deadline Extended - March 2026
 Summary   : FEMA reporting deadline for foreign transactions extended by 30 days.
 URL       : https://www.rbi.org.in/sample/fema_circular_march2026.pdf
-Generated : 2026-03-26T15:56:04.713352+00:00
+Generated : 2026-03-27T01:38:45.869280+00:00

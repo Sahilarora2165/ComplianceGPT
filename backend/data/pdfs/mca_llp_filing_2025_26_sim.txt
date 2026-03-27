@@ -3,4 +3,4 @@ Regulator : MCA
 Title     : MCA Notification: LLP Annual Filing Deadline - FY 2025-26
 Summary   : LLP Form 11 annual return due date extended to July 15, 2026.
 URL       : https://www.mca.gov.in/sample/llp_filing_2025_26.pdf
-Generated : 2026-03-26T15:56:04.714251+00:00
+Generated : 2026-03-27T01:38:45.870912+00:00

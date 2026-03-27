@@ -10,6 +10,7 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Optional
+from datetime import datetime, timezone, date
 from agents.deadline_agent import scan_deadlines, get_latest_alerts, deadline_summary
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +18,7 @@ from pydantic import BaseModel
 
 sys.path.append(str(Path(__file__).parent))
 
+_BACKEND_DIR = Path(__file__).parent
 from config import PDF_DIR, LOGS_DIR
 from core.ingest    import ingest_pdf
 from core.retriever import query_rag
@@ -344,6 +346,76 @@ def get_deadline_summary():
     return {
         "summary":          summary,
         "exposure_display": f"₹{summary['total_exposure']:,.0f} at risk across {summary['total_alerts']} obligation(s)",
+    }
+
+
+@app.post("/deadlines/{alert_id}/send")
+def send_deadline_alert(alert_id: str, ca_name: str = "CA"):
+    """
+    CA approves and sends a deadline alert email to client.
+    Logs to audit trail and marks alert as sent.
+    
+    For demo purposes, this logs the action and returns success.
+    In production, this would integrate with SMTP/SendGrid.
+    """
+    from agents.deadline_agent import get_latest_alerts
+    from core.audit import log_event
+    
+    # Find the alert
+    alerts = get_latest_alerts()
+    alert = next((a for a in alerts if a["alert_id"] == alert_id), None)
+    
+    if not alert:
+        raise HTTPException(status_code=404, detail=f"Deadline alert not found: {alert_id}")
+    
+    # Check if alert has associated draft
+    draft_id = f"DEADLINE_{alert['client_id']}_{alert['obligation_id']}_{date.today().isoformat()}"
+    DRAFTS_DIR = _BACKEND_DIR / "data" / "drafts"
+    draft_path = DRAFTS_DIR / f"{draft_id}.json"
+    
+    if not draft_path.exists():
+        # Auto-generate draft if not exists
+        from agents.deadline_agent import generate_deadline_drafts
+        drafts = generate_deadline_drafts([alert])
+        if not drafts:
+            raise HTTPException(status_code=500, detail="Failed to generate draft for this alert")
+        draft_path = DRAFTS_DIR / f"{drafts[0]['draft_id']}.json"
+    
+    # Load draft and mark as approved
+    draft = json.loads(draft_path.read_text(encoding="utf-8"))
+    draft["status"] = "approved"
+    draft["approved_by"] = ca_name
+    draft["approved_at"] = datetime.now(timezone.utc).isoformat()
+    draft["email_sent"] = True
+    draft["email_sent_at"] = datetime.now(timezone.utc).isoformat()
+    
+    # Save updated draft
+    draft_path.write_text(json.dumps(draft, indent=2, ensure_ascii=False), encoding="utf-8")
+    
+    # Log to audit trail
+    log_event(
+        agent="DeadlineAlert",
+        action="email_sent",
+        details={
+            "alert_id": alert_id,
+            "client_id": alert["client_id"],
+            "client_name": alert["client_name"],
+            "obligation": alert["obligation_type"],
+            "deadline_level": alert["level"],
+            "ca_name": ca_name,
+            "email_to": alert["client_email"],
+            "draft_id": draft_id
+        }
+    )
+    
+    return {
+        "message": f"Deadline alert email sent to {alert['client_email']}",
+        "client_name": alert["client_name"],
+        "obligation": alert["obligation_type"],
+        "deadline_level": alert["level"],
+        "draft_id": draft_id,
+        "email_to": alert["client_email"],
+        "sent_at": draft["email_sent_at"]
     }
 
 

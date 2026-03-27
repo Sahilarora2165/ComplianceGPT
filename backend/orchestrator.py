@@ -99,6 +99,14 @@ def run_pipeline(simulate_mode: bool = False) -> dict:
         _log_pipeline(summary)
         return summary
 
+    # Filter: Skip LOW priority circulars to save tokens for HIGH/MEDIUM
+    # LOW priority = indirect matches, general awareness, no immediate action
+    # This saves ~70% of tokens for drafts that actually matter
+    low_priority_count = sum(1 for r in actionable if r["priority"] == "LOW")
+    actionable = [r for r in actionable if r["priority"] != "LOW"]
+    if low_priority_count > 0:
+        print(f"  ℹ️  Skipped {low_priority_count} LOW priority circular(s) — saving tokens for HIGH/MEDIUM")
+
     # Cap drafts per run to avoid LLM rate limits — HIGH priority first
     MAX_DRAFTS_PER_RUN = 20
     _priority_order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
@@ -137,8 +145,9 @@ def run_pipeline(simulate_mode: bool = False) -> dict:
     # ── Step 4: Deadline Watch Agent ───────────────────────────────────────
     print("\n[4/4] ⚠️  Running Deadline Watch Agent ...")
     deadline_alerts = []
+    deadline_drafts = []
     try:
-        from agents.deadline_agent import scan_deadlines, deadline_summary
+        from agents.deadline_agent import scan_deadlines, deadline_summary, generate_deadline_drafts
         deadline_alerts = scan_deadlines()
         summary["deadline_alerts"] = len(deadline_alerts)
         
@@ -148,8 +157,16 @@ def run_pipeline(simulate_mode: bool = False) -> dict:
         if d_summary['total_exposure'] > 0:
             print(f"     Total exposure: ₹{d_summary['total_exposure']:,.0f}")
         
-        # Print critical alerts
+        # Auto-generate drafts for CRITICAL and MISSED deadlines
         critical_alerts = [a for a in deadline_alerts if a["level"] in ("MISSED", "CRITICAL")]
+        if critical_alerts:
+            print(f"  ⚠️  {len(critical_alerts)} URGENT deadline(s) — auto-generating drafts...")
+            deadline_drafts = generate_deadline_drafts(deadline_alerts)
+            print(f"     ✅ {len(deadline_drafts)} draft(s) generated for urgent deadlines")
+        else:
+            print(f"  ℹ️  No urgent deadlines — no auto-drafts needed")
+        
+        # Print critical alerts
         if critical_alerts:
             print(f"  ⚠️  {len(critical_alerts)} URGENT deadline(s) require attention:")
             for alert in critical_alerts:

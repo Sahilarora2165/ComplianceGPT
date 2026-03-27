@@ -3,4 +3,4 @@ Regulator : IncomeTax
 Title     : CBDT Circular: TDS Rate Revision - FY 2026-27
 Summary   : TDS rates revised for Section 194C and 194J effective April 2026.
 URL       : https://incometaxindia.gov.in/sample/tds_revision_2026.pdf
-Generated : 2026-03-26T15:56:04.714035+00:00
+Generated : 2026-03-27T01:38:45.870729+00:00

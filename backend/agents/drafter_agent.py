@@ -26,8 +26,10 @@ import json
 import math
 import re
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 # ── Path setup ─────────────────────────────────────────────────────────────────
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -44,6 +46,19 @@ from config import (
     CHROMA_COLLECTION, TOP_K
 )
 from core.audit import log_event
+
+# ── Multi-Model Configuration ─────────────────────────────────────────────────
+# Assign models by priority to maximize free tier usage
+# Each model has separate TPD (tokens per day) bucket on Groq free tier
+MODEL_BY_PRIORITY = {
+    "HIGH":   "llama-3.3-70b-versatile",    # Best quality for critical advisories
+    "MEDIUM": "llama-3.1-8b-instant",        # Fast, good quality for routine filings
+    "LOW":    "gemma2-9b-it",                # Basic quality for awareness-only
+}
+
+# Rate limit retry config
+MAX_RETRIES = 3
+RETRY_BACKOFF = 5  # seconds
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 DRAFTS_DIR   = _BACKEND_DIR / "data" / "drafts"
@@ -181,6 +196,9 @@ def _extract_obligations(
     for THIS client from the circular text.
     Returns structured JSON with actions, deadline, risk.
     """
+    # Select model based on circular priority
+    priority = circular.get("priority", "MEDIUM")
+    model = MODEL_BY_PRIORITY.get(priority, "llama-3.1-8b-instant")
     groq = Groq(api_key=GROQ_API_KEY)
 
     # Support both old and new client.json structures
@@ -247,9 +265,62 @@ RULES:
    - Special notes: {client.get('notes', 'None')}
 5. SKIP any action that would be IDENTICAL for every GST/RBI registered business — those are not client-specific advisories
 6. If this circular has NO direct, specific impact on this client beyond general awareness, return exactly ONE action: "Note for awareness — no immediate action required for {client['name']}"
-7. Deadline must be extracted from the circular text if available, else estimate based on regulator norms
-8. Risk level: HIGH if penalty > ₹1L or license risk, MEDIUM if specific filing/action required, LOW if advisory/awareness only
-9. internal_notes must flag CA-only red flags — cross-checks needed, potential exposures, dependencies
+
+DEADLINE EXTRACTION — CRITICAL INSTRUCTIONS:
+You MUST return the deadline in ONE of these FOUR formats ONLY:
+
+1. ISO DATE (when circular states explicit date):
+   - Format: YYYY-MM-DD
+   - Examples: "2026-04-01", "2026-07-31", "2026-10-30"
+   - Use when: Circular says "due on April 1, 2026" or "deadline is 2026-04-01"
+
+2. RELATIVE:N (when deadline is N days from circular date):
+   - Format: RELATIVE:number_of_days
+   - Examples: "RELATIVE:30", "RELATIVE:180", "RELATIVE:60"
+   - Use when: Circular says "within 30 days", "60 days from date of this circular"
+   - Common for: FEMA declarations (180 days), RBI export filings (30 days)
+
+3. PERIODIC:FREQ:DAY (for recurring obligations — USE YOUR REGULATORY KNOWLEDGE):
+   - Format: PERIODIC:MONTHLY:15 or PERIODIC:QUARTERLY:30 or PERIODIC:YEARLY:07-31
+   - Examples: 
+     * GSTR-3B → "PERIODIC:MONTHLY:20" (20th of every month)
+     * TDS → "PERIODIC:MONTHLY:7" (7th of every month)
+     * ITR → "PERIODIC:YEARLY:07-31" (31st July)
+     * SOFTEX → "PERIODIC:MONTHLY:15" (15th of every month)
+     * LLP Annual → "PERIODIC:YEARLY:10-30" (30th October)
+   - CRITICAL: For known recurring Indian compliance (GST, TDS, PF, ESI, MCA filings), 
+     you MUST use PERIODIC format even if circular doesn't explicitly state the date.
+     Use your regulatory knowledge — CAs expect the system to know these deadlines.
+
+4. null (ONLY when genuinely no deadline exists):
+   - Use null when: Circular is purely informational, advisory with no action required
+   - Do NOT use null just because you're uncertain — use PERIODIC with your best estimate
+   - Examples: "Clarification on existing rules" with no new requirement
+
+DEADLINE DECISION TREE:
+- Does circular mention explicit date? → ISO DATE (2026-04-01)
+- Does it say "within X days"? → RELATIVE:X
+- Is this a recurring filing (GST/TDS/PF/ESI/MCA)? → PERIODIC (use your knowledge)
+- Is it purely informational? → null
+
+RISK LEVEL:
+- HIGH: Penalty > ₹1L, license risk, criminal liability, SEBI/RBI enforcement
+- MEDIUM: Specific filing/action required, monetary penalty possible
+- LOW: Advisory/awareness only, no immediate penalty
+
+PENALTY:
+- State exact penalty from circular if available
+- If not stated, use "Not specified in circular"
+- Do NOT make up penalty amounts
+
+APPLICABLE SECTIONS:
+- List specific sections/rules from circular
+- If none mentioned, return empty array []
+
+INTERNAL NOTES:
+- Flag CA-only red flags, cross-checks needed, dependencies
+- Mention if deadline was estimated vs explicit
+- Note any client-specific considerations
 
 Return ONLY valid JSON, no explanation, no markdown:
 {{
@@ -257,19 +328,40 @@ Return ONLY valid JSON, no explanation, no markdown:
     "Action 1 — specific and executable",
     "Action 2 — specific and executable"
   ],
-  "deadline": "YYYY-MM-DD or descriptive deadline",
+  "deadline": "2026-04-01 or RELATIVE:30 or PERIODIC:MONTHLY:20 or null",
   "risk_level": "HIGH|MEDIUM|LOW",
-  "penalty_if_missed": "describe penalty or 'Not specified'",
+  "penalty_if_missed": "exact penalty or 'Not specified in circular'",
   "applicable_sections": ["Section X", "Rule Y"],
-  "internal_notes": "Notes for CA team only — red flags, dependencies, cross-checks needed"
+  "internal_notes": "CA notes — deadline was [explicit/estimated], cross-checks needed"
 }}"""
 
-    response = groq.chat.completions.create(
-        model=GROQ_MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.1,
-        max_tokens=1000
-    )
+    # Retry logic with exponential backoff for rate limits
+    last_error = None
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = groq.chat.completions.create(
+                model=model,  # Use priority-based model
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.1,
+                max_tokens=1000
+            )
+            break  # Success — exit retry loop
+        except Exception as e:
+            error_msg = str(e)
+            if "429" in error_msg or "rate limit" in error_msg.lower():
+                last_error = e
+                if attempt < MAX_RETRIES - 1:
+                    wait_time = RETRY_BACKOFF * (2 ** attempt)  # Exponential backoff
+                    print(f"     ⏳ Rate limit hit — retrying in {wait_time}s (attempt {attempt+1}/{MAX_RETRIES})")
+                    time.sleep(wait_time)
+                continue
+            else:
+                # Non-rate-limit error — don't retry
+                raise
+
+    # If all retries failed
+    if last_error:
+        raise last_error
 
     raw = response.choices[0].message.content.strip()
 
@@ -298,12 +390,15 @@ Return ONLY valid JSON, no explanation, no markdown:
 def _draft_email(
     circular: dict,
     client: dict,
-    obligations: dict
+    obligations: dict,
+    priority: str = "MEDIUM"
 ) -> tuple[str, str]:
     """
     Step 2 of drafting: generate client advisory email + subject line.
     Returns (subject, email_body).
     """
+    # Select model based on priority
+    model = MODEL_BY_PRIORITY.get(priority, "llama-3.1-8b-instant")
     groq = Groq(api_key=GROQ_API_KEY)
 
     actions_text = "\n".join(f"  {i+1}. {a}" for i, a in enumerate(obligations["actions"]))
@@ -344,7 +439,7 @@ Return ONLY valid JSON, no explanation:
 }}"""
 
     response = groq.chat.completions.create(
-        model=GROQ_MODEL,
+        model=model,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.2,
         max_tokens=800
@@ -433,12 +528,31 @@ def draft_single(circular: dict, client: dict) -> dict:
 
     # Step 2: extract obligations
     obligations = _extract_obligations(circular, client, context)
-    print(f"     ✅ {len(obligations['actions'])} action(s) | Risk: {obligations['risk_level']} | Deadline: {obligations['deadline']}")
+    
+    # LAYER 2: Parse and validate deadline format
+    from core.deadline_parser import parse_deadline
+    circular_date = None  # Could extract from circular metadata if available
+    parsed_deadline, deadline_format, deadline_explanation = parse_deadline(
+        obligations.get("deadline", ""),
+        circular["regulator"],
+        circular["title"],
+        circular_date
+    )
+    
+    # Store both raw and parsed deadline
+    obligations["deadline_raw"] = obligations.get("deadline", "")
+    obligations["deadline"] = parsed_deadline.isoformat() if parsed_deadline else None
+    obligations["deadline_format"] = deadline_format
+    obligations["deadline_explanation"] = deadline_explanation
+    
+    print(f"     ✅ {len(obligations['actions'])} action(s) | Risk: {obligations['risk_level']} | Deadline: {obligations['deadline']} ({deadline_format})")
     for i, action in enumerate(obligations["actions"], 1):
         print(f"        {i}. {action}")
 
-    # Step 3: draft email
-    subject, body = _draft_email(circular, client, obligations)
+    # Step 3: draft email (with priority-based model selection)
+    priority = circular.get("priority", "MEDIUM")
+    model = MODEL_BY_PRIORITY.get(priority, "llama-3.1-8b-instant")
+    subject, body = _draft_email(circular, client, obligations, priority)
 
     # Step 4: assemble full draft
     contact = client.get("contact", {})
@@ -462,7 +576,7 @@ def draft_single(circular: dict, client: dict) -> dict:
         "email_body":          body,
         "internal_notes":      obligations["internal_notes"],
         "source_chunks":       sources,
-        "model_used":          GROQ_MODEL,
+        "model_used":          model,
         "generated_at":        datetime.now(timezone.utc).isoformat(),
         "version":             "v1",
         "status":              "pending_review"   # CA must approve before sending

@@ -1,0 +1,354 @@
+{
+  "date": "2026-03-27",
+  "alerts": [
+    {
+      "alert_id": "DLA_C3_RBI_SOFTEX_2026-03-27",
+      "generated_at": "2026-03-27T01:43:26.025588+00:00",
+      "level": "CRITICAL",
+      "days_until_due": 3,
+      "client_id": "C3",
+      "client_name": "Kapoor Tech Solutions Pvt. Ltd.",
+      "client_email": "neha@kapoortech.io",
+      "client_contact": "Neha Kapoor",
+      "obligation_id": "RBI_SOFTEX",
+      "obligation_type": "SOFTEX Filing",
+      "due_date": "2026-03-30",
+      "risk_level": "HIGH",
+      "compliance_score": 60,
+      "recent_misses": 2,
+      "penalty": "RBI penalty + export blockage",
+      "exposure": {
+        "exposure_rupees": 900000,
+        "exposure_label": "₹900,000+ at risk"
+      },
+      "headline": "URGENT — SOFTEX Filing due in 3 day(s) (2026-03-30)",
+      "recommended_action": "File TODAY. RBI penalty + export blockage",
+      "tags": [
+        "GST",
+        "IncomeTax",
+        "RBI"
+      ],
+      "source": "clients_json",
+      "advisory_email": {
+        "subject": "[CRITICAL] Compliance Deadline — SOFTEX Filing due 2026-03-30",
+        "body": "Dear Neha Kapoor,\n\nThis is an urgent compliance reminder from your CA firm.\n\n🔴 CRITICAL: SOFTEX Filing is due on 2026-03-30.\n\nFinancial exposure: ₹900,000+ at risk\nPenalty if not addressed: RBI penalty + export blockage\n\nRequired action: File TODAY. RBI penalty + export blockage\n\nPlease contact us immediately to proceed.\n\nRegards,\nYour CA Firm\n[ComplianceGPT Automated Alert]"
+      }
+    },
+    {
+      "alert_id": "DRAFT_C1_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT_2026-03-27",
+      "generated_at": "2026-03-27T01:43:26.028229+00:00",
+      "level": "WARNING",
+      "days_until_due": 5,
+      "client_id": "C1",
+      "client_name": "Arvind Textiles Pvt. Ltd.",
+      "client_email": "arvind.shah@arvindtextiles.com",
+      "client_contact": "Arvind Shah",
+      "obligation_id": "C1_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+      "obligation_type": "GST Advisory: New Invoice Management System (IMS) - April 2026",
+      "due_date": "2026-04-01",
+      "risk_level": "HIGH",
+      "compliance_score": 68,
+      "recent_misses": 1,
+      "penalty": "Not specified in circular",
+      "exposure": {
+        "exposure_rupees": 0,
+        "exposure_label": "Regulatory risk — financial exposure unquantified"
+      },
+      "headline": "REMINDER — GST Advisory: New Invoice Management System (IMS) - April 2026 due in 5 day(s) (2026-04-01)",
+      "recommended_action": "Prepare and file before 2026-04-01. Not specified in circular",
+      "tags": [
+        "GST",
+        "RBI",
+        "FEMA",
+        "IncomeTax"
+      ],
+      "source": "draft",
+      "draft_id": "C1_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+      "deadline_format": "ISO",
+      "deadline_raw": "2026-04-01",
+      "advisory_email": {
+        "subject": "[WARNING] Compliance Advisory: GST Advisory: New Invoice Management System (IMS) - April 2026",
+        "body": "{\n  \"subject\": \"GST Advisory: Implementation of New Invoice Management System (IMS) - April 2026\",\n  \"body\": \"Dear Arvind Shah, \n\nAs a manufacturing and export entity, Arvind Textiles Pvt. Ltd. is required to comply with the new GST Advisory regarding the implementation of the Invoice Management System (IMS) to ensure accurate GST filing. This applies to your company specifically due to its involvement in both domestic and international transactions.\n\nTo comply with the GST Advisory, please take the following actions:\n1. Implement the new Invoice Management System (IMS) for GST filing as per the GST Advisory.\n\nThe deadline for implementation is 2026-04-01. Given the high risk level associated with non-compliance, we urge you to prioritize this implementation to avoid potential penalties.\n\nPlease do not hesitate to contact us if you require any assistance with the implementation process. We are committed to supporting your company's compliance needs.\n\nBest regards,\nCompliance Advisory Team\"\n}"
+      }
+    },
+    {
+      "alert_id": "DRAFT_C3_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT_2026-03-27",
+      "generated_at": "2026-03-27T01:43:26.028902+00:00",
+      "level": "WARNING",
+      "days_until_due": 5,
+      "client_id": "C3",
+      "client_name": "Kapoor Tech Solutions Pvt. Ltd.",
+      "client_email": "neha@kapoortech.io",
+      "client_contact": "Neha Kapoor",
+      "obligation_id": "C3_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+      "obligation_type": "GST Advisory: New Invoice Management System (IMS) - April 2026",
+      "due_date": "2026-04-01",
+      "risk_level": "HIGH",
+      "compliance_score": 60,
+      "recent_misses": 2,
+      "penalty": "Not specified in circular",
+      "exposure": {
+        "exposure_rupees": 0,
+        "exposure_label": "Regulatory risk — financial exposure unquantified"
+      },
+      "headline": "REMINDER — GST Advisory: New Invoice Management System (IMS) - April 2026 due in 5 day(s) (2026-04-01)",
+      "recommended_action": "Prepare and file before 2026-04-01. Not specified in circular",
+      "tags": [
+        "GST",
+        "IncomeTax",
+        "RBI"
+      ],
+      "source": "draft",
+      "draft_id": "C3_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+      "deadline_format": "ISO",
+      "deadline_raw": "2026-04-01",
+      "advisory_email": {
+        "subject": "[WARNING] Compliance Advisory: GST Advisory: New Invoice Management System (IMS) - April 2026",
+        "body": "{\n  \"subject\": \"GST Advisory: Implementation of New Invoice Management System (IMS) - April 2026\",\n  \"body\": \"Neha Kapoor,\n\nAs an IT and software export company, Kapoor Tech Solutions Pvt. Ltd. is required to comply with the new GST regulations, specifically the implementation of the Invoice Management System (IMS), to ensure accurate and timely GST returns. This applies to your company as it falls under the purview of GST regulations for IT and software exports.\n\nTo ensure compliance, the following actions are required:\n1. Implement the new Invoice Management System (IMS) for GST compliance.\n\nThe deadline for implementation is **2026-04-01**. Given the high risk level associated with non-compliance, it is essential to meet this deadline to avoid potential penalties.\n\nWe are committed to supporting you through this process. If you require any assistance or have questions regarding the implementation of the new IMS, please do not hesitate to reach out to us.\n\nBest regards,\nCompliance Advisory Team\"\n}"
+      }
+    },
+    {
+      "alert_id": "DRAFT_C2_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT_2026-03-27",
+      "generated_at": "2026-03-27T01:43:26.032579+00:00",
+      "level": "WARNING",
+      "days_until_due": 5,
+      "client_id": "C2",
+      "client_name": "Spice Garden Restaurant",
+      "client_email": "suresh@spicegarden.in",
+      "client_contact": "Suresh Pillai",
+      "obligation_id": "C2_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+      "obligation_type": "GST Advisory: New Invoice Management System (IMS) - April 2026",
+      "due_date": "2026-04-01",
+      "risk_level": "HIGH",
+      "compliance_score": 85,
+      "recent_misses": 0,
+      "penalty": "Not specified in circular",
+      "exposure": {
+        "exposure_rupees": 0,
+        "exposure_label": "Regulatory risk — financial exposure unquantified"
+      },
+      "headline": "REMINDER — GST Advisory: New Invoice Management System (IMS) - April 2026 due in 5 day(s) (2026-04-01)",
+      "recommended_action": "Prepare and file before 2026-04-01. Not specified in circular",
+      "tags": [
+        "GST",
+        "IncomeTax"
+      ],
+      "source": "draft",
+      "draft_id": "C2_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+      "deadline_format": "ISO",
+      "deadline_raw": "2026-04-01",
+      "advisory_email": {
+        "subject": "[WARNING] Compliance Advisory: GST Advisory: New Invoice Management System (IMS) - April 2026",
+        "body": "{\n  \"subject\": \"GST Advisory: Implementation of New Invoice Management System (IMS) for Spice Garden Restaurant\",\n  \"body\": \"Dear Suresh Pillai,\n\nAs a food and beverage establishment, Spice Garden Restaurant is required to comply with the new GST regulations, specifically the implementation of the Invoice Management System (IMS) to ensure accurate and timely GST returns. This applies to your business as it involves the issuance of invoices for taxable supplies.\n\nTo ensure compliance, please take the following actions:\n1. Implement the new Invoice Management System (IMS) for GST compliance.\n\nThe deadline for implementation is 2026-04-01. Given the high risk level associated with non-compliance, we urge you to prioritize this implementation to avoid potential penalties.\n\nPlease do not hesitate to contact us if you require any assistance with the implementation process. We are committed to supporting your business in maintaining GST compliance.\n\nBest regards,\nCompliance Advisory Team\"\n}"
+      }
+    },
+    {
+      "alert_id": "DRAFT_C5_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT_2026-03-27",
+      "generated_at": "2026-03-27T01:43:26.033741+00:00",
+      "level": "WARNING",
+      "days_until_due": 5,
+      "client_id": "C5",
+      "client_name": "Galaxy Securities Pvt. Ltd.",
+      "client_email": "amit@galaxysecurities.in",
+      "client_contact": "Amit Verma",
+      "obligation_id": "C5_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+      "obligation_type": "GST Advisory: New Invoice Management System (IMS) - April 2026",
+      "due_date": "2026-04-01",
+      "risk_level": "HIGH",
+      "compliance_score": 75,
+      "recent_misses": 0,
+      "penalty": "Not specified in circular",
+      "exposure": {
+        "exposure_rupees": 0,
+        "exposure_label": "Regulatory risk — financial exposure unquantified"
+      },
+      "headline": "REMINDER — GST Advisory: New Invoice Management System (IMS) - April 2026 due in 5 day(s) (2026-04-01)",
+      "recommended_action": "Prepare and file before 2026-04-01. Not specified in circular",
+      "tags": [
+        "SEBI",
+        "GST",
+        "IncomeTax"
+      ],
+      "source": "draft",
+      "draft_id": "C5_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+      "deadline_format": "ISO",
+      "deadline_raw": "2026-04-01",
+      "advisory_email": {
+        "subject": "[WARNING] Compliance Advisory: GST Advisory: New Invoice Management System (IMS) - April 2026",
+        "body": "{\n  \"subject\": \"GST Advisory: Implementation of New Invoice Management System (IMS) for Galaxy Securities Pvt. Ltd.\",\n  \"body\": \"Dear Amit Verma, \n\nAs a stock broker, Galaxy Securities Pvt. Ltd. is required to comply with the GST regulations, and the new Invoice Management System (IMS) is a crucial aspect of this compliance. The new IMS applies to your company specifically because it will help streamline and standardize the invoicing process, ensuring accurate GST returns.\n\nTo ensure compliance, please take the following actions:\n1. Implement the new Invoice Management System (IMS) for GST compliance\n\nThe deadline for implementation is 2026-04-01. Given the high risk level associated with non-compliance, we urge you to prioritize this implementation to avoid potential penalties.\n\nPlease do not hesitate to contact us if you require any assistance with the implementation process. We are committed to supporting you in maintaining the highest level of compliance.\n\nBest regards,\nCompliance Advisory Team\"\n}"
+      }
+    },
+    {
+      "alert_id": "DLA_C1_FEMA_EXPORT_REALISATION_2026-03-27",
+      "generated_at": "2026-03-27T01:43:26.025556+00:00",
+      "level": "WARNING",
+      "days_until_due": 9,
+      "client_id": "C1",
+      "client_name": "Arvind Textiles Pvt. Ltd.",
+      "client_email": "arvind.shah@arvindtextiles.com",
+      "client_contact": "Arvind Shah",
+      "obligation_id": "FEMA_EXPORT_REALISATION",
+      "obligation_type": "Export Realisation",
+      "due_date": "2026-04-05",
+      "risk_level": "HIGH",
+      "compliance_score": 68,
+      "recent_misses": 1,
+      "penalty": "FEMA violation + penalties",
+      "exposure": {
+        "exposure_rupees": 1500000,
+        "exposure_label": "₹1,500,000+ at risk"
+      },
+      "headline": "REMINDER — Export Realisation due in 9 day(s) (2026-04-05)",
+      "recommended_action": "Prepare and file before 2026-04-05. FEMA violation + penalties",
+      "tags": [
+        "GST",
+        "RBI",
+        "FEMA",
+        "IncomeTax"
+      ],
+      "source": "clients_json",
+      "advisory_email": {
+        "subject": "[WARNING] Compliance Deadline — Export Realisation due 2026-04-05",
+        "body": "Dear Arvind Shah,\n\nThis is an urgent compliance reminder from your CA firm.\n\n🟡 REMINDER: Export Realisation is due on 2026-04-05.\n\nFinancial exposure: ₹1,500,000+ at risk\nPenalty if not addressed: FEMA violation + penalties\n\nRequired action: Prepare and file before 2026-04-05. FEMA violation + penalties\n\nPlease contact us immediately to proceed.\n\nRegards,\nYour CA Firm\n[ComplianceGPT Automated Alert]"
+      }
+    },
+    {
+      "alert_id": "DLA_C4_RBI_MONTHLY_RETURN_2026-03-27",
+      "generated_at": "2026-03-27T01:43:26.025605+00:00",
+      "level": "WARNING",
+      "days_until_due": 11,
+      "client_id": "C4",
+      "client_name": "Sunrise Finserv NBFC Ltd.",
+      "client_email": "sunita.rao@sunrisefinserv.com",
+      "client_contact": "Sunita Rao",
+      "obligation_id": "RBI_MONTHLY_RETURN",
+      "obligation_type": "RBI Monthly Return",
+      "due_date": "2026-04-07",
+      "risk_level": "HIGH",
+      "compliance_score": 72,
+      "recent_misses": 0,
+      "penalty": "RBI compliance action",
+      "exposure": {
+        "exposure_rupees": 900000,
+        "exposure_label": "₹900,000+ at risk"
+      },
+      "headline": "REMINDER — RBI Monthly Return due in 11 day(s) (2026-04-07)",
+      "recommended_action": "Prepare and file before 2026-04-07. RBI compliance action",
+      "tags": [
+        "RBI",
+        "IncomeTax"
+      ],
+      "source": "clients_json",
+      "advisory_email": {
+        "subject": "[WARNING] Compliance Deadline — RBI Monthly Return due 2026-04-07",
+        "body": "Dear Sunita Rao,\n\nThis is an urgent compliance reminder from your CA firm.\n\n🟡 REMINDER: RBI Monthly Return is due on 2026-04-07.\n\nFinancial exposure: ₹900,000+ at risk\nPenalty if not addressed: RBI compliance action\n\nRequired action: Prepare and file before 2026-04-07. RBI compliance action\n\nPlease contact us immediately to proceed.\n\nRegards,\nYour CA Firm\n[ComplianceGPT Automated Alert]"
+      }
+    },
+    {
+      "alert_id": "DRAFT_C4_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION_2026-03-27",
+      "generated_at": "2026-03-27T01:43:26.028458+00:00",
+      "level": "WARNING",
+      "days_until_due": 11,
+      "client_id": "C4",
+      "client_name": "Sunrise Finserv NBFC Ltd.",
+      "client_email": "sunita.rao@sunrisefinserv.com",
+      "client_contact": "Sunita Rao",
+      "obligation_id": "C4_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+      "obligation_type": "CBDT Circular: TDS Rate Revision - FY 2026-27",
+      "due_date": "2026-04-07",
+      "risk_level": "LOW",
+      "compliance_score": 72,
+      "recent_misses": 0,
+      "penalty": "Not specified in circular",
+      "exposure": {
+        "exposure_rupees": 0,
+        "exposure_label": "Regulatory risk — financial exposure unquantified"
+      },
+      "headline": "REMINDER — CBDT Circular: TDS Rate Revision - FY 2026-27 due in 11 day(s) (2026-04-07)",
+      "recommended_action": "Prepare and file before 2026-04-07. Not specified in circular",
+      "tags": [
+        "RBI",
+        "IncomeTax"
+      ],
+      "source": "draft",
+      "draft_id": "C4_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+      "deadline_format": "ISO",
+      "deadline_raw": "2026-04-07",
+      "advisory_email": {
+        "subject": "[WARNING] Compliance Advisory: CBDT Circular: TDS Rate Revision - FY 2026-27",
+        "body": "{\n  \"subject\": \"Compliance Advisory: CBDT Circular on TDS Rate Revision for FY 2026-27\",\n  \"body\": \"Sunita Rao,\nSunrise Finserv NBFC Ltd.\n\nRe: CBDT Circular: TDS Rate Revision - FY 2026-27\n\nThis circular applies to your company as a Non-Banking Financial Company (NBFC) as it requires awareness of the revised TDS rates for FY 2026-27.\n\nPlease note the following actions:\n\n1. Be aware of the revised TDS rates for FY 2026-27 as per the CBDT circular.\n2. No immediate action is required at this time.\n\n**Important Deadline:** The CBDT circular is effective from 1st April 2026, and you are required to be aware of the revised TDS rates by 7th April 2026.\n\nPlease note that the risk level for this circular is LOW, and no penalty is specified in the circular.\n\nIf you have any questions or require assistance with compliance, please do not hesitate to contact us. We are here to support you.\n\nBest regards,\nCompliance Advisory Team\"\n}"
+      }
+    },
+    {
+      "alert_id": "DRAFT_C2_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION_2026-03-27",
+      "generated_at": "2026-03-27T01:43:26.029385+00:00",
+      "level": "WARNING",
+      "days_until_due": 11,
+      "client_id": "C2",
+      "client_name": "Spice Garden Restaurant",
+      "client_email": "suresh@spicegarden.in",
+      "client_contact": "Suresh Pillai",
+      "obligation_id": "C2_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+      "obligation_type": "CBDT Circular: TDS Rate Revision - FY 2026-27",
+      "due_date": "2026-04-07",
+      "risk_level": "LOW",
+      "compliance_score": 85,
+      "recent_misses": 0,
+      "penalty": "Not specified in circular",
+      "exposure": {
+        "exposure_rupees": 0,
+        "exposure_label": "Regulatory risk — financial exposure unquantified"
+      },
+      "headline": "REMINDER — CBDT Circular: TDS Rate Revision - FY 2026-27 due in 11 day(s) (2026-04-07)",
+      "recommended_action": "Prepare and file before 2026-04-07. Not specified in circular",
+      "tags": [
+        "GST",
+        "IncomeTax"
+      ],
+      "source": "draft",
+      "draft_id": "C2_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+      "deadline_format": "ISO",
+      "deadline_raw": "2026-04-07",
+      "advisory_email": {
+        "subject": "[WARNING] Compliance Advisory: CBDT Circular: TDS Rate Revision - FY 2026-27",
+        "body": "{\n  \"subject\": \"Compliance Advisory: CBDT Circular on TDS Rate Revision for FY 2026-27\",\n  \"body\": \"Suresh Pillai, Spice Garden Restaurant,\n\nWe are writing to bring to your attention the CBDT Circular: TDS Rate Revision - FY 2026-27, which affects your business as a Food & Beverage establishment. As per the circular, this revision is applicable to all entities, including restaurants, that are required to deduct Tax Deducted at Source (TDS) on payments made to suppliers.\n\nThe required actions for Spice Garden Restaurant are as follows:\n\n1. Note for awareness: No immediate action is required at this time.\n2. Monitor the circular for any future updates or changes.\n\nPlease note that the deadline for compliance is **April 7, 2026**. Although the risk level is LOW, we recommend reviewing the circular to ensure you are aware of any changes.\n\nIf you have any questions or concerns regarding this circular or require assistance with compliance, please do not hesitate to contact us.\n\nBest regards,\nCompliance Advisory Team\"\n}"
+      }
+    },
+    {
+      "alert_id": "DRAFT_C5_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION_2026-03-27",
+      "generated_at": "2026-03-27T01:43:26.033194+00:00",
+      "level": "WARNING",
+      "days_until_due": 11,
+      "client_id": "C5",
+      "client_name": "Galaxy Securities Pvt. Ltd.",
+      "client_email": "amit@galaxysecurities.in",
+      "client_contact": "Amit Verma",
+      "obligation_id": "C5_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+      "obligation_type": "CBDT Circular: TDS Rate Revision - FY 2026-27",
+      "due_date": "2026-04-07",
+      "risk_level": "LOW",
+      "compliance_score": 75,
+      "recent_misses": 0,
+      "penalty": "Not specified in circular",
+      "exposure": {
+        "exposure_rupees": 0,
+        "exposure_label": "Regulatory risk — financial exposure unquantified"
+      },
+      "headline": "REMINDER — CBDT Circular: TDS Rate Revision - FY 2026-27 due in 11 day(s) (2026-04-07)",
+      "recommended_action": "Prepare and file before 2026-04-07. Not specified in circular",
+      "tags": [
+        "SEBI",
+        "GST",
+        "IncomeTax"
+      ],
+      "source": "draft",
+      "draft_id": "C5_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+      "deadline_format": "ISO",
+      "deadline_raw": "2026-04-07",
+      "advisory_email": {
+        "subject": "[WARNING] Compliance Advisory: CBDT Circular: TDS Rate Revision - FY 2026-27",
+        "body": "{\n  \"subject\": \"Compliance Advisory: CBDT Circular on TDS Rate Revision for FY 2026-27\",\n  \"body\": \"Amit Verma,\n\nWe are writing to bring to your attention the CBDT Circular on TDS Rate Revision for FY 2026-27. As a stock broker, Galaxy Securities Pvt. Ltd. is required to deduct tax at source (TDS) on various transactions, and this circular affects the TDS rates applicable to your business.\n\nPlease note that no immediate action is required for Galaxy Securities Pvt. Ltd. at this time. However, we recommend that you review the circular and ensure compliance with the revised TDS rates as and when applicable.\n\nThe required actions are as follows:\n\n1. Review the CBDT Circular on TDS Rate Revision for FY 2026-27.\n2. Familiarize yourself with the revised TDS rates applicable to your business.\n\nThe deadline for compliance is **April 7, 2026**.\n\nPlease note that the risk level for this circular is LOW, and no penalty is specified in the circular.\n\nIf you require any assistance or have any questions regarding this circular, please do not hesitate to contact us.\n\nBest regards,\nCompliance Advisory Team\"\n}"
+      }
+    }
+  ]
+}
