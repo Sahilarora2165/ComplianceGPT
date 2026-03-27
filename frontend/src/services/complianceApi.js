@@ -23,14 +23,16 @@ export function getDashboardData() {
     request("/circulars"),
     request("/drafts"),
     request("/deadlines"),
+    request("/compliance-calendar"),
     request("/clients"),
     request("/audit"),
     request("/scheduler/status"),
-  ]).then(([pipeline, circulars, drafts, deadlines, clients, audit, scheduler]) => ({
+  ]).then(([pipeline, circulars, drafts, deadlines, calendar, clients, audit, scheduler]) => ({
     pipeline: pipeline.status === "fulfilled" ? pipeline.value : null,
     circulars: circulars.status === "fulfilled" ? circulars.value : null,
     drafts: drafts.status === "fulfilled" ? drafts.value : null,
     deadlines: deadlines.status === "fulfilled" ? deadlines.value : null,
+    calendar: calendar.status === "fulfilled" ? calendar.value : null,
     clients: clients.status === "fulfilled" ? clients.value : null,
     audit: audit.status === "fulfilled" ? audit.value : null,
     scheduler: scheduler.status === "fulfilled" ? scheduler.value : null,
@@ -80,4 +82,8 @@ export function queryAnalyst({ question, filters = {}, activeDocument = null }) 
     method: "POST",
     body: JSON.stringify({ question, filters, active_document: activeDocument }),
   });
+}
+
+export function getComplianceCalendar() {
+  return request("/compliance-calendar");
 }
