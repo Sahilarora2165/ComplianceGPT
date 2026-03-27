@@ -2,11 +2,16 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:8000";
 
 async function request(path, options = {}) {
+  const isFormData = options.body instanceof FormData;
+  const headers = {
+    ...(options.headers || {}),
+  };
+  if (!isFormData && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
+    headers,
     ...options,
   });
 
@@ -86,4 +91,24 @@ export function queryAnalyst({ question, filters = {}, activeDocument = null }) 
 
 export function getComplianceCalendar() {
   return request("/compliance-calendar");
+}
+
+export function uploadDocument({ file, regulator, title, uploadedBy = "CA" }) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("regulator", regulator);
+  formData.append("title", title);
+  formData.append("uploaded_by", uploadedBy);
+
+  return request("/documents/upload", {
+    method: "POST",
+    body: formData,
+  });
+}
+
+export function runUploadedDocumentPipeline(documentId, caName = "CA") {
+  return request(`/documents/${encodeURIComponent(documentId)}/run-pipeline`, {
+    method: "POST",
+    body: JSON.stringify({ ca_name: caName }),
+  });
 }

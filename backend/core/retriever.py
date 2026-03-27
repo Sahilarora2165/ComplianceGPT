@@ -34,6 +34,12 @@ _WORD_PATTERN = re.compile(r"[a-z0-9]{2,}")
 _DOC_SCOPE_PATTERN = re.compile(r"\b(this|that|above|previous|same)\b", re.IGNORECASE)
 _SUMMARY_PATTERN = re.compile(r"\b(summary|summarize|important points|key points|alerts|points to note|highlights|main points)\b", re.IGNORECASE)
 _DEADLINE_QUERY_PATTERN = re.compile(r"\b(when is|what date|deadline|due date|effective date|effective from|applicable from|extension)\b", re.IGNORECASE)
+_GENERIC_DATE_QUERY_PATTERN = re.compile(r"\b(date of|what is the date|what's the date|dated)\b", re.IGNORECASE)
+_CIRCULAR_DATE_QUERY_PATTERN = re.compile(r"\b(date of (this )?(rbi )?circular|circular date|date of this circular)\b", re.IGNORECASE)
+_CIRCULAR_REF_PATTERN = re.compile(
+    r"\b(circular number|circular no|circular ref|reference number|rbi number|what is the circular)\b",
+    re.IGNORECASE,
+)
 _RATE_QUERY_PATTERN = re.compile(r"\b(what rate|which rate|rate mentioned|what percent|what percentage|rate of)\b", re.IGNORECASE)
 _DATE_VALUE_PATTERN = re.compile(
     r"\b(?:\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{4}|"
@@ -43,10 +49,16 @@ _DATE_VALUE_PATTERN = re.compile(
 )
 _DURATION_VALUE_PATTERN = re.compile(r"\b\d+\s+(?:day|days|month|months|year|years)\b", re.IGNORECASE)
 _RATE_VALUE_PATTERN = re.compile(r"\b\d+(?:\.\d+)?\s*%\b")
+_CIRCULAR_REF_VALUE_PATTERN = re.compile(
+    r"\b(?:RBI/\d{4}-\d{2}/\d+|CO\.[A-Za-z0-9.]+\.[A-Za-z0-9.]+\.No\.[A-Za-z0-9.-]+(?:/[A-Za-z0-9.-]+)+)\b",
+    re.IGNORECASE,
+)
 _MAX_QUERY_VARIANTS = 6
 _MIN_FETCH_K = 8
 _MAX_FETCH_K = 16
-_SMALL_CORPUS_THRESHOLD = 75
+# Lowered from 75 → 20: the old value caused keyword-heavy queries to miss on
+# small corpora because the bypass path returns fake positional RRF with no BM25.
+_SMALL_CORPUS_THRESHOLD = 20
 _MEDIUM_CORPUS_THRESHOLD = 300
 _MAX_RERANK_CANDIDATES = 10
 
@@ -107,10 +119,32 @@ def _get_cross_encoder() -> CrossEncoder:
     return CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
 
-@lru_cache(maxsize=1)
+# Module-level singleton — NOT lru_cache.
+# lru_cache caused stale-state bugs: after an upload, ingest_pdf writes chunks
+# via its own ChromaDB client instance, but the cached collection object here
+# still pointed to the old connection and missed the new chunks intermittently.
+# invalidate_collection_cache() is called by app.py after every successful
+# upload so the next query_rag() always opens a fresh connection.
+_collection_singleton = None
+
+
 def _get_collection():
-    client = get_persistent_client(VECTORSTORE_DIR)
-    return client.get_or_create_collection(name=CHROMA_COLLECTION)
+    global _collection_singleton
+    if _collection_singleton is None:
+        client = get_persistent_client(VECTORSTORE_DIR)
+        _collection_singleton = client.get_or_create_collection(name=CHROMA_COLLECTION)
+    return _collection_singleton
+
+
+def invalidate_collection_cache() -> None:
+    """
+    Drop the cached collection handle.
+    Call this immediately after any ingest_pdf() call so the next
+    query_rag() opens a fresh connection and sees the new chunks.
+    Zero performance cost — re-fetched once on next query only.
+    """
+    global _collection_singleton
+    _collection_singleton = None
 
 
 def _safe_date(value: Optional[str]) -> Optional[datetime]:
@@ -234,11 +268,23 @@ def _matches_filters(meta: dict, filters: Optional[dict]) -> bool:
     regulator = (filters.get("regulator") or "").strip().lower()
     title_contains = (filters.get("title_contains") or "").strip().lower()
     source_name = (filters.get("source") or "").strip().lower()
+    title_lower = enriched["title"].lower()
+    source_lower = enriched["source"].lower()
 
     if regulator and enriched["regulator"].lower() != regulator:
         return False
-    if title_contains and title_contains not in enriched["title"].lower():
-        return False
+    if title_contains:
+        # Support comma/semicolon/pipe separated keywords as OR conditions.
+        title_terms = [
+            term.strip()
+            for term in re.split(r"[,;|]", title_contains)
+            if term.strip()
+        ]
+        if not title_terms:
+            title_terms = [title_contains]
+
+        if not any(term in title_lower or term in source_lower for term in title_terms):
+            return False
     if source_name and enriched["source"].lower() != source_name:
         return False
 
@@ -278,9 +324,14 @@ def _classify_question_type(question: str) -> str:
     lower = question.lower().strip()
     if any(token in lower for token in ["impact", "affect", "obligation", "should", "recommend", "compare", "difference", "why", "how does"]):
         return "REASONING"
+    if _CIRCULAR_REF_PATTERN.search(lower):
+        return "REFERENCE_EXTRACTION"
     if _RATE_QUERY_PATTERN.search(lower):
         return "RATE_EXTRACTION"
     if _DEADLINE_QUERY_PATTERN.search(lower):
+        return "DEADLINE_EXTRACTION"
+    # Handle common CA phrasing: "What is the date of this RBI circular?"
+    if _GENERIC_DATE_QUERY_PATTERN.search(lower):
         return "DEADLINE_EXTRACTION"
     return "REASONING"
 
@@ -308,6 +359,8 @@ def expand_query(user_question: str) -> list[str]:
 
     if _TEMPORAL_PATTERN.search(lower):
         variants.extend(["effective date", "deadline", "applicable from", "extended until"])
+    if re.search(r"\bcircular\s*(number|no\.?|ref|reference)\b", lower):
+        variants.extend(["RBI/", "CO.DGBA", "circular number", "reference number", "rbi circular", "circular no"])
     if "who" in lower or "applicable" in lower or "affected" in lower:
         variants.extend(["applies to", "relevant to", "entities covered"])
 
@@ -516,19 +569,112 @@ def _has_strong_fast_path_support(signals: dict, support: dict) -> bool:
 
 def _deadline_query_preferences(question: str) -> dict:
     lower = question.lower()
-    wants_date = any(phrase in lower for phrase in ["what date", "when is", "effective date", "effective from", "applicable from"])
+    wants_date = any(
+        phrase in lower
+        for phrase in [
+            "what date",
+            "what is the date",
+            "what's the date",
+            "date of",
+            "dated",
+            "when is",
+            "effective date",
+            "effective from",
+            "applicable from",
+        ]
+    )
     wants_extension = "extension" in lower or "extended" in lower
     wants_duration = wants_extension and not wants_date
     return {
         "wants_date": wants_date,
         "wants_extension": wants_extension,
         "wants_duration": wants_duration,
+        "wants_circular_issue_date": bool(_CIRCULAR_DATE_QUERY_PATTERN.search(lower)),
     }
 
 
-def _extract_deadline_answer(question: str, reranked: list[dict], sources: list[dict]) -> Optional[dict]:
+def _pick_circular_issue_date(question: str, reranked: list[dict], sources: list[dict]) -> Optional[dict]:
+    """
+    Prefer the circular's issue date (usually page 1 header), not historical dates
+    listed inside annex tables.
+    """
     preferences = _deadline_query_preferences(question)
-    keywords = ["deadline", "due date", "effective", "applicable", "extended", "extension"]
+    if not preferences["wants_circular_issue_date"]:
+        return None
+
+    best = None
+    best_score = -10**9
+    pairs = list(zip(reranked[:6], sources[:6]))
+
+    def evaluate_pairs(candidates: list[tuple[dict, dict]]) -> tuple[Optional[dict], int]:
+        local_best = None
+        local_best_score = -10**9
+        for candidate, source in candidates:
+            sentences = _split_sentences(candidate["doc"])
+            for sentence in sentences[:14]:
+                date_match = _DATE_VALUE_PATTERN.search(sentence)
+                if not date_match:
+                    continue
+
+                s_lower = sentence.lower()
+                score = 0
+
+                # Issue dates are usually on page 1 headers.
+                if int(source.get("page", 999)) <= 1:
+                    score += 12
+                elif int(source.get("page", 999)) <= 2:
+                    score += 4
+
+                # Positive issue-date cues.
+                if any(token in s_lower for token in [" dated ", " dated", "rbi/", "master circular", "on the above subject"]):
+                    score += 6
+                if "reserve bank of india" in s_lower:
+                    score += 2
+
+                # Strong negative cues for annex/history/table rows.
+                if any(
+                    token in s_lower
+                    for token in ["annex", "list of circulars", "consolidated", "subject", "circular no.", "agency commission"]
+                ):
+                    score -= 15
+
+                # Prefer top-ranked sources as tie-breaker.
+                score += max(0, 4 - (int(source["source_id"][1:]) - 1))
+
+                if score > local_best_score:
+                    local_best_score = score
+                    local_best = {
+                        "answer": f"The circular is dated {date_match.group(0)} [{source['source_id']}]",
+                        "source_ids": [source["source_id"]],
+                    }
+        return local_best, local_best_score
+
+    # Pass 1: Strictly prefer page-1/2 evidence for "this circular" date.
+    page_pref_pairs = [
+        (candidate, source)
+        for candidate, source in pairs
+        if int(source.get("page", 999)) <= 2
+    ]
+    if page_pref_pairs:
+        best, best_score = evaluate_pairs(page_pref_pairs)
+        if best:
+            return best
+
+    # Pass 2: fallback over remaining candidates.
+    best, best_score = evaluate_pairs(pairs)
+    if best:
+        return best
+
+    return None
+
+
+def _extract_deadline_answer(question: str, reranked: list[dict], sources: list[dict]) -> Optional[dict]:
+    issue_date = _pick_circular_issue_date(question, reranked, sources)
+    if issue_date:
+        return issue_date
+
+    preferences = _deadline_query_preferences(question)
+    keywords = ["deadline", "due date", "effective", "applicable", "extended", "extension", "date", "dated"]
     signals = _extract_query_signals(question)
 
     for candidate, source in zip(reranked[:3], sources[:3]):
@@ -588,8 +734,50 @@ def _extract_rate_answer(question: str, reranked: list[dict], sources: list[dict
     return None
 
 
+def _extract_circular_reference(question: str, reranked: list[dict], sources: list[dict]) -> Optional[dict]:
+    preferred_tokens = ("rbi/", "co.dgba")
+
+    # Prefer page-1/2 header evidence first.
+    for candidate, source in zip(reranked[:6], sources[:6]):
+        if int(source.get("page", 999)) > 2:
+            continue
+        matches = _CIRCULAR_REF_VALUE_PATTERN.findall(candidate["doc"])
+        if not matches:
+            continue
+
+        deduped = []
+        for value in matches:
+            if value not in deduped:
+                deduped.append(value)
+
+        deduped.sort(key=lambda value: (0 if any(token in value.lower() for token in preferred_tokens) else 1, value.lower()))
+        reference_text = "; ".join(deduped[:2])
+        return {
+            "answer": f"The circular reference is {reference_text} [{source['source_id']}]",
+            "source_ids": [source["source_id"]],
+        }
+
+    # Fallback across the top reranked chunks.
+    for candidate, source in zip(reranked[:6], sources[:6]):
+        matches = _CIRCULAR_REF_VALUE_PATTERN.findall(candidate["doc"])
+        if not matches:
+            continue
+        deduped = []
+        for value in matches:
+            if value not in deduped:
+                deduped.append(value)
+        reference_text = "; ".join(deduped[:2])
+        return {
+            "answer": f"The circular reference is {reference_text} [{source['source_id']}]",
+            "source_ids": [source["source_id"]],
+        }
+    return None
+
+
 def _try_fast_path(question: str, reranked: list[dict], sources: list[dict]) -> Optional[dict]:
     question_type = _classify_question_type(question)
+    if question_type == "REFERENCE_EXTRACTION":
+        return _extract_circular_reference(question, reranked, sources)
     if question_type == "DEADLINE_EXTRACTION":
         return _extract_deadline_answer(question, reranked, sources)
     if question_type == "RATE_EXTRACTION":

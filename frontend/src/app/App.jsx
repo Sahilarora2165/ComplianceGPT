@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import {
   approveDraft,
   getDashboardData,
+  runUploadedDocumentPipeline,
   sendDeadlineAlert,
   resetPipelineState,
   runPipeline,
   triggerDeadlineScan,
   triggerSchedulerMonitoring,
+  uploadDocument,
 } from "@/services/complianceApi";
 import ComplianceCalendarView from "@/ComplianceCalendarView";
 import AuditTrailView from "@/features/audit-trail";
@@ -26,7 +28,7 @@ const NAV = [
   { key: "clients", label: "Clients", icon: "group" },
   { key: "analyst", label: "Analyst Query", icon: "psychology" },
   { key: "audit", label: "Audit Trail", icon: "history_edu" },
-  { key: "pipeline", label: "Pipeline", icon: "account_tree" },
+  { key: "operations", label: "Operations Center", icon: "account_tree" },
 ];
 
 function getClientName(client) {
@@ -93,6 +95,7 @@ export default function App() {
   });
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState("");
+  const [openIntakeSignal, setOpenIntakeSignal] = useState(0);
 
   useEffect(() => {
     let ignore = false;
@@ -187,6 +190,33 @@ export default function App() {
     }
   }
 
+  async function handleDocumentUpload({ file, regulator, title, uploadedBy }) {
+    setActionMessage("Uploading and ingesting document...");
+    try {
+      const result = await uploadDocument({ file, regulator, title, uploadedBy });
+      setActionMessage(
+        `${result?.document?.title || file.name} ingested. It is now available in Analyst Query.`,
+      );
+      return result;
+    } catch {
+      setActionMessage("Document upload failed");
+      throw new Error("Upload failed");
+    }
+  }
+
+  async function handleRunDocumentPipeline(documentId, title) {
+    const label = title ? `Document processing (${title})` : "Document processing";
+    setActionMessage(`${label} starting...`);
+    try {
+      await runUploadedDocumentPipeline(documentId, "CA");
+      setActionMessage(`${label} started - monitoring for completion...`);
+      pollCompletion(label);
+    } catch {
+      setActionMessage(`${label} failed to start`);
+      throw new Error("Document processing start failed");
+    }
+  }
+
   function pollCompletion(label) {
     let attempts = 0;
     const timer = setInterval(async () => {
@@ -212,9 +242,14 @@ export default function App() {
 
       if (attempts >= 180) {
         clearInterval(timer);
-        setActionMessage("Pipeline still running - check back shortly.");
+        setActionMessage("Processing is still running - check back shortly.");
       }
     }, 2000);
+  }
+
+  function openDocumentIntakeWorkspace() {
+    setPage("analyst");
+    setOpenIntakeSignal((current) => current + 1);
   }
 
   async function handleDraftDecision(draftId, approved) {
@@ -258,9 +293,9 @@ export default function App() {
         eyebrow: "Research Intelligence",
         subtitle: "Ask compliance questions grounded in the knowledge base",
       },
-      pipeline: {
-        eyebrow: "Execution Control",
-        subtitle: "Operate monitoring runs and inspect pipeline state",
+      operations: {
+        eyebrow: "Monitoring Control",
+        subtitle: "Operate monitoring runs and inspect execution state",
       },
       dashboard: {
         eyebrow: "Compliance Operations",
@@ -316,7 +351,7 @@ export default function App() {
         page !== "calendar" &&
         page !== "clients" &&
         page !== "analyst" &&
-        page !== "pipeline" &&
+        page !== "operations" &&
         page !== "audit" ? (
           <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-canvas/90 px-5 py-3 backdrop-blur md:px-8">
             <div className="flex items-center justify-between gap-4">
@@ -356,7 +391,7 @@ export default function App() {
               loading={loading}
               pipeline={data.pipeline}
               onRunDemo={() =>
-                handleRunPipeline({ simulateMode: true, reset: true, label: "Demo pipeline" })
+                handleRunPipeline({ simulateMode: true, reset: true, label: "Demo monitoring run" })
               }
               onRunReal={() =>
                 handleRunPipeline({
@@ -391,25 +426,21 @@ export default function App() {
           ) : page === "audit" ? (
             <AuditTrailView events={auditEvents} loading={loading} />
           ) : page === "analyst" ? (
-            <AnalystQueryView />
-          ) : page === "pipeline" ? (
+            <AnalystQueryView
+              actionMessage={actionMessage}
+              onUploadDocument={handleDocumentUpload}
+              onRunUploadedDocumentPipeline={handleRunDocumentPipeline}
+              uploadHistory={auditEvents}
+              openIntakeSignal={openIntakeSignal}
+            />
+          ) : page === "operations" ? (
             <PipelineControlView
               actionMessage={actionMessage}
               loading={loading}
               pipeline={data.pipeline}
               scheduler={scheduler}
-              onRunDemo={() =>
-                handleRunPipeline({ simulateMode: true, reset: true, label: "Demo pipeline" })
-              }
-              onRunReal={() =>
-                handleRunPipeline({
-                  simulateMode: false,
-                  reset: false,
-                  label: "Real monitoring",
-                })
-              }
               onResetPipeline={() =>
-                refresh(resetPipelineState, "Pipeline reset", "Pipeline reset")
+                refresh(resetPipelineState, "Monitoring state reset", "Monitoring state reset")
               }
               onTriggerScheduler={() =>
                 refresh(
@@ -418,6 +449,7 @@ export default function App() {
                   "Scheduler triggered",
                 )
               }
+              onOpenDocumentIntake={openDocumentIntakeWorkspace}
             />
           ) : (
             <div className="flex h-full min-h-0 flex-col gap-3">
@@ -436,11 +468,11 @@ export default function App() {
                 <div className="flex flex-wrap gap-3 xl:justify-end xl:pt-4">
                     <button
                       onClick={() =>
-                        handleRunPipeline({ simulateMode: true, reset: true, label: "Demo pipeline" })
+                        handleRunPipeline({ simulateMode: true, reset: true, label: "Demo monitoring run" })
                       }
                       className="rounded-xl bg-shell px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-shellSoft"
                     >
-                      Run Demo Pipeline
+                      Run Demo Monitoring
                     </button>
                     <button
                       onClick={() =>

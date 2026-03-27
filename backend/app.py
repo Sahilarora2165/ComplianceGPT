@@ -6,13 +6,15 @@ Run: uvicorn app:app --reload --port 8000
 
 import json
 import logging
+import re
 import shutil
 import sys
+from uuid import uuid4
 from pathlib import Path
 from typing import Optional, List
 from datetime import datetime, timezone, date
 from agents.deadline_agent import scan_deadlines, get_latest_alerts, deadline_summary
-from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -21,7 +23,7 @@ sys.path.append(str(Path(__file__).parent))
 _BACKEND_DIR = Path(__file__).parent
 from config import PDF_DIR, LOGS_DIR
 from core.ingest    import ingest_pdf
-from core.retriever import query_rag
+from core.retriever import query_rag, invalidate_collection_cache
 from core.audit     import read_audit_log, log_event
 from agents.monitoring_agent import run_monitoring_agent, HASH_DB_PATH, SIMULATED_DOCUMENTS
 from agents.client_matcher   import match_clients
@@ -34,6 +36,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 PIPELINE_STATUS_PATH = Path(__file__).parent / "data" / "latest_pipeline_status.json"
+UPLOADED_DOCS_PATH = Path(__file__).parent / "data" / "uploaded_documents.json"
+SUPPORTED_REGULATORS = {"RBI", "GST", "IncomeTax", "MCA", "SEBI"}
+SUPPORTED_UPLOAD_EXTENSIONS = {".pdf", ".txt"}
 
 app = FastAPI(
     title="ComplianceGPT API",
@@ -105,6 +110,47 @@ def _update_pipeline_result(**updates) -> None:
     _latest_result.update(updates)
     _latest_result["updated_at"] = _now()
     _save_pipeline_status(_latest_result)
+
+
+def _load_uploaded_documents() -> dict:
+    if not UPLOADED_DOCS_PATH.exists():
+        return {}
+    try:
+        data = json.loads(UPLOADED_DOCS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return data
+
+
+def _save_uploaded_documents(documents: dict) -> None:
+    UPLOADED_DOCS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    UPLOADED_DOCS_PATH.write_text(
+        json.dumps(documents, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def _slugify_filename(name: str) -> str:
+    stem = re.sub(r"[^A-Za-z0-9._-]+", "_", name).strip("._")
+    return stem or "document"
+
+
+def _infer_priority_from_title(title: str) -> str:
+    lower = title.lower()
+    if any(token in lower for token in ("deadline", "extension", "penalty", "mandatory", "fema", "urgent")):
+        return "HIGH"
+    if any(token in lower for token in ("advisory", "clarification", "information", "guidelines", "faq")):
+        return "LOW"
+    return "MEDIUM"
+
+
+def _summary_from_preview(preview_text: str) -> str:
+    compact = re.sub(r"\s+", " ", preview_text or "").strip()
+    if not compact:
+        return "Manual upload document for compliance processing."
+    return compact[:220]
 
 
 # ── Scheduler ─────────────────────────────────────────────────────────────────
@@ -190,6 +236,10 @@ class PipelineRequest(BaseModel):
     simulate_mode: bool = True
     regulators:    Optional[list[str]] = None
     reset:         bool = False
+
+
+class DocumentPipelineRequest(BaseModel):
+    ca_name: str = "CA"
 
 
 # ─────────────────────────────────────────────
@@ -345,6 +395,152 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             last_run=_latest_result.get("last_run"),
         )
         logger.error(f"❌ Pipeline error: {e}")
+
+
+def _execute_uploaded_document_pipeline(document_id: str, ca_name: str):
+    global _latest_result
+    try:
+        uploaded_docs = _load_uploaded_documents()
+        uploaded = uploaded_docs.get(document_id)
+        if not uploaded:
+            raise ValueError(f"Uploaded document not found: {document_id}")
+
+        started_at = _now()
+        pipeline_doc = {
+            "document_id": document_id,
+            "regulator": uploaded["regulator"],
+            "title": uploaded["title"],
+            "url": uploaded.get("url") or "",
+            "filename": uploaded["stored_filename"],
+            "priority": uploaded["priority"],
+            "summary": uploaded["summary"],
+            "source": "manual_upload",
+            "uploaded_by": uploaded.get("uploaded_by", "CA"),
+            "uploaded_at": uploaded.get("uploaded_at"),
+        }
+
+        _update_pipeline_result(
+            new_documents=[pipeline_doc],
+            match_results=[],
+            drafts=[],
+            total_circulars=1,
+            total_matches=0,
+            total_drafts=0,
+            last_run=None,
+            run_mode="manual_upload",
+            status="running",
+            stage="matching",
+            status_message=f"Running matcher for uploaded document: {uploaded['title']}",
+            started_at=started_at,
+        )
+
+        match_results = match_clients([pipeline_doc])
+        total_matches = sum(item["match_count"] for item in match_results)
+        _update_pipeline_result(
+            match_results=match_results,
+            total_matches=total_matches,
+            stage="matching",
+            status_message=f"Matching complete: {total_matches} client match(es)",
+        )
+
+        _update_pipeline_result(
+            stage="drafting",
+            status_message="Draft generation in progress",
+        )
+
+        drafts = []
+        actionable = [item for item in match_results if item["match_count"] > 0]
+        if actionable:
+            clients_path = Path(__file__).parent / "clients.json"
+            clients_map = {
+                client["id"]: client
+                for client in json.loads(clients_path.read_text(encoding="utf-8"))
+            }
+            total_targets = sum(len(item.get("affected_clients", [])) for item in actionable)
+            processed_targets = 0
+            for item in actionable:
+                circular = {
+                    "title": item["circular_title"],
+                    "regulator": item["regulator"],
+                    "priority": item["priority"],
+                    "summary": item.get("summary", ""),
+                }
+                for affected in item.get("affected_clients", []):
+                    client = clients_map.get(affected["client_id"])
+                    if not client:
+                        continue
+                    draft = draft_single(circular, client)
+                    drafts.append(draft)
+                    processed_targets += 1
+                    _update_pipeline_result(
+                        drafts=drafts,
+                        total_drafts=len(drafts),
+                        stage="drafting",
+                        status_message=(
+                            f"Drafting in progress: {processed_targets}/{total_targets} draft(s) generated"
+                        ),
+                    )
+
+        _update_pipeline_result(
+            stage="deadlines",
+            status_message="Scanning deadlines from updated drafts and client obligations",
+        )
+        alerts = scan_deadlines()
+        deadline_count = len(alerts)
+
+        _latest_result = {
+            "new_documents": [pipeline_doc],
+            "match_results": match_results,
+            "drafts": drafts,
+            "total_circulars": 1,
+            "total_matches": total_matches,
+            "total_drafts": len(drafts),
+            "last_run": _now(),
+            "run_mode": "manual_upload",
+            "status": "completed",
+            "stage": "completed",
+            "status_message": (
+                f"Uploaded document pipeline complete: {total_matches} match(es), "
+                f"{len(drafts)} draft(s), {deadline_count} deadline alert(s) in watchlist"
+            ),
+            "started_at": started_at,
+            "updated_at": _now(),
+        }
+        _save_pipeline_status(_latest_result)
+
+        uploaded["last_pipeline_run"] = _now()
+        uploaded["last_pipeline_summary"] = {
+            "matches": total_matches,
+            "drafts": len(drafts),
+            "deadline_alerts": deadline_count,
+            "triggered_by": ca_name,
+        }
+        uploaded_docs[document_id] = uploaded
+        _save_uploaded_documents(uploaded_docs)
+
+        log_event(
+            agent="UploadAgent",
+            action="document_pipeline_completed",
+            details={
+                "document_id": document_id,
+                "title": uploaded["title"],
+                "regulator": uploaded["regulator"],
+                "uploaded_by": uploaded.get("uploaded_by", "CA"),
+                "triggered_by": ca_name,
+                "matches": total_matches,
+                "drafts": len(drafts),
+                "deadline_alerts": deadline_count,
+            },
+            citation=uploaded["stored_filename"],
+        )
+    except Exception as exc:
+        _update_pipeline_result(
+            status="failed",
+            stage="failed",
+            status_message=f"Uploaded document pipeline failed: {exc}",
+            last_run=_latest_result.get("last_run"),
+        )
+        logger.error(f"❌ Uploaded document pipeline error ({document_id}): {exc}")
 
 
 @app.get("/pipeline/status")
@@ -607,17 +803,150 @@ def query(req: QueryRequest):
 # INGEST
 # ─────────────────────────────────────────────
 
+@app.post("/documents/upload")
+async def upload_document(
+    file: UploadFile = File(...),
+    regulator: str = Form(...),
+    title: str = Form(...),
+    uploaded_by: str = Form("CA"),
+):
+    """
+    Upload a PDF/TXT document, ingest it into ChromaDB, and return extraction preview.
+    This does NOT trigger matching/drafting automatically.
+    """
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="File name is required")
+
+    regulator = regulator.strip()
+    if regulator not in SUPPORTED_REGULATORS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported regulator. Allowed: {', '.join(sorted(SUPPORTED_REGULATORS))}",
+        )
+
+    title = title.strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="Title is required")
+
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in SUPPORTED_UPLOAD_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Only PDF and TXT files are accepted")
+
+    safe_original = _slugify_filename(Path(file.filename).stem)
+    document_id = f"DOC_{uuid4().hex[:12].upper()}"
+    stored_filename = f"{document_id}_{safe_original}{suffix}"
+    destination = PDF_DIR / stored_filename
+    PDF_DIR.mkdir(parents=True, exist_ok=True)
+
+    file_bytes = await file.read()
+    destination.write_bytes(file_bytes)
+
+    ingest_result = ingest_pdf(
+        str(destination),
+        force=True,
+        regulator_override=regulator,
+        title_override=title,
+    )
+    # Invalidate the retriever's collection singleton so the next query_rag()
+    # call opens a fresh ChromaDB connection and sees the newly uploaded chunks.
+    # This is the fix for the "sometimes right, sometimes wrong" inconsistency —
+    # the old lru_cache held a stale connection that missed chunks written by
+    # ingest_pdf's own client instance.
+    invalidate_collection_cache()
+
+    preview = (ingest_result or {}).get("first_chunk_preview", "")
+    summary = _summary_from_preview(preview)
+    priority = _infer_priority_from_title(title)
+    uploaded_at = _now()
+    uploaded_record = {
+        "document_id": document_id,
+        "title": title,
+        "regulator": regulator,
+        "priority": priority,
+        "summary": summary,
+        "source": "manual_upload",
+        "stored_filename": stored_filename,
+        "original_filename": file.filename,
+        "uploaded_by": uploaded_by.strip() or "CA",
+        "uploaded_at": uploaded_at,
+        "ingest": {
+            "pages": (ingest_result or {}).get("pages", 0),
+            "chunks": (ingest_result or {}).get("chunks", 0),
+            "used_ocr": bool((ingest_result or {}).get("used_ocr", False)),
+            "first_chunk_preview": preview,
+            "status": (ingest_result or {}).get("status", "unknown"),
+        },
+    }
+
+    uploaded_docs = _load_uploaded_documents()
+    uploaded_docs[document_id] = uploaded_record
+    _save_uploaded_documents(uploaded_docs)
+
+    log_event(
+        agent="UploadAgent",
+        action="document_uploaded",
+        details={
+            "document_id": document_id,
+            "uploaded_by": uploaded_record["uploaded_by"],
+            "filename": file.filename,
+            "stored_filename": stored_filename,
+            "regulator": regulator,
+            "title": title,
+            "chunks": uploaded_record["ingest"]["chunks"],
+        },
+        citation=stored_filename,
+    )
+
+    return {
+        "message": f"{file.filename} ingested successfully",
+        "document": uploaded_record,
+    }
+
+
+@app.post("/documents/{document_id}/run-pipeline")
+def run_uploaded_document_pipeline(
+    document_id: str,
+    background_tasks: BackgroundTasks,
+    req: Optional[DocumentPipelineRequest] = None,
+):
+    """
+    Trigger matcher + drafter + deadline scan for one already-ingested uploaded document.
+    """
+    uploaded_docs = _load_uploaded_documents()
+    uploaded = uploaded_docs.get(document_id)
+    if not uploaded:
+        raise HTTPException(status_code=404, detail=f"Uploaded document not found: {document_id}")
+
+    ca_name = (req.ca_name if req else "CA").strip() or "CA"
+    background_tasks.add_task(
+        _execute_uploaded_document_pipeline,
+        document_id=document_id,
+        ca_name=ca_name,
+    )
+    return {
+        "message": "Uploaded document pipeline started",
+        "document_id": document_id,
+        "title": uploaded["title"],
+        "regulator": uploaded["regulator"],
+        "triggered_by": ca_name,
+    }
+
+
 @app.post("/ingest")
 def ingest(file: UploadFile = File(...)):
-    """Upload and ingest a PDF into ChromaDB."""
-    if not file.filename.endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF files accepted")
+    """Legacy ingest endpoint (supports PDF and TXT)."""
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="File name is required")
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in SUPPORTED_UPLOAD_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Only PDF and TXT files accepted")
     dest = PDF_DIR / file.filename
     PDF_DIR.mkdir(parents=True, exist_ok=True)
     with open(dest, "wb") as f:
         shutil.copyfileobj(file.file, f)
-    ingest_pdf(str(dest))
-    return {"message": f"{file.filename} ingested successfully"}
+    result = ingest_pdf(str(dest))
+    invalidate_collection_cache()
+    return {"message": f"{file.filename} ingested successfully", "ingest": result}
 
 
 # ─────────────────────────────────────────────

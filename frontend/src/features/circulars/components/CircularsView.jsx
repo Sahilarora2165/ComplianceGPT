@@ -359,7 +359,7 @@ export default function CircularsView({
                       ? `${selected.draftCount} draft${
                           selected.draftCount > 1 ? "s" : ""
                         } ready — go to Draft Review to approve.`
-                      : "Run the pipeline to generate client advisories for this circular."}
+                      : "Run monitoring to generate client advisories for this circular."}
                   </p>
                 </div>
               </div>

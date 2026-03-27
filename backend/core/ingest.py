@@ -2,6 +2,7 @@ import re
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(_BACKEND_DIR))
@@ -21,7 +22,8 @@ try:
 except ImportError:
     convert_from_path = None
 from langchain_core.documents import Document
-from sentence_transformers import SentenceTransformer
+# SentenceTransformer no longer imported here — we use the shared cached model
+# from core.retriever via _get_embed_model() to avoid duplicate instances.
 
 from config import (
     PDF_DIR, VECTORSTORE_DIR, EMBEDDING_MODEL,
@@ -30,6 +32,16 @@ from config import (
 )
 from core.audit import log_event
 from core.chroma_client import get_persistent_client
+
+# Import the cached model from retriever so ingest and retrieval always use
+# the SAME SentenceTransformer instance. Instantiating a second model here
+# (even from the same EMBEDDING_MODEL string) creates a separate object that
+# can diverge if the model is updated mid-session, causing embedding mismatches.
+# We do a lazy import inside ingest_pdf() to avoid circular-import issues at
+# module load time.
+def _get_embed_model():
+    from core.retriever import _get_embedding_model
+    return _get_embedding_model()
 
 
 # ── Regulator Detection ───────────────────────────────────────────────────────
@@ -112,7 +124,13 @@ def load_text_pages(text_path: str) -> tuple[list[dict], bool]:
     return [{"page": 0, "text": text}], False
 
 
-def extract_document_metadata(pdf_path: str, pages: list[dict], regulator: str) -> dict:
+def extract_document_metadata(
+    pdf_path: str,
+    pages: list[dict],
+    regulator: str,
+    title_override: Optional[str] = None,
+    url_override: Optional[str] = None,
+) -> dict:
     metadata = {
         "title": Path(pdf_path).stem.replace("_", " ").replace("-", " ").title(),
         "document_date": None,
@@ -136,6 +154,11 @@ def extract_document_metadata(pdf_path: str, pages: list[dict], regulator: str) 
             metadata["url"] = value
         elif lowered == "regulator" and value:
             metadata["regulator"] = value
+
+    if title_override:
+        metadata["title"] = title_override.strip()
+    if url_override:
+        metadata["url"] = url_override.strip()
 
     return metadata
 
@@ -166,10 +189,15 @@ def _split_by_structure(text: str) -> list[str]:
     return splits
 
 
-def _merge_short_chunks(chunks: list[str], min_chars: int = 200) -> list[str]:
+def _merge_short_chunks(chunks: list[str], min_chars: int = 200, page: int = 0) -> list[str]:
     """
     Merge consecutive short chunks so we don't embed tiny fragments.
     """
+    # Page 1 headers are often short but carry critical metadata
+    # (circular no., reference no., date), so use a lower merge threshold.
+    if page == 0:
+        min_chars = 60
+
     merged = []
     buffer = ""
     for chunk in chunks:
@@ -216,11 +244,25 @@ def chunk_pages(pages: list[dict], source_name: str) -> list[Document]:
         if not raw_text:
             continue
 
+        if page["page"] == 0:
+            header_text = raw_text[:400].strip()
+            if header_text:
+                all_chunks.append(
+                    Document(
+                        page_content=header_text,
+                        metadata={
+                            "source": source_name,
+                            "page": 0,
+                            "chunk_type": "header",
+                        },
+                    )
+                )
+
         # Step 1: structural split
         structural_chunks = _split_by_structure(raw_text)
 
         # Step 2: merge short fragments
-        merged_chunks = _merge_short_chunks(structural_chunks, min_chars=200)
+        merged_chunks = _merge_short_chunks(structural_chunks, min_chars=200, page=page["page"])
 
         # Step 3: hard-split oversized chunks
         final_chunks: list[str] = []
@@ -252,7 +294,13 @@ def _already_ingested(collection, pdf_stem: str) -> bool:
 
 # ── Main Ingest Function ──────────────────────────────────────────────────────
 
-def ingest_pdf(pdf_path: str, force: bool = False):
+def ingest_pdf(
+    pdf_path: str,
+    force: bool = False,
+    regulator_override: Optional[str] = None,
+    title_override: Optional[str] = None,
+    url_override: Optional[str] = None,
+):
     pdf_name = Path(pdf_path).name
     pdf_stem = Path(pdf_path).stem
     file_suffix = Path(pdf_path).suffix.lower()
@@ -263,7 +311,15 @@ def ingest_pdf(pdf_path: str, force: bool = False):
 
     if not force and _already_ingested(collection, pdf_stem):
         print(f"  ⏭️  Already ingested — skipping (use force=True to re-ingest)")
-        return
+        return {
+            "status": "skipped",
+            "file": pdf_name,
+            "pages": 0,
+            "chunks": 0,
+            "regulator": regulator_override or "Unknown",
+            "title": title_override or Path(pdf_path).stem,
+            "first_chunk_preview": "",
+        }
 
     if file_suffix == ".txt":
         pages, used_ocr = load_text_pages(pdf_path)
@@ -275,8 +331,14 @@ def ingest_pdf(pdf_path: str, force: bool = False):
     print(f"  {extractor_label} — {len(pages)} pages, {total_chars} chars")
 
     sample_text = " ".join(p["text"] for p in pages[:3])
-    regulator   = detect_regulator(pdf_path, sample_text)
-    doc_meta    = extract_document_metadata(pdf_path, pages, regulator)
+    regulator   = regulator_override or detect_regulator(pdf_path, sample_text)
+    doc_meta    = extract_document_metadata(
+        pdf_path,
+        pages,
+        regulator,
+        title_override=title_override,
+        url_override=url_override,
+    )
     print(f"  🏷️  Regulator tag: {regulator}")
 
     chunks = chunk_pages(pages, pdf_name)
@@ -284,11 +346,23 @@ def ingest_pdf(pdf_path: str, force: bool = False):
         print(f"  ⚠️  No text extracted from {pdf_name} — skipping")
         log_event(agent="IngestAgent", action="pdf_skipped",
                   details={"file": pdf_name, "reason": "no_text_extracted", "used_ocr": used_ocr})
-        return
+        return {
+            "status": "skipped",
+            "file": pdf_name,
+            "pages": len(pages),
+            "chunks": 0,
+            "regulator": regulator,
+            "title": doc_meta["title"],
+            "first_chunk_preview": "",
+        }
 
     print(f"  ✂️  {len(chunks)} chunks created")
 
-    model      = SentenceTransformer(EMBEDDING_MODEL)
+    # Use the shared cached embedding model from retriever.
+    # This ensures ingest and query use the IDENTICAL model instance — critical
+    # for vector-space consistency. A fresh SentenceTransformer() here would
+    # create a separate object that can drift if the model is updated mid-session.
+    model      = _get_embed_model()
     texts      = [chunk.page_content for chunk in chunks]
     embeddings = model.encode(texts, show_progress_bar=False).tolist()
     ids        = [f"{pdf_stem}_chunk_{i}" for i in range(len(texts))]
@@ -314,6 +388,24 @@ def ingest_pdf(pdf_path: str, force: bool = False):
                  "regulator": regulator, "used_ocr": used_ocr, "total_chars": total_chars},
         citation=pdf_name
     )
+
+    preview = ""
+    if texts:
+        preview = re.sub(r"\s+", " ", texts[0]).strip()[:400]
+
+    return {
+        "status": "ingested",
+        "file": pdf_name,
+        "pages": len(pages),
+        "chunks": len(chunks),
+        "regulator": regulator,
+        "title": doc_meta["title"],
+        "document_date": doc_meta["document_date"],
+        "url": doc_meta["url"],
+        "used_ocr": used_ocr,
+        "total_chars": total_chars,
+        "first_chunk_preview": preview,
+    }
 
 
 if __name__ == "__main__":
