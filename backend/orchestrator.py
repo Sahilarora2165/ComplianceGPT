@@ -50,7 +50,7 @@ def run_pipeline(simulate_mode: bool = False) -> dict:
     }
 
     # ── Step 1: Monitoring Agent ───────────────────────────────────────────
-    print("\n[1/3] 🔍 Running Monitoring Agent ...")
+    print("\n[1/4] 🔍 Running Monitoring Agent ...")
     try:
         from agents.monitoring_agent import run_monitoring_agent
         new_docs = run_monitoring_agent(
@@ -71,7 +71,7 @@ def run_pipeline(simulate_mode: bool = False) -> dict:
         return summary
 
     # ── Step 2: Client Matcher ─────────────────────────────────────────────
-    print("\n[2/3] 🎯 Running Client Matcher ...")
+    print("\n[2/4] 🎯 Running Client Matcher ...")
     try:
         from agents.client_matcher import match_clients
         match_results = match_clients(new_docs)
@@ -122,7 +122,7 @@ def run_pipeline(simulate_mode: bool = False) -> dict:
     actionable = trimmed
 
     # ── Step 3: Drafter Agent ──────────────────────────────────────────────
-    print("\n[3/3] ✍️  Running Drafter Agent ...")
+    print("\n[3/4] ✍️  Running Drafter Agent ...")
     drafts = []
     try:
         from agents.drafter_agent import draft_advisories

@@ -1,0 +1,39 @@
+{
+  "draft_id": "C1_RBI_RBI_CIRCULAR_FEMA_COMPLIANCE_DEADLINE",
+  "client_id": "C1",
+  "client_name": "Arvind Textiles Pvt. Ltd.",
+  "client_email": "arvind.shah@arvindtextiles.com",
+  "client_contact": "Arvind Shah",
+  "circular_id": "RBI_RBI_CIRCULAR_FEMA_COMPLIANCE_DEADLINE",
+  "circular_title": "RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+  "regulator": "RBI",
+  "priority": "HIGH",
+  "circular_summary": "FEMA reporting deadline for foreign transactions extended by 30 days.",
+  "actions": [
+    "Submit SOFTEX form for each export invoice to the bank within the extended deadline — required as Arvind Textiles is a goods exporter under FEMA",
+    "Reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before closure of the reporting cycle for each export transaction"
+  ],
+  "deadline": "2026-04-26",
+  "risk_level": "HIGH",
+  "penalty_if_missed": "Not specified in circular",
+  "applicable_sections": [],
+  "email_subject": "Compliance Advisory: RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+  "email_body": "{\n  \"subject\": \"Action Required: FEMA Compliance Deadline Extension for Arvind Textiles Pvt. Ltd.\",\n  \"body\": \"Dear Arvind Shah, \n\nAs Arvind Textiles Pvt. Ltd. is a goods exporter under the Foreign Exchange Management Act (FEMA), it is essential to comply with the RBI's regulations. This applies to your company specifically because you engage in export activities, which are subject to FEMA guidelines.\n\nTo ensure compliance, please take the following actions:\n1. Submit the SOFTEX form for each export invoice to the bank within the extended deadline.\n2. Reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before closure of the reporting cycle for each export transaction.\n\nThe deadline for compliance is 2026-04-26. Given the high risk level associated with non-compliance, we urge you to take immediate action to avoid potential penalties.\n\nPlease do not hesitate to contact us if you require assistance with the compliance process. We are here to help.\n\nBest regards,\nCompliance Advisory Team\"\n}",
+  "internal_notes": "CA notes — deadline was explicitly extended by 30 days, cross-checks needed for export transactions and SOFTEX submissions",
+  "source_chunks": [
+    {
+      "source": "rbi_fema_circular_march2026_sim.txt",
+      "page": 0,
+      "score": 0.9999
+    },
+    {
+      "source": "rbi_fema_circular_march2026_sim.txt",
+      "page": 0,
+      "score": 0.4175
+    }
+  ],
+  "model_used": "llama-3.3-70b-versatile",
+  "generated_at": "2026-03-27T03:47:45.505483+00:00",
+  "version": "v1",
+  "status": "pending_review"
+}

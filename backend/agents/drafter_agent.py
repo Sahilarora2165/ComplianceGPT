@@ -38,7 +38,6 @@ sys.path.append(str(_BACKEND_DIR))
 from groq import Groq
 from sentence_transformers import SentenceTransformer, CrossEncoder
 from rank_bm25 import BM25Okapi
-import chromadb
 
 from config import (
     GROQ_API_KEY, GROQ_MODEL,
@@ -46,6 +45,7 @@ from config import (
     CHROMA_COLLECTION, TOP_K
 )
 from core.audit import log_event
+from core.chroma_client import get_persistent_client
 
 # ── Multi-Model Configuration ─────────────────────────────────────────────────
 # Assign models by priority to maximize free tier usage
@@ -89,7 +89,11 @@ def _make_circular_id(regulator: str, title: str) -> str:
 # RAG CONTEXT RETRIEVER (internal, drafter-specific)
 # ─────────────────────────────────────────────
 
-def _retrieve_context(query: str, top_k: int = TOP_K) -> tuple[str, list[dict]]:
+def _retrieve_context(
+    query: str,
+    regulator: Optional[str] = None,
+    top_k: int = TOP_K
+) -> tuple[str, list[dict]]:
     """
     Pull relevant chunks from ChromaDB using hybrid search
     (vector + BM25 + cross-encoder rerank).
@@ -98,7 +102,7 @@ def _retrieve_context(query: str, top_k: int = TOP_K) -> tuple[str, list[dict]]:
         context_text : formatted string for LLM prompt
         sources      : list of {source, page, score}
     """
-    client     = chromadb.PersistentClient(path=str(VECTORSTORE_DIR))
+    client     = get_persistent_client(VECTORSTORE_DIR)
     collection = client.get_or_create_collection(name=CHROMA_COLLECTION)
 
     if collection.count() == 0:
@@ -162,6 +166,26 @@ def _retrieve_context(query: str, top_k: int = TOP_K) -> tuple[str, list[dict]]:
         for i, c in enumerate(candidates):
             c["ce_score"] = float(ce_scores[i])
         candidates = sorted(candidates, key=lambda x: x["ce_score"], reverse=True)[:top_k]
+
+    # ── Regulator filter ───────────────────────────────────────────────────
+    if regulator:
+        regulator_keywords = {
+            "RBI": ["rbi", "fema"],
+            "GST": ["gst"],
+            "INCOMETAX": ["incometax", "cbdt"],
+            "MCA": ["mca"],
+            "SEBI": ["sebi"],
+        }
+        keywords = regulator_keywords.get(str(regulator).upper(), [str(regulator).lower()])
+        candidates = [
+            c for c in candidates
+            if any(
+                keyword in str(c.get("meta", {}).get("source", "")).lower()
+                for keyword in keywords
+            )
+        ]
+        if not candidates:
+            return "", []
 
     # ── Build context string ───────────────────────────────────────────────
     def sigmoid(x): return 1 / (1 + math.exp(-x))
@@ -265,6 +289,9 @@ RULES:
    - Special notes: {client.get('notes', 'None')}
 5. SKIP any action that would be IDENTICAL for every GST/RBI registered business — those are not client-specific advisories
 6. If this circular has NO direct, specific impact on this client beyond general awareness, return exactly ONE action: "Note for awareness — no immediate action required for {client['name']}"
+7. CONSTITUTION CHECK — CRITICAL: Before suggesting any filing or form, verify it matches the client's constitution. The client's constitution is {client['constitution']}. LLP forms (Form 11, Form 8, LLP Annual Return) must NEVER be suggested for a Private Limited or Public Limited company. AOC-4 and MGT-7 are only for companies, never for LLPs or proprietorships. If the circular is about LLP filings and this client is NOT an LLP, return exactly ONE action: "Note for awareness — not applicable to {client['name']} as it is a {client['constitution']}, not an LLP." Do not suggest any filing action.
+8. REGULATOR BOUNDARY — CRITICAL: Only suggest actions directly related to the circular's regulator. Circular regulator is {circular['regulator']}. Do NOT suggest RBI/FEMA/SOFTEX actions inside a GST or IncomeTax circular. Do NOT suggest GST actions inside an RBI circular. Each draft must stay strictly within the boundary of its regulator.
+9. NO MIXING — CRITICAL: Never include "Note for awareness — no immediate action required" as one of multiple actions. It is only valid as the SOLE action when the circular has zero direct impact on this client. If you have identified at least one real, specific action for this client, do NOT add an awareness note alongside it. Either the client has a compliance obligation (list only the real actions) or they don't (list only the awareness note). Never both.
 
 DEADLINE EXTRACTION — CRITICAL INSTRUCTIONS:
 You MUST return the deadline in ONE of these FOUR formats ONLY:
@@ -519,7 +546,7 @@ def draft_single(circular: dict, client: dict) -> dict:
         f"{circular['regulator']} {circular['title']} {circular['summary']} "
         f"{client['industry']} {client.get('business_type') or client.get('industry', '')}"
     )
-    context, sources = _retrieve_context(query)
+    context, sources = _retrieve_context(query, regulator=circular["regulator"])
 
     if sources:
         print(f"     📚 RAG: {len(sources)} chunk(s) retrieved from {sources[0]['source']}")

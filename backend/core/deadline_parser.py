@@ -39,8 +39,8 @@ PERIODIC_DEADLINES = {
     ("IncomeTax", "Form 26Q"): ("PERIODIC:QUARTERLY:30", "30th of month following quarter"),
     
     # PF/ESI (common for manufacturing/services)
-    ("RBI", "PF"):            ("PERIODIC:MONTHLY:15", "15th of every month"),
-    ("RBI", "ESI"):           ("PERIODIC:MONTHLY:15", "15th of every month"),
+    ("Labour", "PF"):         ("PERIODIC:MONTHLY:15", "15th of every month"),
+    ("Labour", "ESI"):        ("PERIODIC:MONTHLY:15", "15th of every month"),
     
     # RBI/FEMA
     ("RBI", "SOFTEX"):        ("PERIODIC:MONTHLY:15", "15th of every month for previous month"),
@@ -252,8 +252,10 @@ def _calculate_periodic_next(freq: str, day_spec: str, circular_date: Optional[d
         try:
             candidate = ref_date.replace(month=quarter_month, day=day)
             if candidate <= ref_date:
-                # Next quarter
-                candidate = (ref_date + relativedelta(months=3)).replace(month=quarter_month, day=day)
+                next_quarter_month = quarter_month + 3
+                next_year = ref_date.year + (1 if next_quarter_month > 12 else 0)
+                next_quarter_month = next_quarter_month - 12 if next_quarter_month > 12 else next_quarter_month
+                candidate = date(next_year, next_quarter_month, day)
             return candidate
         except ValueError:
             # Use last day of quarter month
@@ -290,8 +292,7 @@ def _calculate_periodic_next(freq: str, day_spec: str, circular_date: Optional[d
                 # Invalid date
                 pass
     
-    # Fallback: return ref_date + 30 days
-    return ref_date + timedelta(days=30)
+    return None
 
 
 def _lookup_periodic_deadline(regulator: str, obligation_type: str) -> Optional[Tuple[str, str]]:
@@ -315,6 +316,13 @@ def _lookup_periodic_deadline(regulator: str, obligation_type: str) -> Optional[
         if reg == regulator and obl.lower() in obligation_lower:
             return (format, explanation)
         if reg == regulator and obligation_lower in obl.lower():
+            return (format, explanation)
+
+    # Second pass: ignore regulator and match by obligation only
+    for (_, obl), (format, explanation) in PERIODIC_DEADLINES.items():
+        if obl.lower() in obligation_lower:
+            return (format, explanation)
+        if obligation_lower in obl.lower():
             return (format, explanation)
     
     # Check obligation type keywords
@@ -353,6 +361,8 @@ def _calculate_from_periodic(periodic_format: str, circular_date: Optional[date]
     if match:
         freq, day_spec = match.groups()
         calc_date = _calculate_periodic_next(freq.upper(), day_spec, circular_date)
+        if calc_date is None:
+            return None, "null", "Periodic calculation failed"
         return calc_date, periodic_format, f"Calculated from periodic: {calc_date.isoformat()}"
     
     return None, "null", "Invalid periodic format"

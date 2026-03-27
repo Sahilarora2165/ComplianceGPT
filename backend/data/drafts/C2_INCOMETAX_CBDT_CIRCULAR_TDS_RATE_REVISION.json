@@ -1,0 +1,43 @@
+{
+  "draft_id": "C2_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+  "client_id": "C2",
+  "client_name": "Spice Garden Restaurant",
+  "client_email": "suresh@spicegarden.in",
+  "client_contact": "Suresh Pillai",
+  "circular_id": "INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+  "circular_title": "CBDT Circular: TDS Rate Revision - FY 2026-27",
+  "regulator": "IncomeTax",
+  "priority": "MEDIUM",
+  "circular_summary": "TDS rates revised for Section 194C and 194J effective April 2026.",
+  "actions": [
+    "Verify PAN availability, threshold limits, and the nature of payment before deciding the applicable section and rate under Section 194C and 194J for Spice Garden Restaurant",
+    "Update ERP or payroll-accounting systems to apply the revised TDS rates from the first payment cycle after implementation for Spice Garden Restaurant",
+    "Maintain section-wise documentation for contractor payments, consultancy fees, and technical service invoices to support classification under Section 194C or Section 194J for Spice Garden Restaurant"
+  ],
+  "deadline": "2026-04-26",
+  "risk_level": "MEDIUM",
+  "penalty_if_missed": "Not specified in circular",
+  "applicable_sections": [
+    "Section 194C",
+    "Section 194J"
+  ],
+  "email_subject": "Compliance Advisory: CBDT Circular: TDS Rate Revision - FY 2026-27",
+  "email_body": "{\n  \"subject\": \"Compliance Advisory: CBDT Circular on TDS Rate Revision for FY 2026-27\",\n  \"body\": \"Suresh Pillai,\nSpice Garden Restaurant (Food & Beverage)\n\nWe are writing to inform you that the CBDT Circular: TDS Rate Revision - FY 2026-27 applies to your business as a food and beverage establishment, which is required to deduct tax at source (TDS) on payments made to contractors, consultants, and technical service providers.\n\nTo ensure compliance with the revised TDS rates, we recommend the following actions:\n\n1. Verify the availability of Permanent Account Number (PAN) for all contractors, consultants, and technical service providers, and determine the threshold limits and nature of payment to decide the applicable section and rate under Section 194C and 194J.\n2. Update your Enterprise Resource Planning (ERP) or payroll-accounting systems to apply the revised TDS rates from the first payment cycle after implementation.\n3. Maintain section-wise documentation for contractor payments, consultancy fees, and technical service invoices to support classification under Section 194C or Section 194J.\n\nPlease note that the deadline for completing these actions is **2026-04-26**. Failure to comply may result in penalties, although the specific penalty amount is not specified in the circular.\n\nIf you require assistance with implementing these changes, please do not hesitate to contact us. We are here to support you in maintaining compliance with tax regulations.\n\nBest regards,\nCompliance Advisory Team\"",
+  "internal_notes": "CA notes — deadline was estimated, cross-checks needed for correct implementation of revised TDS rates",
+  "source_chunks": [
+    {
+      "source": "incometax_tds_revision_2026_sim.txt",
+      "page": 0,
+      "score": 0.9999
+    },
+    {
+      "source": "incometax_tds_revision_2026_sim.txt",
+      "page": 0,
+      "score": 0.5195
+    }
+  ],
+  "model_used": "llama-3.1-8b-instant",
+  "generated_at": "2026-03-27T03:48:25.092781+00:00",
+  "version": "v1",
+  "status": "pending_review"
+}

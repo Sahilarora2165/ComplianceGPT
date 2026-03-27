@@ -1,0 +1,42 @@
+{
+  "draft_id": "C3_INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+  "client_id": "C3",
+  "client_name": "Kapoor Tech Solutions Pvt. Ltd.",
+  "client_email": "neha@kapoortech.io",
+  "client_contact": "Neha Kapoor",
+  "circular_id": "INCOMETAX_CBDT_CIRCULAR_TDS_RATE_REVISION",
+  "circular_title": "CBDT Circular: TDS Rate Revision - FY 2026-27",
+  "regulator": "IncomeTax",
+  "priority": "MEDIUM",
+  "circular_summary": "TDS rates revised for Section 194C and 194J effective April 2026.",
+  "actions": [
+    "Update ERP or payroll-accounting systems to apply the revised TDS rates for Section 194C and 194J from the first payment cycle after implementation",
+    "Verify PAN availability, threshold limits, and the nature of payment before deciding the applicable section and rate for contractual payments under Section 194C and professional or technical fee payments under Section 194J"
+  ],
+  "deadline": "2026-04-26",
+  "risk_level": "MEDIUM",
+  "penalty_if_missed": "Not specified in circular",
+  "applicable_sections": [
+    "Section 194C",
+    "Section 194J"
+  ],
+  "email_subject": "Compliance Advisory: CBDT Circular: TDS Rate Revision - FY 2026-27",
+  "email_body": "{\n  \"subject\": \"Compliance Advisory: CBDT Circular on TDS Rate Revision for FY 2026-27\",\n  \"body\": \"Ms. Neha Kapoor, Kapoor Tech Solutions Pvt. Ltd.,\nWe bring to your attention the CBDT Circular on TDS Rate Revision for FY 2026-27, which affects your company as an IT & Software Export entity. As a recipient of contractual payments and professional or technical fees, you are required to adhere to the revised TDS rates under Sections 194C and 194J.\n\nTo ensure compliance, we recommend the following actions:\n\n1. Update your ERP or payroll-accounting systems to apply the revised TDS rates for Section 194C and 194J from the first payment cycle after implementation.\n2. Verify PAN availability, threshold limits, and the nature of payment before deciding the applicable section and rate for contractual payments under Section 194C and professional or technical fee payments under Section 194J.\n\nPlease note that the deadline for implementation is **2026-04-26**. Failure to comply may result in potential penalties, although the circular does not specify the exact penalty amount.\n\nIf you require assistance with updating your systems or have any questions regarding the circular, please do not hesitate to contact us. We are here to support you in maintaining compliance with tax regulations.\n\nBest regards,\nCompliance Advisory Team\"",
+  "internal_notes": "CA notes — deadline was estimated, cross-checks needed for correct implementation of revised TDS rates",
+  "source_chunks": [
+    {
+      "source": "incometax_tds_revision_2026_sim.txt",
+      "page": 0,
+      "score": 0.9999
+    },
+    {
+      "source": "incometax_tds_revision_2026_sim.txt",
+      "page": 0,
+      "score": 0.5295
+    }
+  ],
+  "model_used": "llama-3.1-8b-instant",
+  "generated_at": "2026-03-27T03:48:42.150338+00:00",
+  "version": "v1",
+  "status": "pending_review"
+}

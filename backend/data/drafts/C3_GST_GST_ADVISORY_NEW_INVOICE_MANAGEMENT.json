@@ -1,0 +1,40 @@
+{
+  "draft_id": "C3_GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+  "client_id": "C3",
+  "client_name": "Kapoor Tech Solutions Pvt. Ltd.",
+  "client_email": "neha@kapoortech.io",
+  "client_contact": "Neha Kapoor",
+  "circular_id": "GST_GST_ADVISORY_NEW_INVOICE_MANAGEMENT",
+  "circular_title": "GST Advisory: New Invoice Management System (IMS) - April 2026",
+  "regulator": "GST",
+  "priority": "HIGH",
+  "circular_summary": "Invoice Management System mandatory from April 1, 2026 for all GST filers.",
+  "actions": [
+    "Review supplier-uploaded invoices within the IMS workflow before auto-population into GSTR-2B and take necessary actions (accept, reject, or keep pending) within the prescribed cycle",
+    "Reconcile purchase register with IMS actions to ensure accurate reflection of eligible input tax credit in GSTR-3B",
+    "Ensure vendor follow-up happens before filing GSTR-3B to match the claim of input tax credit with accepted invoice data"
+  ],
+  "deadline": "2026-04-20",
+  "risk_level": "MEDIUM",
+  "penalty_if_missed": "Not specified in circular",
+  "applicable_sections": [],
+  "email_subject": "Compliance Advisory: GST Advisory: New Invoice Management System (IMS) - April 2026",
+  "email_body": "{\n  \"subject\": \"GST Advisory: New Invoice Management System (IMS) - April 2026\",\n  \"body\": \"Neha Kapoor,\n\nAs Kapoor Tech Solutions Pvt. Ltd. is engaged in IT and software export, the new Invoice Management System (IMS) introduced by the GST regulator applies to your company, specifically impacting your input tax credit claims. This system affects your business operations, requiring adjustments to your current invoicing and tax filing processes.\n\nTo ensure compliance, please take the following necessary actions:\n1. Review supplier-uploaded invoices within the IMS workflow before auto-population into GSTR-2B and take necessary actions (accept, reject, or keep pending) within the prescribed cycle.\n2. Reconcile purchase register with IMS actions to ensure accurate reflection of eligible input tax credit in GSTR-3B.\n3. Ensure vendor follow-up happens before filing GSTR-3B to match the claim of input tax credit with accepted invoice data.\n\nThe deadline for implementing these changes is 2026-04-20. Although the penalty for non-compliance is not specified, it is essential to adhere to the deadline to avoid any potential risks.\n\nPlease do not hesitate to contact us if you require assistance with implementing these changes. We are here to support you in ensuring compliance with the new IMS.\n\nBest regards,\nCompliance Advisory Team\"\n}",
+  "internal_notes": "CA notes — deadline was estimated based on monthly GSTR-3B filing, cross-checks needed for accurate input tax credit claim",
+  "source_chunks": [
+    {
+      "source": "gst_ims_advisory_april2026_sim.txt",
+      "page": 0,
+      "score": 0.9999
+    },
+    {
+      "source": "gst_ims_advisory_april2026_sim.txt",
+      "page": 0,
+      "score": 0.5547
+    }
+  ],
+  "model_used": "llama-3.3-70b-versatile",
+  "generated_at": "2026-03-27T03:48:06.354258+00:00",
+  "version": "v1",
+  "status": "pending_review"
+}
