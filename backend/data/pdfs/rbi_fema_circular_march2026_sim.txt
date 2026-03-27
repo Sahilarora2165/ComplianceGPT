@@ -1,6 +1,12 @@
-SIMULATED DOCUMENT
+SIMULATED REGULATORY DOCUMENT
 Regulator : RBI
 Title     : RBI Circular: FEMA Compliance Deadline Extended - March 2026
 Summary   : FEMA reporting deadline for foreign transactions extended by 30 days.
 URL       : https://www.rbi.org.in/sample/fema_circular_march2026.pdf
-Generated : 2026-03-26T15:56:04.713352+00:00
+Generated : 2026-03-27T03:47:14.112805+00:00
+
+Reserve Bank of India circular on export and foreign exchange compliance for authorised dealer banks and eligible exporters. Authorised dealers are advised to ensure that SOFTEX and related FEMA reporting timelines are monitored for each export transaction, and delayed submissions should be escalated for immediate regularisation. Where the original reporting timeline was 30 days from the invoice or certification event, regulated entities should apply the revised extension window communicated in this circular and maintain documentary evidence of delay condonation wherever applicable.
+
+Entities receiving export proceeds in foreign currency should reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before closure of the reporting cycle. Dealers should obtain corrected declarations where transaction values, invoice references, or remittance details do not match prior submissions. Compliance teams should track pending export realisations, overdue foreign receivables, and FEMA follow-up items separately from GST or direct tax matters because these obligations arise specifically under RBI and FEMA reporting requirements.
+
+This circular is intended to improve timeliness of export data submission, reduce mismatches in foreign exchange reporting, and support supervisory review by authorised dealer banks. Records relating to foreign inward remittance, export declaration forms, and SOFTEX certifications should be preserved in an auditable format for regulatory inspection.

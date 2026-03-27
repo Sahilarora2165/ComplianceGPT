@@ -1,6 +1,12 @@
-SIMULATED DOCUMENT
+SIMULATED REGULATORY DOCUMENT
 Regulator : MCA
 Title     : MCA Notification: LLP Annual Filing Deadline - FY 2025-26
 Summary   : LLP Form 11 annual return due date extended to July 15, 2026.
 URL       : https://www.mca.gov.in/sample/llp_filing_2025_26.pdf
-Generated : 2026-03-26T15:56:04.714251+00:00
+Generated : 2026-03-27T03:47:26.459921+00:00
+
+Ministry of Corporate Affairs notification regarding annual filing obligations for Limited Liability Partnerships for financial year 2025-26. Every LLP should prepare and file Form 11, being the LLP Annual Return, with the Registrar within the statutory filing timeline, and designated partners should confirm the particulars of partners, contribution, and business classification before submission. The annual compliance package should also include preparation of the Statement of Account and Solvency in Form 8, where applicable under the LLP framework.
+
+The notification highlights that LLP Annual Return compliance is distinct from company annual filing under the Companies Act. Forms such as AOC-4 and MGT-7 apply to companies and are not substitutes for LLP Form 11 or Form 8. Compliance teams should therefore validate the constitution of the entity before preparing annual filing tasks, and only LLPs should be assigned these MCA obligations.
+
+For demo purposes, the filing calendar should treat October 30 as the annual due date benchmark for LLP Annual Return tracking unless a later extension is expressly notified. Supporting registers, partner details, and financial statements should be reviewed in advance so the filing can be completed without late fees.

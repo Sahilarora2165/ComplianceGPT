@@ -73,6 +73,57 @@ SIMULATED_DOCUMENTS = [
     },
 ]
 
+SIMULATED_DOCUMENT_TEXT = {
+    "rbi_fema_circular_march2026.pdf": """
+Reserve Bank of India circular on export and foreign exchange compliance for authorised dealer banks and eligible exporters. Authorised dealers are advised to ensure that SOFTEX and related FEMA reporting timelines are monitored for each export transaction, and delayed submissions should be escalated for immediate regularisation. Where the original reporting timeline was 30 days from the invoice or certification event, regulated entities should apply the revised extension window communicated in this circular and maintain documentary evidence of delay condonation wherever applicable.
+
+Entities receiving export proceeds in foreign currency should reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before closure of the reporting cycle. Dealers should obtain corrected declarations where transaction values, invoice references, or remittance details do not match prior submissions. Compliance teams should track pending export realisations, overdue foreign receivables, and FEMA follow-up items separately from GST or direct tax matters because these obligations arise specifically under RBI and FEMA reporting requirements.
+
+This circular is intended to improve timeliness of export data submission, reduce mismatches in foreign exchange reporting, and support supervisory review by authorised dealer banks. Records relating to foreign inward remittance, export declaration forms, and SOFTEX certifications should be preserved in an auditable format for regulatory inspection.
+""".strip(),
+    "gst_ims_advisory_april2026.pdf": """
+Goods and Services Tax Network advisory on implementation of the Invoice Management System (IMS) for registered taxpayers from April 1, 2026. Taxpayers should review supplier-uploaded invoices within the IMS workflow before auto-population into GSTR-2B, and mismatched invoices should be accepted, rejected, or kept pending within the prescribed cycle. Businesses must align purchase register reconciliation with IMS actions so that eligible input tax credit is reflected accurately in GSTR-3B.
+
+The advisory clarifies that outward supply reporting in GSTR-1 continues to be the source document for invoice visibility in the recipient's IMS dashboard. Recipients should reconcile invoices, debit notes, and credit notes against books before finalising monthly returns, and unresolved mismatches may affect input tax credit availability. Compliance teams should ensure that vendor follow-up happens before filing GSTR-3B so that the claim of input tax credit matches the accepted invoice data.
+
+Taxpayers with large vendor bases are encouraged to create maker-checker controls around IMS review, document exception handling for missing invoices, and maintain a return-close checklist covering GSTR-1, IMS actions, and GSTR-3B. The advisory is relevant to GST-registered entities and should not be used for RBI, FEMA, or direct tax compliance actions.
+""".strip(),
+    "incometax_tds_revision_2026.pdf": """
+CBDT circular revising tax deduction at source compliance guidance for financial year 2026-27. Deductors making contractual payments under Section 194C and professional or technical fee payments under Section 194J should apply the revised TDS rates from the effective date notified in the circular. Entities must update ERP or payroll-accounting systems so the correct deduction logic is applied from the first payment cycle after implementation.
+
+The circular reiterates that deductors should verify PAN availability, threshold limits, and the nature of payment before deciding the applicable section and rate. Any short deduction arising from legacy rate tables should be identified through vendor ledger review, and correction statements should be prepared where return filings need amendment. Monthly deposit of TDS and quarterly statement filing should continue within the statutory due dates under the Income-tax Act and related rules.
+
+Businesses should maintain section-wise documentation for contractor payments, consultancy fees, and technical service invoices to support classification under Section 194C or Section 194J. This circular is limited to Income-tax and CBDT TDS obligations and does not create any GST, RBI, or MCA filing requirement.
+""".strip(),
+    "mca_llp_filing_2025_26.pdf": """
+Ministry of Corporate Affairs notification regarding annual filing obligations for Limited Liability Partnerships for financial year 2025-26. Every LLP should prepare and file Form 11, being the LLP Annual Return, with the Registrar within the statutory filing timeline, and designated partners should confirm the particulars of partners, contribution, and business classification before submission. The annual compliance package should also include preparation of the Statement of Account and Solvency in Form 8, where applicable under the LLP framework.
+
+The notification highlights that LLP Annual Return compliance is distinct from company annual filing under the Companies Act. Forms such as AOC-4 and MGT-7 apply to companies and are not substitutes for LLP Form 11 or Form 8. Compliance teams should therefore validate the constitution of the entity before preparing annual filing tasks, and only LLPs should be assigned these MCA obligations.
+
+For demo purposes, the filing calendar should treat October 30 as the annual due date benchmark for LLP Annual Return tracking unless a later extension is expressly notified. Supporting registers, partner details, and financial statements should be reviewed in advance so the filing can be completed without late fees.
+""".strip(),
+    "sebi_esg_disclosure_2026.pdf": """
+Securities and Exchange Board of India circular enhancing ESG disclosure expectations for listed entities. The circular applies to listed companies within the prescribed coverage universe and requires stronger reporting on environmental, social, and governance metrics through the applicable annual reporting framework. Companies should review board-approved sustainability governance, materiality assessment, and data ownership across business units before compiling disclosures.
+
+Listed entities should ensure that ESG disclosures are consistent with annual report narratives, business responsibility and sustainability reporting, and risk management statements made to stock exchanges. Metrics relating to greenhouse gas emissions, workforce data, supply chain due diligence, and governance controls should be documented with internal evidence trails. Investor-facing disclosures should be reviewed for completeness and consistency before submission to exchanges or inclusion in annual reporting.
+
+The circular is intended for capital market disclosure compliance and should be actioned only for relevant listed companies. Unlisted entities or businesses outside the SEBI disclosure perimeter may treat the update as awareness-only unless they are specifically brought within the reporting framework.
+""".strip(),
+}
+
+
+def _build_simulated_document_text(doc: dict) -> str:
+    body = SIMULATED_DOCUMENT_TEXT.get(doc["filename"], doc["summary"])
+    return (
+        "SIMULATED REGULATORY DOCUMENT\n"
+        f"Regulator : {doc['regulator']}\n"
+        f"Title     : {doc['title']}\n"
+        f"Summary   : {doc['summary']}\n"
+        f"URL       : {doc['url']}\n"
+        f"Generated : {datetime.now(timezone.utc).isoformat()}\n\n"
+        f"{body}\n"
+    )
+
 
 def _load_hash_db() -> dict:
     if HASH_DB_PATH.exists():
@@ -804,13 +855,14 @@ def _ingest_new_docs(new_docs: list) -> None:
         if doc["source"] == "simulated":
             dest = PDF_DIR / doc["filename"].replace(".pdf", "_sim.txt")
             PDF_DIR.mkdir(parents=True, exist_ok=True)
-            dest.write_text(
-                f"SIMULATED DOCUMENT\nRegulator : {doc['regulator']}\nTitle     : {doc['title']}\n"
-                f"Summary   : {doc['summary']}\nURL       : {doc['url']}\n"
-                f"Generated : {datetime.now(timezone.utc).isoformat()}\n",
-                encoding="utf-8"
-            )
-            print(f"    Placeholder created: {dest.name}")
+            dest.write_text(_build_simulated_document_text(doc), encoding="utf-8")
+            print(f"    Simulated document created: {dest.name}")
+            try:
+                ingest_pdf(str(dest), force=True)
+            except Exception as e:
+                print(f"    Simulated ingest failed: {e}")
+                log_event(agent="MonitoringAgent", action="ingest_failed",
+                          details={"filename": dest.name, "error": str(e)})
             log_event(agent="MonitoringAgent", action="doc_simulated",
                       details={"filename": doc["filename"], "regulator": doc["regulator"]},
                       citation=doc["title"])

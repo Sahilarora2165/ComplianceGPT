@@ -10,6 +10,7 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Optional
+from datetime import datetime, timezone, date
 from agents.deadline_agent import scan_deadlines, get_latest_alerts, deadline_summary
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +18,7 @@ from pydantic import BaseModel
 
 sys.path.append(str(Path(__file__).parent))
 
+_BACKEND_DIR = Path(__file__).parent
 from config import PDF_DIR, LOGS_DIR
 from core.ingest    import ingest_pdf
 from core.retriever import query_rag
@@ -30,6 +32,8 @@ from apscheduler.triggers.interval import IntervalTrigger
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+PIPELINE_STATUS_PATH = Path(__file__).parent / "data" / "latest_pipeline_status.json"
 
 app = FastAPI(
     title="ComplianceGPT API",
@@ -54,7 +58,53 @@ _latest_result: dict = {
     "total_drafts":   0,
     "last_run":       None,
     "run_mode":       None,
+    "status":         "idle",
+    "stage":          "idle",
+    "status_message": "Waiting for first run",
+    "started_at":     None,
+    "updated_at":     None,
 }
+
+
+def _save_pipeline_status(status: dict) -> None:
+    PIPELINE_STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    PIPELINE_STATUS_PATH.write_text(
+        json.dumps(status, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def _load_pipeline_status() -> dict:
+    if not PIPELINE_STATUS_PATH.exists():
+        return dict(_latest_result)
+    try:
+        saved = json.loads(PIPELINE_STATUS_PATH.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.warning(f"Failed to load persisted pipeline status: {exc}")
+        return dict(_latest_result)
+
+    return {
+        "new_documents": saved.get("new_documents", []),
+        "match_results": saved.get("match_results", []),
+        "drafts": saved.get("drafts", []),
+        "total_circulars": saved.get("total_circulars", 0),
+        "total_matches": saved.get("total_matches", 0),
+        "total_drafts": saved.get("total_drafts", 0),
+        "last_run": saved.get("last_run"),
+        "run_mode": saved.get("run_mode"),
+        "status": saved.get("status", "idle"),
+        "stage": saved.get("stage", "idle"),
+        "status_message": saved.get("status_message", "Waiting for first run"),
+        "started_at": saved.get("started_at"),
+        "updated_at": saved.get("updated_at"),
+    }
+
+
+def _update_pipeline_result(**updates) -> None:
+    global _latest_result
+    _latest_result.update(updates)
+    _latest_result["updated_at"] = _now()
+    _save_pipeline_status(_latest_result)
 
 
 # ── Scheduler ─────────────────────────────────────────────────────────────────
@@ -88,6 +138,8 @@ scheduler = BackgroundScheduler()
 
 @app.on_event("startup")
 def start_scheduler():
+    global _latest_result
+    _latest_result = _load_pipeline_status()
     scheduler.add_job(
         _run_monitoring_job,
         trigger=IntervalTrigger(hours=6),
@@ -157,9 +209,26 @@ def run_full_pipeline(req: PipelineRequest, background_tasks: BackgroundTasks):
 def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
     global _latest_result
     try:
+        started_at = _now()
+        _update_pipeline_result(
+            new_documents=[],
+            match_results=[],
+            drafts=[],
+            total_circulars=0,
+            total_matches=0,
+            total_drafts=0,
+            last_run=None,
+            run_mode="simulate" if simulate_mode else "real",
+            status="running",
+            stage="monitoring",
+            status_message="Monitoring stage started",
+            started_at=started_at,
+        )
+
         if reset and HASH_DB_PATH.exists():
             HASH_DB_PATH.unlink()
             logger.info("🔄 Hash DB reset")
+            _update_pipeline_result(status_message="Pipeline state reset. Monitoring stage started")
 
         # Stage 1
         new_docs = run_monitoring_agent(
@@ -167,19 +236,74 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             regulators=regulators,
             auto_ingest=False
         )
+        _update_pipeline_result(
+            new_documents=new_docs,
+            total_circulars=len(new_docs),
+            stage="monitoring",
+            status_message=f"Monitoring complete: {len(new_docs)} circular(s) found",
+        )
         if not new_docs:
-            _latest_result.update({"new_documents":[],"match_results":[],"drafts":[],
-                                    "total_circulars":0,"total_matches":0,"total_drafts":0,
-                                    "last_run": _now(), "run_mode": "simulate" if simulate_mode else "real"})
+            _update_pipeline_result(
+                match_results=[],
+                drafts=[],
+                total_matches=0,
+                total_drafts=0,
+                last_run=_now(),
+                status="completed",
+                stage="completed",
+                status_message="Pipeline completed with no new documents",
+            )
             return
 
         # Stage 2
+        _update_pipeline_result(stage="matching", status_message="Client matching in progress")
         match_results = match_clients(new_docs)
         total_matches = sum(r["match_count"] for r in match_results)
+        _update_pipeline_result(
+            match_results=match_results,
+            total_matches=total_matches,
+            stage="matching",
+            status_message=f"Matching complete: {total_matches} client match(es) found",
+        )
 
         # Stage 3
         actionable = [r for r in match_results if r["match_count"] > 0]
-        drafts     = draft_advisories(actionable) if actionable else []
+        _update_pipeline_result(
+            stage="drafting",
+            status_message=f"Draft generation started for {len(actionable)} actionable circular(s)",
+        )
+        drafts = []
+        if actionable:
+            clients_path = Path(__file__).parent / "clients.json"
+            clients_map = {
+                client["id"]: client
+                for client in json.loads(clients_path.read_text(encoding="utf-8"))
+            }
+            total_targets = sum(len(item.get("affected_clients", [])) for item in actionable)
+            processed_targets = 0
+
+            for item in actionable:
+                circular = {
+                    "title": item["circular_title"],
+                    "regulator": item["regulator"],
+                    "priority": item["priority"],
+                    "summary": item.get("summary", ""),
+                }
+                for affected in item.get("affected_clients", []):
+                    client = clients_map.get(affected["client_id"])
+                    if not client:
+                        continue
+                    draft = draft_single(circular, client)
+                    drafts.append(draft)
+                    processed_targets += 1
+                    _update_pipeline_result(
+                        drafts=drafts,
+                        total_drafts=len(drafts),
+                        stage="drafting",
+                        status_message=(
+                            f"Drafting in progress: {processed_targets}/{total_targets} draft(s) generated"
+                        ),
+                    )
 
         _latest_result = {
             "new_documents":   new_docs,
@@ -190,9 +314,21 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             "total_drafts":    len(drafts),
             "last_run":        _now(),
             "run_mode":        "simulate" if simulate_mode else "real",
+            "status":          "completed",
+            "stage":           "completed",
+            "status_message":  f"Pipeline completed: {len(new_docs)} circular(s), {total_matches} match(es), {len(drafts)} draft(s)",
+            "started_at":      started_at,
+            "updated_at":      _now(),
         }
+        _save_pipeline_status(_latest_result)
         logger.info(f"✅ Pipeline complete — {len(new_docs)} circulars, {total_matches} matches, {len(drafts)} drafts")
     except Exception as e:
+        _update_pipeline_result(
+            status="failed",
+            stage="failed",
+            status_message=f"Pipeline failed: {e}",
+            last_run=_latest_result.get("last_run"),
+        )
         logger.error(f"❌ Pipeline error: {e}")
 
 
@@ -344,6 +480,76 @@ def get_deadline_summary():
     return {
         "summary":          summary,
         "exposure_display": f"₹{summary['total_exposure']:,.0f} at risk across {summary['total_alerts']} obligation(s)",
+    }
+
+
+@app.post("/deadlines/{alert_id}/send")
+def send_deadline_alert(alert_id: str, ca_name: str = "CA"):
+    """
+    CA approves and sends a deadline alert email to client.
+    Logs to audit trail and marks alert as sent.
+    
+    For demo purposes, this logs the action and returns success.
+    In production, this would integrate with SMTP/SendGrid.
+    """
+    from agents.deadline_agent import get_latest_alerts
+    from core.audit import log_event
+    
+    # Find the alert
+    alerts = get_latest_alerts()
+    alert = next((a for a in alerts if a["alert_id"] == alert_id), None)
+    
+    if not alert:
+        raise HTTPException(status_code=404, detail=f"Deadline alert not found: {alert_id}")
+    
+    # Check if alert has associated draft
+    draft_id = f"DEADLINE_{alert['client_id']}_{alert['obligation_id']}_{date.today().isoformat()}"
+    DRAFTS_DIR = _BACKEND_DIR / "data" / "drafts"
+    draft_path = DRAFTS_DIR / f"{draft_id}.json"
+    
+    if not draft_path.exists():
+        # Auto-generate draft if not exists
+        from agents.deadline_agent import generate_deadline_drafts
+        drafts = generate_deadline_drafts([alert])
+        if not drafts:
+            raise HTTPException(status_code=500, detail="Failed to generate draft for this alert")
+        draft_path = DRAFTS_DIR / f"{drafts[0]['draft_id']}.json"
+    
+    # Load draft and mark as approved
+    draft = json.loads(draft_path.read_text(encoding="utf-8"))
+    draft["status"] = "approved"
+    draft["approved_by"] = ca_name
+    draft["approved_at"] = datetime.now(timezone.utc).isoformat()
+    draft["email_sent"] = True
+    draft["email_sent_at"] = datetime.now(timezone.utc).isoformat()
+    
+    # Save updated draft
+    draft_path.write_text(json.dumps(draft, indent=2, ensure_ascii=False), encoding="utf-8")
+    
+    # Log to audit trail
+    log_event(
+        agent="DeadlineAlert",
+        action="email_sent",
+        details={
+            "alert_id": alert_id,
+            "client_id": alert["client_id"],
+            "client_name": alert["client_name"],
+            "obligation": alert["obligation_type"],
+            "deadline_level": alert["level"],
+            "ca_name": ca_name,
+            "email_to": alert["client_email"],
+            "draft_id": draft_id
+        }
+    )
+    
+    return {
+        "message": f"Deadline alert email sent to {alert['client_email']}",
+        "client_name": alert["client_name"],
+        "obligation": alert["obligation_type"],
+        "deadline_level": alert["level"],
+        "draft_id": draft_id,
+        "email_to": alert["client_email"],
+        "sent_at": draft["email_sent_at"]
     }
 
 

@@ -157,3 +157,6 @@ impact_model.pdf
 *.bak
 *.backup
 *.old
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/

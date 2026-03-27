@@ -1,6 +1,12 @@
-SIMULATED DOCUMENT
+SIMULATED REGULATORY DOCUMENT
 Regulator : GST
 Title     : GST Advisory: New Invoice Management System (IMS) - April 2026
 Summary   : Invoice Management System mandatory from April 1, 2026 for all GST filers.
 URL       : https://www.gst.gov.in/sample/ims_advisory_april2026.pdf
-Generated : 2026-03-26T15:56:04.713774+00:00
+Generated : 2026-03-27T03:47:19.273855+00:00
+
+Goods and Services Tax Network advisory on implementation of the Invoice Management System (IMS) for registered taxpayers from April 1, 2026. Taxpayers should review supplier-uploaded invoices within the IMS workflow before auto-population into GSTR-2B, and mismatched invoices should be accepted, rejected, or kept pending within the prescribed cycle. Businesses must align purchase register reconciliation with IMS actions so that eligible input tax credit is reflected accurately in GSTR-3B.
+
+The advisory clarifies that outward supply reporting in GSTR-1 continues to be the source document for invoice visibility in the recipient's IMS dashboard. Recipients should reconcile invoices, debit notes, and credit notes against books before finalising monthly returns, and unresolved mismatches may affect input tax credit availability. Compliance teams should ensure that vendor follow-up happens before filing GSTR-3B so that the claim of input tax credit matches the accepted invoice data.
+
+Taxpayers with large vendor bases are encouraged to create maker-checker controls around IMS review, document exception handling for missing invoices, and maintain a return-close checklist covering GSTR-1, IMS actions, and GSTR-3B. The advisory is relevant to GST-registered entities and should not be used for RBI, FEMA, or direct tax compliance actions.
