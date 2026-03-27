@@ -51,6 +51,15 @@ function extractEmailBody(emailBody) {
   }
 }
 
+function getDraftSummary(draft) {
+  return (
+    draft?.circular_summary ||
+    draft?.summary ||
+    draft?.circular?.summary ||
+    "No circular summary available."
+  );
+}
+
 export default function DraftReviewView({
   actionMessage,
   allDrafts,
@@ -286,7 +295,7 @@ export default function DraftReviewView({
                   <div className="space-y-4">
                     <DetailBlock
                       label="Circular Summary"
-                      value={selectedDraft.circular_summary || "No circular summary available."}
+                      value={getDraftSummary(selectedDraft)}
                     />
                     <div className="grid grid-cols-2 gap-4">
                       <DetailBlock label="Deadline" value={selectedDraft.deadline || "Not specified"} />

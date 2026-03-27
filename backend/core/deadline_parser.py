@@ -400,3 +400,66 @@ def validate_deadline_format(deadline_str: str) -> Tuple[bool, str]:
             return True, ""
     
     return False, f"Deadline '{deadline_str[:50]}' does not match accepted formats (ISO/RELATIVE/PERIODIC/null)"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PUBLIC: GET COMPLIANCE CALENDAR (for API endpoint)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def get_calendar(reference_date: Optional[date] = None) -> list[dict]:
+    """
+    Returns the full Indian compliance calendar with next concrete dates.
+    Used by GET /compliance-calendar.
+    """
+    if reference_date is None:
+        reference_date = date.today()
+
+    result = []
+    seen = set()  # Deduplicate entries with same obligation name
+
+    for (regulator, obligation), (periodic_fmt, explanation) in PERIODIC_DEADLINES.items():
+        # Skip duplicate obligation names (e.g., GSTR1 vs GSTR-1)
+        key = (regulator, obligation.replace("-", "").upper())
+        if key in seen:
+            continue
+        seen.add(key)
+
+        # Calculate next date from the periodic format
+        calc_date, _, _ = _calculate_from_periodic(periodic_fmt, reference_date)
+        days_until = (calc_date - reference_date).days if calc_date else None
+
+        # Determine frequency label
+        if "MONTHLY" in periodic_fmt:
+            frequency = "Monthly"
+        elif "QUARTERLY" in periodic_fmt:
+            frequency = "Quarterly"
+        elif "HALFYEARLY" in periodic_fmt:
+            frequency = "Half-Yearly"
+        elif "YEARLY" in periodic_fmt:
+            frequency = "Annual"
+        else:
+            frequency = "As applicable"
+
+        # Urgency level
+        urgency = "OK"
+        if days_until is not None:
+            if days_until < 0:
+                urgency = "MISSED"
+            elif days_until <= 3:
+                urgency = "CRITICAL"
+            elif days_until <= 14:
+                urgency = "WARNING"
+
+        result.append({
+            "regulator":     regulator,
+            "obligation":    obligation,
+            "description":   explanation,
+            "next_due_date": calc_date.isoformat() if calc_date else None,
+            "days_until":    days_until,
+            "frequency":     frequency,
+            "urgency":       urgency,
+        })
+
+    # Sort by next due date (soonest first)
+    result.sort(key=lambda x: x["next_due_date"] or "9999-12-31")
+    return result

@@ -554,6 +554,25 @@ def send_deadline_alert(alert_id: str, ca_name: str = "CA"):
 
 
 # ─────────────────────────────────────────────
+# COMPLIANCE CALENDAR
+# ─────────────────────────────────────────────
+
+@app.get("/compliance-calendar")
+def get_compliance_calendar():
+    """
+    Returns the full Indian statutory compliance calendar with next due dates.
+    Top ~20 recurring deadlines every CA firm tracks (GST, TDS, MCA, RBI, SEBI).
+    """
+    from core.deadline_parser import get_calendar
+    calendar = get_calendar()
+    return {
+        "calendar": calendar,
+        "total": len(calendar),
+        "as_of": date.today().isoformat(),
+    }
+
+
+# ─────────────────────────────────────────────
 # RAG QUERY
 # ─────────────────────────────────────────────
 

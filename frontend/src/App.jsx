@@ -10,6 +10,7 @@ import {
 } from "./api";
 import AuditTrailView from "./AuditTrailView";
 import AnalystQueryView from "./AnalystQueryView";
+import ComplianceCalendarView from "./ComplianceCalendarView";
 import ClientProfilesView from "./ClientProfilesView";
 import CircularsView from "./CircularsView";
 import DeadlineWatchView from "./DeadlineWatchView";
@@ -21,6 +22,7 @@ const navItems = [
   { key: "circulars", label: "Circulars Monitor", icon: "visibility" },
   { key: "drafts", label: "Draft Review", icon: "edit_document" },
   { key: "deadlines", label: "Deadline Watch", icon: "alarm" },
+  { key: "calendar", label: "Compliance Calendar", icon: "calendar_month" },
   { key: "clients", label: "Client Profiles", icon: "group" },
   { key: "analyst", label: "Analyst Query", icon: "psychology" },
   { key: "audit", label: "Audit Trail", icon: "history_edu" },
@@ -106,6 +108,7 @@ function App() {
     circulars: null,
     drafts: null,
     deadlines: null,
+    calendar: null,
     clients: null,
     audit: null,
     scheduler: null,
@@ -158,6 +161,7 @@ function App() {
   const allCirculars = useMemo(() => data.pipeline?.match_results || [], [data.pipeline]);
   const auditEvents = useMemo(() => data.audit?.events || [], [data.audit]);
   const scheduler = useMemo(() => data.scheduler || null, [data.scheduler]);
+  const calendar = useMemo(() => data.calendar || null, [data.calendar]);
 
   const metrics = useMemo(() => {
     const totalExposure =
@@ -295,6 +299,11 @@ function App() {
               eyebrow: "Deadline Intelligence Workspace",
               subtitle: "Track filing risk, upcoming obligations, and exposure across clients",
             }
+          : currentPage === "calendar"
+            ? {
+                eyebrow: "Statutory Calendar Workspace",
+                subtitle: "Review upcoming Indian regulatory filing deadlines from the compliance calendar",
+              }
           : currentPage === "clients"
             ? {
                 eyebrow: "Client Intelligence Workspace",
@@ -439,6 +448,8 @@ function App() {
               }
               onTriggerScan={() => refresh(triggerDeadlineScan, "Deadline scan")}
             />
+          ) : currentPage === "calendar" ? (
+            <ComplianceCalendarView calendarData={calendar} loading={loading} />
           ) : currentPage === "clients" ? (
             <ClientProfilesView clients={clients} loading={loading} />
           ) : currentPage === "audit" ? (
