@@ -112,6 +112,34 @@ def load_text_pages(text_path: str) -> tuple[list[dict], bool]:
     return [{"page": 0, "text": text}], False
 
 
+def extract_document_metadata(pdf_path: str, pages: list[dict], regulator: str) -> dict:
+    metadata = {
+        "title": Path(pdf_path).stem.replace("_", " ").replace("-", " ").title(),
+        "document_date": None,
+        "url": None,
+        "regulator": regulator,
+    }
+    if Path(pdf_path).suffix.lower() != ".txt" or not pages:
+        return metadata
+
+    header_lines = pages[0]["text"].splitlines()[:12]
+    for line in header_lines:
+        if ":" not in line:
+            continue
+        key, value = [part.strip() for part in line.split(":", 1)]
+        lowered = key.lower()
+        if lowered == "title" and value:
+            metadata["title"] = value
+        elif lowered in {"generated", "date"} and value:
+            metadata["document_date"] = value
+        elif lowered == "url" and value:
+            metadata["url"] = value
+        elif lowered == "regulator" and value:
+            metadata["regulator"] = value
+
+    return metadata
+
+
 # ── Structure-Aware Chunking ──────────────────────────────────────────────────
 
 # Matches: "1.", "1.1", "Section 5", "CHAPTER 3", "A.", blank-line separators
@@ -248,6 +276,7 @@ def ingest_pdf(pdf_path: str, force: bool = False):
 
     sample_text = " ".join(p["text"] for p in pages[:3])
     regulator   = detect_regulator(pdf_path, sample_text)
+    doc_meta    = extract_document_metadata(pdf_path, pages, regulator)
     print(f"  🏷️  Regulator tag: {regulator}")
 
     chunks = chunk_pages(pages, pdf_name)
@@ -267,7 +296,10 @@ def ingest_pdf(pdf_path: str, force: bool = False):
         {
             "source":    pdf_name,
             "page":      chunk.metadata.get("page", 0),
-            "regulator": regulator,
+            "regulator": doc_meta["regulator"],
+            "title":     doc_meta["title"],
+            "document_date": doc_meta["document_date"] or "",
+            "url":       doc_meta["url"] or "",
             "used_ocr":  str(used_ocr)
         }
         for chunk in chunks

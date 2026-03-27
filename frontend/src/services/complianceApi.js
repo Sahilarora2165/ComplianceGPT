@@ -75,9 +75,9 @@ export function triggerSchedulerMonitoring() {
   });
 }
 
-export function queryAnalyst(question) {
+export function queryAnalyst({ question, filters = {}, activeDocument = null }) {
   return request("/query", {
     method: "POST",
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({ question, filters, active_document: activeDocument }),
   });
 }

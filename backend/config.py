@@ -1,6 +1,7 @@
 import os
 os.environ["CHROMA_DISABLE_TELEMETRY"] = "1"
 os.environ["ANONYMIZED_TELEMETRY"]     = "False"
+os.environ["TOKENIZERS_PARALLELISM"]  = "false"
 
 from pathlib import Path
 from dotenv import load_dotenv

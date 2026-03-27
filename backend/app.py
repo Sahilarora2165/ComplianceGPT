@@ -9,12 +9,12 @@ import logging
 import shutil
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, timezone, date
 from agents.deadline_agent import scan_deadlines, get_latest_alerts, deadline_summary
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 sys.path.append(str(Path(__file__).parent))
 
@@ -164,8 +164,23 @@ def stop_scheduler():
 
 # ── Pydantic models ────────────────────────────────────────────────────────────
 
+class QueryTurn(BaseModel):
+    role: str
+    content: str
+
+
+class QueryFilters(BaseModel):
+    regulator: Optional[str] = None
+    title_contains: Optional[str] = None
+    date_from: Optional[str] = None
+    date_to: Optional[str] = None
+
+
 class QueryRequest(BaseModel):
     question: str
+    history: List[QueryTurn] = Field(default_factory=list)
+    filters: Optional[QueryFilters] = None
+    active_document: Optional[str] = None
 
 class ApproveRequest(BaseModel):
     approved: bool
@@ -562,7 +577,11 @@ def query(req: QueryRequest):
     """Ask a compliance question — answered via RAG pipeline."""
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty")
-    return query_rag(req.question)
+    return query_rag(
+        req.question,
+        filters=req.filters.dict(exclude_none=True) if req.filters else None,
+        active_document=req.active_document,
+    )
 
 
 # ─────────────────────────────────────────────

@@ -8,6 +8,30 @@ The system eliminates the manual work of reading every new circular from every r
 
 ---
 
+## Local Setup
+
+Use the project virtual environment for backend work. This avoids future breakage from global Python package conflicts.
+
+```bash
+./backend/bootstrap_venv.sh
+source .venv/bin/activate
+cd backend
+python -m uvicorn app:app --reload --port 8000
+```
+
+Or run the backend directly through the helper script:
+
+```bash
+./backend/run_local.sh
+```
+
+Notes:
+- The backend now expects `.venv` at the repo root.
+- Keep using `backend/requirements.txt` for backend dependency changes.
+- If embeddings or reranker models are not cached locally, the first retrieval run may download them once.
+
+---
+
 ## Architecture Overview
 
 ```
