@@ -1517,8 +1517,10 @@ def run_monitoring_agent(
             new_docs.extend(_scrape_gst_playwright(hash_db))
         if not regulators or "IncomeTax" in regulators:
             new_docs.extend(_scrape_incometax_playwright(hash_db))
-        if not regulators or "MCA" in regulators:
-            new_docs.extend(_scrape_mca_playwright(hash_db))
+        # MCA scraper disabled — mca.gov.in is heavily JS-rendered and returns
+        # 403/empty results consistently; causes long timeouts with no payoff.
+        # if not regulators or "MCA" in regulators:
+        #     new_docs.extend(_scrape_mca_playwright(hash_db))
         # EPFO scraper disabled — epfindia.gov.in mixes circular PDFs with
         # nav links, help-desk pages, and unrelated documents; a reliable
         # selector has not been identified yet. Re-enable once a stable

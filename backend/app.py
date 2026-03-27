@@ -365,7 +365,14 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
                     "summary": item.get("summary", ""),
                     "url": item.get("url", ""),
                 }
-                for affected in item.get("affected_clients", []):
+                # Within each circular: highest-risk clients (lowest compliance_score) first
+                affected_sorted = sorted(
+                    item.get("affected_clients", []),
+                    key=lambda a: (clients_map.get(a["client_id"]) or {})
+                        .get("risk", (clients_map.get(a["client_id"]) or {}).get("risk_profile", {}))
+                        .get("compliance_score", 100)
+                )
+                for affected in affected_sorted:
                     if processed_targets >= MAX_DRAFTS_PER_RUN:
                         break
                     client_id = affected["client_id"]
