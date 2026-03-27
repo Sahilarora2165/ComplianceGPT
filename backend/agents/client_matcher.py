@@ -142,6 +142,23 @@ _CONTENT_RULES: dict[str, list[dict]] = {
             "reason": "Priority sector lending circular — applicable to RBI-regulated lenders",
         },
     ],
+    "MCA": [
+        {
+            "keywords": [
+                "llp", "form 11", "form 8", "limited liability partnership",
+                "llp annual",
+            ],
+            "required_constitution": "llp",
+            "reason": "LLP filing circular — applicable only to LLP clients",
+        },
+        {
+            "keywords": [
+                "aoc-4", "mgt-7", "annual return", "annual filing",
+            ],
+            "required_constitution": "company",
+            "reason": "Company annual filing circular — applicable only to company clients",
+        },
+    ],
 }
 
 
@@ -182,6 +199,12 @@ def _content_match(title: str, summary: str, client: dict, regulator: str) -> tu
         required_tags = rule.get("required_tags", [])
         if required_tags and not any(t.upper() in client_tags for t in required_tags):
             return False, ""
+
+        required_constitution = rule.get("required_constitution")
+        if required_constitution:
+            constitution = client.get("constitution", "").lower()
+            if required_constitution not in constitution:
+                return False, ""
 
         # Optionally narrow by business type
         biz_kws = rule.get("business_contains", [])

@@ -6,12 +6,22 @@ from pathlib import Path
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(_BACKEND_DIR))
 
-import fitz
-import pytesseract
-from pdf2image import convert_from_path
+try:
+    import fitz
+except ImportError:
+    fitz = None
+
+try:
+    import pytesseract
+except ImportError:
+    pytesseract = None
+
+try:
+    from pdf2image import convert_from_path
+except ImportError:
+    convert_from_path = None
 from langchain_core.documents import Document
 from sentence_transformers import SentenceTransformer
-import chromadb
 
 from config import (
     PDF_DIR, VECTORSTORE_DIR, EMBEDDING_MODEL,
@@ -19,6 +29,7 @@ from config import (
     OCR_CHAR_THRESHOLD, REGULATOR_KEYWORDS, REGULATOR_FILENAME_MAP
 )
 from core.audit import log_event
+from core.chroma_client import get_persistent_client
 
 
 # ── Regulator Detection ───────────────────────────────────────────────────────
@@ -39,6 +50,9 @@ def detect_regulator(pdf_path: str, sample_text: str) -> str:
 # ── PDF Text Extraction ───────────────────────────────────────────────────────
 
 def extract_text_pymupdf(pdf_path: str) -> tuple[list[dict], bool]:
+    if fitz is None:
+        print("  ⚠️  PyMuPDF not installed — falling back to OCR")
+        return [], True
     try:
         doc   = fitz.open(pdf_path)
         pages = []
@@ -56,6 +70,9 @@ def extract_text_pymupdf(pdf_path: str) -> tuple[list[dict], bool]:
 
 
 def extract_text_ocr(pdf_path: str) -> list[dict]:
+    if convert_from_path is None or pytesseract is None:
+        print("  ❌ OCR dependencies not installed")
+        return []
     print(f"  🔍 OCR triggered for: {Path(pdf_path).name}")
     images = convert_from_path(pdf_path, dpi=300)
     pages  = []
@@ -82,6 +99,17 @@ def load_pdf_pages(pdf_path: str, max_retries: int = 2) -> tuple[list[dict], boo
             print(f"  ⚠️  Retry {attempt + 1}/{max_retries}...")
             time.sleep(1)
     return [], True
+
+
+def load_text_pages(text_path: str) -> tuple[list[dict], bool]:
+    try:
+        text = Path(text_path).read_text(encoding="utf-8").strip()
+    except Exception as e:
+        print(f"  ❌ Failed to read text document: {e}")
+        return [], False
+    if not text:
+        return [], False
+    return [{"page": 0, "text": text}], False
 
 
 # ── Structure-Aware Chunking ──────────────────────────────────────────────────
@@ -199,18 +227,24 @@ def _already_ingested(collection, pdf_stem: str) -> bool:
 def ingest_pdf(pdf_path: str, force: bool = False):
     pdf_name = Path(pdf_path).name
     pdf_stem = Path(pdf_path).stem
+    file_suffix = Path(pdf_path).suffix.lower()
     print(f"\n📄 Ingesting: {pdf_name}")
 
-    client     = chromadb.PersistentClient(path=str(VECTORSTORE_DIR))
+    client     = get_persistent_client(VECTORSTORE_DIR)
     collection = client.get_or_create_collection(name=CHROMA_COLLECTION)
 
     if not force and _already_ingested(collection, pdf_stem):
         print(f"  ⏭️  Already ingested — skipping (use force=True to re-ingest)")
         return
 
-    pages, used_ocr = load_pdf_pages(pdf_path)
+    if file_suffix == ".txt":
+        pages, used_ocr = load_text_pages(pdf_path)
+        extractor_label = "📝 Text file used"
+    else:
+        pages, used_ocr = load_pdf_pages(pdf_path)
+        extractor_label = "🔎 OCR used" if used_ocr else "⚡ PyMuPDF used"
     total_chars     = sum(len(p["text"]) for p in pages)
-    print(f"  {'🔎 OCR used' if used_ocr else '⚡ PyMuPDF used'} — {len(pages)} pages, {total_chars} chars")
+    print(f"  {extractor_label} — {len(pages)} pages, {total_chars} chars")
 
     sample_text = " ".join(p["text"] for p in pages[:3])
     regulator   = detect_regulator(pdf_path, sample_text)
@@ -251,11 +285,11 @@ def ingest_pdf(pdf_path: str, force: bool = False):
 
 
 if __name__ == "__main__":
-    pdf_files = list(PDF_DIR.glob("*.pdf"))
+    pdf_files = list(PDF_DIR.glob("*.pdf")) + list(PDF_DIR.glob("*.txt"))
     if not pdf_files:
-        print("❌ No PDFs found in backend/data/pdfs/")
+        print("❌ No ingestible documents found in backend/data/pdfs/")
         sys.exit(1)
-    print(f"📂 Found {len(pdf_files)} PDF(s)\n")
+    print(f"📂 Found {len(pdf_files)} ingestible document(s)\n")
     for pdf in pdf_files:
         ingest_pdf(str(pdf))
     print("\n🎉 All PDFs ingested!")

@@ -131,10 +131,136 @@ def _financial_exposure(client: dict, obligation: dict, days: int) -> dict:
     return {"exposure_rupees": exposure, "exposure_label": label}
 
 
+def _scan_drafts_for_deadlines(clients: list, today: date, today_str: str) -> list[dict]:
+    """
+    Scan generated drafts for structured deadlines.
+    Handles ISO, RELATIVE, PERIODIC formats from deadline_parser.
+    
+    Returns list of alert dicts for upcoming deadlines.
+    """
+    from core.deadline_parser import parse_deadline
+    
+    DRAFTS_DIR = _BACKEND_DIR / "data" / "drafts"
+    if not DRAFTS_DIR.exists():
+        return []
+    
+    alerts = []
+    clients_map = {c["id"]: c for c in clients}
+    
+    # Scan all draft files
+    for draft_path in DRAFTS_DIR.glob("*.json"):
+        try:
+            draft = json.loads(draft_path.read_text(encoding="utf-8"))
+
+            # Skip DEADLINE_ drafts — these are auto-generated reminder drafts,
+            # not original compliance obligations. They should never be re-processed.
+            draft_id = draft.get("draft_id", "")
+            if draft_id.startswith("DEADLINE_"):
+                continue
+
+            # Skip if no deadline or already completed
+            deadline_str = draft.get("deadline")
+            if not deadline_str:
+                continue
+
+            status = draft.get("status", "pending_review")
+            if status in ("approved", "rejected", "sent"):
+                continue
+            
+            # Get client info
+            client_id = draft.get("client_id")
+            client = clients_map.get(client_id)
+            if not client:
+                continue
+            
+            # Parse deadline using the parser
+            regulator = draft.get("regulator", "")
+            obligation_type = draft.get("circular_title", "")
+            parsed_date, deadline_format, explanation = parse_deadline(
+                deadline_str, regulator, obligation_type, today
+            )
+            
+            if not parsed_date:
+                continue  # null deadline — skip
+            
+            # Calculate days until due
+            days = (parsed_date - today).days
+            level = _alert_level(days)
+            
+            if level == "OK":
+                continue  # Too far out — no alert needed
+            
+            # Build alert
+            client_name = client["name"]
+            contact = client.get("contact", {})
+            risk_profile = client.get("risk_profile", {})
+            
+            penalty = draft.get("penalty_if_missed", "Not specified")
+            exposure = _financial_exposure(client, {
+                "type": obligation_type,
+                "risk_level": draft.get("risk_level", "LOW"),
+                "penalty_if_missed": penalty
+            }, days)
+            
+            # Build headline based on format
+            if level == "MISSED":
+                headline = f"MISSED DEADLINE — {draft['circular_title']} was due {parsed_date.isoformat()} ({abs(days)} days ago)"
+                action = f"File immediately. Initiate late filing / condonation procedure. {penalty}"
+            elif level == "CRITICAL":
+                headline = f"URGENT — {draft['circular_title']} due in {days} day(s) ({parsed_date.isoformat()})"
+                action = f"File TODAY. {penalty}"
+            else:
+                headline = f"REMINDER — {draft['circular_title']} due in {days} day(s) ({parsed_date.isoformat()})"
+                action = f"Prepare and file before {parsed_date.isoformat()}. {penalty}"
+            
+            alert = {
+                "alert_id":          f"DRAFT_{client_id}_{draft.get('circular_id', 'UNKNOWN')}_{today_str}",
+                "generated_at":      datetime.now(timezone.utc).isoformat(),
+                "level":             level,
+                "days_until_due":    days,
+                "client_id":         client_id,
+                "client_name":       client_name,
+                "client_email":      contact.get("email", ""),
+                "client_contact":    contact.get("name", contact.get("primary_person", "")),
+                "obligation_id":     draft.get("draft_id", ""),
+                "obligation_type":   draft.get("circular_title", ""),
+                "due_date":          parsed_date.isoformat(),
+                "risk_level":        draft.get("risk_level", "LOW"),
+                "compliance_score":  risk_profile.get("compliance_score", 100),
+                "recent_misses":     risk_profile.get("recent_misses", 0),
+                "penalty":           penalty,
+                "exposure":          exposure,
+                "headline":          headline,
+                "recommended_action": action,
+                "tags":              client.get("tags", []),
+                "source":            "draft",
+                "draft_id":          draft.get("draft_id"),
+                "deadline_format":   deadline_format,
+                "deadline_raw":      draft.get("deadline_raw", deadline_str),
+                
+                # Email draft
+                "advisory_email": {
+                    "subject": f"[{level}] {draft.get('email_subject', 'Compliance Deadline')}",
+                    "body": draft.get("email_body", "")
+                }
+            }
+            alerts.append(alert)
+            
+        except Exception as e:
+            # Skip malformed drafts
+            continue
+    
+    return alerts
+
+
 def scan_deadlines(clients: Optional[list] = None) -> list[dict]:
     """
     Main function. Scans all clients for deadline breaches.
     Returns list of alert dicts, sorted by urgency.
+    
+    Scans two sources:
+    1. Client active_obligations from clients.json (hardcoded deadlines)
+    2. Generated drafts with structured deadlines (from Drafter Agent)
 
     Args:
         clients: Optional pre-loaded client list. Reads from clients.json if None.
@@ -146,7 +272,9 @@ def scan_deadlines(clients: Optional[list] = None) -> list[dict]:
 
     alerts = []
     today_str = date.today().isoformat()
+    today = date.today()
 
+    # ── Source 1: Client active_obligations ────────────────────────────────
     for client in clients:
         client_id   = client.get("id", "UNKNOWN")
         client_name = client.get("name", "Unknown Client")
@@ -204,6 +332,7 @@ def scan_deadlines(clients: Optional[list] = None) -> list[dict]:
                 "headline":          headline,
                 "recommended_action": action,
                 "tags":              client.get("tags", []),
+                "source":            "clients_json",
 
                 # Email draft for CA to send to client
                 "advisory_email": {
@@ -222,6 +351,10 @@ def scan_deadlines(clients: Optional[list] = None) -> list[dict]:
                 }
             }
             alerts.append(alert)
+
+    # ── Source 2: Generated drafts with structured deadlines ───────────────
+    drafts_alerts = _scan_drafts_for_deadlines(clients, today, today_str)
+    alerts.extend(drafts_alerts)
 
     # Sort: MISSED first → CRITICAL → WARNING, then by days ascending
     level_order = {"MISSED": 0, "CRITICAL": 1, "WARNING": 2}
@@ -292,6 +425,260 @@ def deadline_summary(alerts: list[dict]) -> dict:
             for a in alerts if a["level"] in ("MISSED", "CRITICAL")
         ]
     }
+
+
+# ── AUTO-DRAFT GENERATION FOR DEADLINES ──────────────────────────────────────
+
+def generate_deadline_drafts(alerts: Optional[list[dict]] = None, auto_generate: bool = True) -> list[dict]:
+    """
+    Auto-generate compliance drafts for CRITICAL and MISSED deadlines.
+    
+    Args:
+        alerts: List of deadline alerts (scans if None)
+        auto_generate: If True, generates drafts for CRITICAL and MISSED only
+    
+    Returns:
+        List of generated drafts with metadata
+    """
+    if alerts is None:
+        alerts = scan_deadlines()
+    
+    # Filter to only CRITICAL and MISSED for auto-generation
+    actionable = [a for a in alerts if a["level"] in ("CRITICAL", "MISSED")]
+    
+    if not actionable:
+        return []
+    
+    # Load full client data
+    if not CLIENTS_PATH.exists():
+        raise FileNotFoundError(f"clients.json not found at {CLIENTS_PATH}")
+    
+    clients = {c["id"]: c for c in json.loads(CLIENTS_PATH.read_text(encoding="utf-8"))}
+    
+    generated_drafts = []
+    
+    for alert in actionable:
+        client_id = alert["client_id"]
+
+        # Skip alerts that came from existing DEADLINE drafts — these should not
+        # trigger new draft generation. This prevents infinite nesting.
+        obligation_id = alert.get("obligation_id", "")
+        if obligation_id.startswith("DEADLINE_"):
+            continue
+
+        client = clients.get(client_id)
+
+        if not client:
+            print(f"  ⚠️  Client {client_id} not found — skipping draft generation")
+            continue
+
+        # Build a circular-like object for drafter compatibility
+        circular = {
+            "title": f"{alert['obligation_type']} - {alert['level']} Deadline Alert",
+            "regulator": _infer_regulator_from_obligation(alert["obligation_type"], alert["tags"]),
+            "priority": "HIGH" if alert["level"] == "MISSED" else "MEDIUM",
+            "summary": alert["headline"],
+        }
+
+        # Build obligations from alert
+        obligations = {
+            "actions": [alert["recommended_action"]],
+            "deadline": alert["due_date"],
+            "risk_level": alert["risk_level"],
+            "penalty_if_missed": alert["penalty"],
+            "applicable_sections": [],
+            "internal_notes": f"Auto-generated from deadline agent. Level: {alert['level']}. Days until due: {alert['days_until_due']}. Financial exposure: {alert['exposure']['exposure_label']}"
+        }
+
+        # Generate draft email
+        try:
+            subject, body = _generate_deadline_email(alert, client, obligations)
+
+            # Strip any DEADLINE_ prefix from obligation_id to prevent nested IDs
+            clean_obligation_id = obligation_id.removeprefix("DEADLINE_")
+            draft_id = f"DEADLINE_{client_id}_{clean_obligation_id}_{date.today().isoformat()}"
+            
+            draft = {
+                "draft_id": draft_id,
+                "client_id": client_id,
+                "client_name": client["name"],
+                "client_email": alert["client_email"],
+                "client_contact": alert["client_contact"],
+                "circular_id": f"DEADLINE_{alert['obligation_id']}",
+                "circular_title": circular["title"],
+                "regulator": circular["regulator"],
+                "priority": circular["priority"],
+                "circular_summary": circular["summary"],
+                "actions": obligations["actions"],
+                "deadline": obligations["deadline"],
+                "risk_level": obligations["risk_level"],
+                "penalty_if_missed": obligations["penalty_if_missed"],
+                "applicable_sections": obligations["applicable_sections"],
+                "email_subject": subject,
+                "email_body": body,
+                "internal_notes": obligations["internal_notes"],
+                "source_chunks": [],
+                "model_used": "deadline_agent_auto",
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "version": "v1",
+                "status": "pending_review",
+                "metadata": {
+                    "deadline_level": alert["level"],
+                    "days_until_due": alert["days_until_due"],
+                    "financial_exposure": alert["exposure"],
+                    "auto_generated": True
+                }
+            }
+            
+            # Save draft
+            draft_path = _save_deadline_draft(draft)
+            generated_drafts.append(draft)
+            
+            icon = "💀" if alert["level"] == "MISSED" else "🔴"
+            print(f"  {icon} Draft generated: {client['name']} — {alert['obligation_type']} ({alert['level']})")
+            
+        except Exception as e:
+            print(f"  ❌ Failed to generate draft for {client['name']}: {e}")
+    
+    return generated_drafts
+
+
+def _infer_regulator_from_obligation(obligation_type: str, tags: list[str]) -> str:
+    """Infer regulator from obligation type and client tags."""
+    obligation_lower = obligation_type.lower()
+    
+    if "gst" in obligation_lower or "gstr" in obligation_lower:
+        return "GST"
+    elif "tds" in obligation_lower or "income" in obligation_lower or "itr" in obligation_lower or "advance tax" in obligation_lower:
+        return "IncomeTax"
+    elif "rbi" in obligation_lower or "softex" in obligation_lower or "export" in obligation_lower:
+        return "RBI"
+    elif "fema" in obligation_lower:
+        return "RBI"
+    elif "sebi" in obligation_lower:
+        return "SEBI"
+    elif "mca" in obligation_lower or "llp" in obligation_lower or "cin" in obligation_lower:
+        return "MCA"
+    elif "transfer pricing" in obligation_lower or "tp" in obligation_lower:
+        return "IncomeTax"
+    
+    # Fallback to first tag
+    if tags:
+        tag_map = {
+            "GST": "GST",
+            "IncomeTax": "IncomeTax",
+            "RBI": "RBI",
+            "FEMA": "RBI",
+            "SEBI": "SEBI",
+            "MCA": "MCA"
+        }
+        for tag in tags:
+            if tag in tag_map:
+                return tag_map[tag]
+    
+    return "Unknown"
+
+
+def _generate_deadline_email(alert: dict, client: dict, obligations: dict) -> tuple[str, str]:
+    """Generate email subject and body for deadline alert."""
+    contact = client.get("contact", {})
+    primary_person = contact.get("primary_person") or contact.get("name", "Sir/Madam")
+    
+    level = alert["level"]
+    obligation_type = alert["obligation_type"]
+    due_date = alert["due_date"]
+    days_until = alert["days_until_due"]
+    penalty = alert["penalty"]
+    exposure = alert["exposure"]["exposure_label"]
+    
+    # Subject lines by urgency
+    if level == "MISSED":
+        subject = f"URGENT: {obligation_type} Deadline MISSED — Immediate Action Required"
+    elif level == "CRITICAL":
+        subject = f"CRITICAL: {obligation_type} Due in {days_until} Day(s) — Action Required"
+    else:
+        subject = f"Reminder: {obligation_type} Due on {due_date}"
+    
+    # Email body templates
+    if level == "MISSED":
+        body = f"""Dear {primary_person},
+
+This is an URGENT compliance alert regarding a MISSED deadline.
+
+⚠️ MISSED DEADLINE: {obligation_type}
+   Original Due Date: {due_date}
+   Days Overdue: {abs(days_until)} days
+
+FINANCIAL EXPOSURE: {exposure}
+PENALTY APPLICABLE: {penalty}
+
+IMMEDIATE ACTION REQUIRED:
+{obligations['actions'][0]}
+
+Please contact us IMMEDIATELY to initiate late filing/condonation procedures.
+
+Time is critical — every day of delay increases the penalty.
+
+Regards,
+Compliance Advisory Team
+[ComplianceGPT Automated Deadline Alert]
+"""
+    elif level == "CRITICAL":
+        body = f"""Dear {primary_person},
+
+This is a CRITICAL compliance reminder.
+
+🔴 URGENT DEADLINE: {obligation_type}
+   Due Date: {due_date}
+   Days Remaining: {days_until} day(s)
+
+FINANCIAL EXPOSURE: {exposure}
+PENALTY IF MISSED: {penalty}
+
+REQUIRED ACTION:
+{obligations['actions'][0]}
+
+Please prioritize this matter and contact us today to ensure timely filing.
+
+Regards,
+Compliance Advisory Team
+[ComplianceGPT Automated Deadline Alert]
+"""
+    else:
+        body = f"""Dear {primary_person},
+
+This is a compliance reminder for your upcoming deadline.
+
+🟡 REMINDER: {obligation_type}
+   Due Date: {due_date}
+   Days Remaining: {days_until} days
+
+FINANCIAL EXPOSURE: {exposure}
+PENALTY IF MISSED: {penalty}
+
+REQUIRED ACTION:
+{obligations['actions'][0]}
+
+Please contact us to proceed with the filing.
+
+Regards,
+Compliance Advisory Team
+[ComplianceGPT Automated Deadline Alert]
+"""
+    
+    return subject, body
+
+
+def _save_deadline_draft(draft: dict) -> Path:
+    """Save deadline draft to data/drafts/ directory."""
+    from pathlib import Path
+    DRAFTS_DIR = _BACKEND_DIR / "data" / "drafts"
+    DRAFTS_DIR.mkdir(parents=True, exist_ok=True)
+    
+    filename = f"{draft['draft_id']}.json"
+    path = DRAFTS_DIR / filename
+    path.write_text(json.dumps(draft, indent=2, ensure_ascii=False), encoding="utf-8")
+    return path
 
 
 # ── CLI standalone run ────────────────────────────────────────────────────────

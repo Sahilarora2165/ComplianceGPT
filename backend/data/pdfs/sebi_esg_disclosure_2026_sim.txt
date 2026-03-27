@@ -1,6 +1,12 @@
-SIMULATED DOCUMENT
+SIMULATED REGULATORY DOCUMENT
 Regulator : SEBI
 Title     : SEBI Circular: ESG Disclosure Norms for Listed Companies
 Summary   : Enhanced ESG disclosures mandatory for top 1000 listed companies.
 URL       : https://www.sebi.gov.in/sample/esg_disclosure_2026.pdf
-Generated : 2026-03-26T15:56:04.714455+00:00
+Generated : 2026-03-27T03:47:29.977733+00:00
+
+Securities and Exchange Board of India circular enhancing ESG disclosure expectations for listed entities. The circular applies to listed companies within the prescribed coverage universe and requires stronger reporting on environmental, social, and governance metrics through the applicable annual reporting framework. Companies should review board-approved sustainability governance, materiality assessment, and data ownership across business units before compiling disclosures.
+
+Listed entities should ensure that ESG disclosures are consistent with annual report narratives, business responsibility and sustainability reporting, and risk management statements made to stock exchanges. Metrics relating to greenhouse gas emissions, workforce data, supply chain due diligence, and governance controls should be documented with internal evidence trails. Investor-facing disclosures should be reviewed for completeness and consistency before submission to exchanges or inclusion in annual reporting.
+
+The circular is intended for capital market disclosure compliance and should be actioned only for relevant listed companies. Unlisted entities or businesses outside the SEBI disclosure perimeter may treat the update as awareness-only unless they are specifically brought within the reporting framework.

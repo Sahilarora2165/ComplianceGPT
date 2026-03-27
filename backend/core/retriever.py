@@ -7,7 +7,6 @@ sys.path.append(str(_BACKEND_DIR))
 
 from sentence_transformers import SentenceTransformer, CrossEncoder
 from rank_bm25 import BM25Okapi
-import chromadb
 from groq import Groq
 
 from config import (
@@ -17,6 +16,7 @@ from config import (
     MIN_RELEVANCE_SCORE
 )
 from core.audit import log_event
+from core.chroma_client import get_persistent_client
 
 # Cross-encoder for reranking — loads once at module level (not per query)
 # ms-marco-MiniLM-L-6-v2: small, fast, accurate, free, runs locally
@@ -155,7 +155,7 @@ def _rerank(question: str, candidates: list[dict], top_n: int) -> list[dict]:
 
 def query_rag(user_question: str) -> dict:
     model      = SentenceTransformer(EMBEDDING_MODEL)
-    client     = chromadb.PersistentClient(path=str(VECTORSTORE_DIR))
+    client     = get_persistent_client(VECTORSTORE_DIR)
     collection = client.get_or_create_collection(name=CHROMA_COLLECTION)
 
     queries = expand_query(user_question)
