@@ -270,7 +270,7 @@ export default function ClientProfilesView({ clients, loading }) {
                 </div>
               </div>
 
-              <div className="max-h-[calc(100vh-18rem)] overflow-y-auto p-8">
+              <div className="p-8">
                 <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
                   <section>
                     <SectionTitle title="Identifiers" />

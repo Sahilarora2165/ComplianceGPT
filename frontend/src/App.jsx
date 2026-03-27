@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   approveDraft,
   getDashboardData,
+  sendDeadlineAlert,
   resetPipelineState,
   runPipeline,
   triggerDeadlineScan,
@@ -429,6 +430,13 @@ function App() {
               allDeadlines={allDeadlines}
               deadlineSummary={data.deadlines?.summary}
               loading={loading}
+              onSendAlert={(alertId) =>
+                refresh(
+                  () => sendDeadlineAlert(alertId, "CA"),
+                  "Sending deadline alert",
+                  "Deadline alert email sent",
+                )
+              }
               onTriggerScan={() => refresh(triggerDeadlineScan, "Deadline scan")}
             />
           ) : currentPage === "clients" ? (

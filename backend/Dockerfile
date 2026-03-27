@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -40,10 +40,9 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
     pip install --no-cache-dir -r requirements.txt
 
 # -----------------------------
-# 3. Playwright (single layer)
+# 3. Playwright browser install (package already in requirements)
 # -----------------------------
-RUN pip install --no-cache-dir playwright && \
-    playwright install chromium
+RUN playwright install chromium
 
 
 # -----------------------------

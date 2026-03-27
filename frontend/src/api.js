@@ -50,6 +50,12 @@ export function triggerDeadlineScan() {
   });
 }
 
+export function sendDeadlineAlert(alertId, caName = "CA") {
+  return request(`/deadlines/${alertId}/send?ca_name=${encodeURIComponent(caName)}`, {
+    method: "POST",
+  });
+}
+
 export function approveDraft(draftId, approved, caName = "CA") {
   return request(`/drafts/${draftId}/approve`, {
     method: "POST",

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 function levelTone(level) {
   if (level === "MISSED") return "bg-rose-100 text-rose-800";
@@ -16,6 +16,18 @@ function textTone(level) {
   if (level === "MISSED") return "text-rose-700";
   if (level === "CRITICAL") return "text-orange-700";
   return "text-amber-700";
+}
+
+function sourceTone(source) {
+  if (source === "draft") return "bg-sky-100 text-sky-800";
+  if (source === "clients_json") return "bg-emerald-100 text-emerald-800";
+  return "bg-slate-100 text-slate-700";
+}
+
+function sourceLabel(source) {
+  if (source === "draft") return "Generated Draft";
+  if (source === "clients_json") return "Client Profile";
+  return "Unknown Source";
 }
 
 function filterChipTone(value, current) {
@@ -48,12 +60,15 @@ export default function DeadlineWatchView({
   allDeadlines,
   deadlineSummary,
   loading,
+  onSendAlert,
   onTriggerScan,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState("All");
   const [clientFilter, setClientFilter] = useState("All");
   const [selectedAlertId, setSelectedAlertId] = useState(null);
+  const [clientMenuOpen, setClientMenuOpen] = useState(false);
+  const clientMenuRef = useRef(null);
 
   const clientOptions = useMemo(() => {
     const names = [...new Set(allDeadlines.map((alert) => alert.client_name).filter(Boolean))];
@@ -88,6 +103,27 @@ export default function DeadlineWatchView({
       setSelectedAlertId(filteredAlerts[0].alert_id);
     }
   }, [filteredAlerts, selectedAlertId]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (clientMenuRef.current && !clientMenuRef.current.contains(event.target)) {
+        setClientMenuOpen(false);
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setClientMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
 
   const selectedAlert =
     filteredAlerts.find((alert) => alert.alert_id === selectedAlertId) || filteredAlerts[0] || null;
@@ -126,45 +162,83 @@ export default function DeadlineWatchView({
         </div>
       ) : null}
 
-      <section className="rounded-3xl bg-white p-6 shadow-panel">
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 xl:items-center">
-          <div className="relative xl:col-span-5">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
-              search
-            </span>
-            <input
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-teal-300 focus:bg-white"
-              placeholder="Search client, obligation, or alert level..."
-              type="text"
-            />
+      <section className="rounded-3xl bg-white p-5 shadow-panel">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 xl:items-start">
+          <div className="xl:col-span-8">
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+                search
+              </span>
+              <input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 py-0 pl-10 pr-4 text-sm outline-none transition focus:border-teal-300 focus:bg-white"
+                placeholder="Search client, obligation, or alert level..."
+                type="text"
+              />
+            </div>
           </div>
 
-          <div className="xl:col-span-4">
+          <div className="xl:col-span-4 xl:self-start">
+            <div ref={clientMenuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setClientMenuOpen((open) => !open)}
+                className={`flex h-14 w-full items-center gap-3 rounded-2xl border px-4 py-0 text-left transition duration-200 ${
+                  clientMenuOpen
+                    ? "border-teal-300 bg-white shadow-lg shadow-teal-100/60"
+                    : "border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white"
+                }`}
+              >
+                <span className="material-symbols-outlined text-slate-500">group</span>
+                <span className="flex-1 text-sm font-medium text-slate-800">{clientFilter}</span>
+                <span
+                  className={`material-symbols-outlined text-slate-500 transition duration-200 ${
+                    clientMenuOpen ? "rotate-180" : ""
+                  }`}
+                >
+                  expand_more
+                </span>
+              </button>
+
+              <div
+                className={`absolute right-0 z-20 mt-2 w-full origin-top rounded-2xl border border-slate-200 bg-white p-2 shadow-xl transition duration-200 ${
+                  clientMenuOpen
+                    ? "pointer-events-auto translate-y-0 opacity-100"
+                    : "pointer-events-none -translate-y-1 opacity-0"
+                }`}
+              >
+                {clientOptions.map((option) => {
+                  const active = option === clientFilter;
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => {
+                        setClientFilter(option);
+                        setClientMenuOpen(false);
+                      }}
+                      className={`flex w-full items-center rounded-xl px-3 py-2.5 text-sm transition ${
+                        active
+                          ? "bg-slate-950 text-white"
+                          : "text-slate-700 hover:bg-slate-100"
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="xl:col-span-8 -mt-1">
             <FilterRow
-              label="Level"
+              label={null}
               options={["All", "MISSED", "CRITICAL", "WARNING"]}
               value={levelFilter}
               onChange={setLevelFilter}
             />
-          </div>
-
-          <div className="xl:col-span-3">
-            <label className="block text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
-              Client
-            </label>
-            <select
-              value={clientFilter}
-              onChange={(event) => setClientFilter(event.target.value)}
-              className="mt-3 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-teal-300 focus:bg-white"
-            >
-              {clientOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
       </section>
@@ -208,9 +282,18 @@ export default function DeadlineWatchView({
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h4 className="font-headline text-lg font-extrabold text-slate-950">
-                        {alert.client_name}
-                      </h4>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="font-headline text-lg font-extrabold text-slate-950">
+                          {alert.client_name}
+                        </h4>
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${sourceTone(
+                            alert.source,
+                          )}`}
+                        >
+                          {sourceLabel(alert.source)}
+                        </span>
+                      </div>
                       <p className="mt-1 text-sm font-medium text-slate-600">
                         {alert.obligation_type}
                       </p>
@@ -338,6 +421,21 @@ export default function DeadlineWatchView({
                                 ? "Validate readiness, gather any missing information, and escalate within the CA team before the due date."
                                 : "Monitor progress, confirm preparatory steps, and keep the obligation in the active watchlist.")}
                         </p>
+                        {onSendAlert ? (
+                          <div className="mt-5 flex flex-wrap gap-3">
+                            <button
+                              onClick={() => onSendAlert(selectedAlert.alert_id)}
+                              className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                            >
+                              Send Alert Email
+                            </button>
+                            {selectedAlert.advisory_email?.subject ? (
+                              <div className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs text-slate-600">
+                                Draft subject ready
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </div>
                     </section>
 
@@ -359,6 +457,19 @@ export default function DeadlineWatchView({
                             label="Penalty"
                             value={selectedAlert.penalty || "Not specified"}
                           />
+                          <MetadataRow
+                            label="Source"
+                            value={sourceLabel(selectedAlert.source)}
+                          />
+                          {selectedAlert.draft_id ? (
+                            <MetadataRow label="Draft ID" value={selectedAlert.draft_id} />
+                          ) : null}
+                          {selectedAlert.deadline_format ? (
+                            <MetadataRow
+                              label="Deadline Format"
+                              value={selectedAlert.deadline_format}
+                            />
+                          ) : null}
                         </div>
                       </div>
 
@@ -372,6 +483,16 @@ export default function DeadlineWatchView({
                         <p className="mt-2 text-sm text-slate-600">
                           {selectedAlert.exposure?.exposure_label || "No exposure label available"}
                         </p>
+                        {selectedAlert.client_email ? (
+                          <p className="mt-4 text-sm text-slate-600">
+                            Client email: {selectedAlert.client_email}
+                          </p>
+                        ) : null}
+                        {selectedAlert.client_contact ? (
+                          <p className="mt-1 text-sm text-slate-600">
+                            Contact: {selectedAlert.client_contact}
+                          </p>
+                        ) : null}
                       </div>
                     </section>
                   </div>
@@ -392,8 +513,10 @@ export default function DeadlineWatchView({
 function FilterRow({ label, options, value, onChange }) {
   return (
     <div>
-      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">{label}</span>
-      <div className="mt-3 flex flex-wrap gap-2">
+      {label ? (
+        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">{label}</span>
+      ) : null}
+      <div className={`${label ? "mt-3" : ""} flex flex-wrap gap-2`}>
         {options.map((option) => (
           <button
             key={option}
