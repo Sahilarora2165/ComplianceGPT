@@ -17,13 +17,10 @@ export default function PipelineControlView({
   loading,
   pipeline,
   scheduler,
-  onRunDemo,
-  onRunReal,
   onResetPipeline,
   onTriggerScheduler,
 }) {
   const docs = pipeline?.new_documents || [];
-  const isRunning = pipeline?.status === "running";
 
   const stats = [
     { title: "Last Run", value: formatDate(pipeline?.last_run), tone: "border-accent" },
@@ -39,44 +36,28 @@ export default function PipelineControlView({
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <div>
-          <h1 className="font-headline text-3xl font-extrabold text-slate-950">Pipeline Control</h1>
-          <p className="mt-1 text-sm text-muted">Run monitoring, inspect execution state, and manage the scheduler.</p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={onRunDemo}
-            disabled={isRunning}
-            className="rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isRunning ? "Running..." : "Run Demo Pipeline"}
-          </button>
-          <button
-            onClick={onRunReal}
-            disabled={isRunning}
-            className="rounded-xl border border-accent px-5 py-2.5 text-sm font-semibold text-accent hover:bg-teal-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Run Real Monitoring
-          </button>
-        </div>
+    <div className="space-y-5">
+      <div className="space-y-1">
+        <p className="text-[11px] font-bold uppercase tracking-[0.26em] text-muted">
+          Execution Control
+        </p>
+        <h1 className="font-headline text-[2.15rem] font-extrabold leading-tight tracking-tight text-slate-950">
+          Pipeline Control
+        </h1>
+        <p className="text-sm text-slate-600">
+          Inspect execution state and manage the scheduler.
+        </p>
       </div>
 
       <ActionBanner message={actionMessage} />
 
-      {/* Stats row */}
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-6">
         {stats.map((s) => (
           <StatCard key={s.title} title={s.title} value={s.value} tone={s.tone} />
         ))}
       </div>
 
-      {/* Main content */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-
-        {/* Documents table */}
         <div className="xl:col-span-8 space-y-4">
           <div className="rounded-2xl bg-white shadow-panel overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
@@ -130,31 +111,9 @@ export default function PipelineControlView({
               </div>
             )}
           </div>
-
-          {/* 3 compact metrics */}
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { label: "Circulars Processed", value: pipeline?.total_circulars || 0, icon: "description" },
-              { label: "Client Matches", value: pipeline?.total_matches || 0, icon: "handshake" },
-              { label: "Drafts Generated", value: pipeline?.total_drafts || 0, icon: "edit_document" },
-            ].map((m) => (
-              <div key={m.label} className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-panel">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-                  <span className="material-symbols-outlined text-slate-600">{m.icon}</span>
-                </div>
-                <div>
-                  <p className="text-2xl font-extrabold text-slate-950">{m.value}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted">{m.label}</p>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
-        {/* Right sidebar */}
         <div className="xl:col-span-4 space-y-4">
-
-          {/* Quick operations */}
           <div className="rounded-2xl bg-slate-950 p-5 text-white shadow-panel">
             <h3 className="font-headline text-base font-bold mb-4">Quick Operations</h3>
             <div className="space-y-2">
@@ -175,7 +134,6 @@ export default function PipelineControlView({
             </div>
           </div>
 
-          {/* Scheduler status */}
           <div className="rounded-2xl bg-white p-5 shadow-panel">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-headline text-base font-bold text-slate-950">Scheduler</h3>
@@ -200,25 +158,6 @@ export default function PipelineControlView({
             ) : (
               <EmptyState message={loading ? "Loading jobs..." : "No scheduler jobs active."} />
             )}
-          </div>
-
-          {/* Status notes */}
-          <div className="rounded-2xl bg-slate-50 p-5 shadow-panel space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-muted">Execution Notes</h3>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted">Run mode</p>
-              <p className="mt-1 text-sm text-slate-800">
-                {pipeline?.run_mode ? `Last pipeline ran in ${pipeline.run_mode} mode.` : "No run recorded yet."}
-              </p>
-            </div>
-            {pipeline?.total_drafts ? (
-              <div className="rounded-xl border-l-4 border-warning bg-amber-50 p-3">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-warning">Drafts ready</p>
-                <p className="mt-1 text-sm text-amber-900">
-                  {pipeline.total_drafts} drafts from the latest run are awaiting CA review.
-                </p>
-              </div>
-            ) : null}
           </div>
         </div>
       </div>
