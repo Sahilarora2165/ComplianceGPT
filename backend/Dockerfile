@@ -46,9 +46,17 @@ RUN playwright install chromium
 
 
 # -----------------------------
-# 4. Pre-download embedding model (cached)
+# 4. Pre-download models (cached in image)
 # -----------------------------
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+RUN python -c "\
+from sentence_transformers import SentenceTransformer, CrossEncoder; \
+SentenceTransformer('all-MiniLM-L6-v2'); \
+CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2'); \
+print('Models cached.')"
+
+# After model is cached, lock to offline mode so runtime never hits HuggingFace
+ENV TRANSFORMERS_OFFLINE=1
+ENV HF_HUB_OFFLINE=1
 
 # -----------------------------
 # 5. Copy app code (AFTER deps)

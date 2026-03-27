@@ -191,9 +191,10 @@ def _scan_drafts_for_deadlines(clients: list, today: date, today_str: str) -> li
                 continue  # Too far out — no alert needed
             
             # Build alert
-            client_name = client["name"]
-            contact = client.get("contact", {})
-            risk_profile = client.get("risk_profile", {})
+            _p2         = client.get("profile", {})
+            client_name = _p2.get("name", client.get("name", "Unknown"))
+            contact     = _p2
+            risk_profile = client.get("risk", client.get("risk_profile", {}))
             
             penalty = draft.get("penalty_if_missed", "Not specified")
             exposure = _financial_exposure(client, {
@@ -276,12 +277,31 @@ def scan_deadlines(clients: Optional[list] = None) -> list[dict]:
 
     # ── Source 1: Client active_obligations ────────────────────────────────
     for client in clients:
-        client_id   = client.get("id", "UNKNOWN")
-        client_name = client.get("name", "Unknown Client")
-        contact     = client.get("contact", {})
-        risk_profile = client.get("risk_profile", {})
+        client_id    = client.get("id", "UNKNOWN")
+        _prof        = client.get("profile", {})
+        client_name  = _prof.get("name", client.get("name", "Unknown Client"))
+        contact      = _prof  # profile holds email, name in new schema
+        risk_profile = client.get("risk", client.get("risk_profile", {}))
 
-        for obligation in client.get("active_obligations", []):
+        # Support both new schema (obligations) and old schema (active_obligations)
+        raw_obligations = client.get("obligations", client.get("active_obligations", []))
+
+        # Normalise new schema obligations to the shape deadline_agent expects
+        obligations_list = []
+        for o in raw_obligations:
+            if "code" in o:  # new schema
+                obligations_list.append({
+                    "id":               o["code"],
+                    "type":             o["code"].replace("_", " ").title(),
+                    "due_date":         o.get("due_date", ""),
+                    "status":           o.get("status", "pending").upper(),
+                    "risk_level":       "HIGH" if o.get("status") in ("overdue", "critical") else "MEDIUM",
+                    "penalty_if_missed": o.get("penalty", "Not specified"),
+                })
+            else:  # old schema — pass through unchanged
+                obligations_list.append(o)
+
+        for obligation in obligations_list:
             # Skip already completed obligations
             if obligation.get("status", "").upper() in ("COMPLETED", "FILED", "DONE"):
                 continue
@@ -320,7 +340,7 @@ def scan_deadlines(clients: Optional[list] = None) -> list[dict]:
                 "client_id":         client_id,
                 "client_name":       client_name,
                 "client_email":      contact.get("email", ""),
-                "client_contact":    contact.get("name", ""),
+                "client_contact":    contact.get("name", client_name),
                 "obligation_id":     obligation.get("id", ""),
                 "obligation_type":   obligation.get("type", ""),
                 "due_date":          due_date_str,
@@ -338,7 +358,7 @@ def scan_deadlines(clients: Optional[list] = None) -> list[dict]:
                 "advisory_email": {
                     "subject": f"[{level}] Compliance Deadline — {obligation.get('type','')} due {due_date_str}",
                     "body": (
-                        f"Dear {contact.get('name', 'Sir/Madam')},\n\n"
+                        f"Dear {contact.get('name', client_name)},\n\n"
                         f"This is an urgent compliance reminder from your CA firm.\n\n"
                         f"{'⚠️ MISSED DEADLINE' if level == 'MISSED' else ('🔴 CRITICAL' if level == 'CRITICAL' else '🟡 REMINDER')}: "
                         f"{obligation.get('type', '')} {'was due' if level == 'MISSED' else 'is due'} on {due_date_str}.\n\n"
@@ -501,7 +521,7 @@ def generate_deadline_drafts(alerts: Optional[list[dict]] = None, auto_generate:
             draft = {
                 "draft_id": draft_id,
                 "client_id": client_id,
-                "client_name": client["name"],
+                "client_name": client.get("profile", {}).get("name", client.get("name", "")),
                 "client_email": alert["client_email"],
                 "client_contact": alert["client_contact"],
                 "circular_id": f"DEADLINE_{alert['obligation_id']}",
@@ -535,10 +555,10 @@ def generate_deadline_drafts(alerts: Optional[list[dict]] = None, auto_generate:
             generated_drafts.append(draft)
             
             icon = "💀" if alert["level"] == "MISSED" else "🔴"
-            print(f"  {icon} Draft generated: {client['name']} — {alert['obligation_type']} ({alert['level']})")
+            print(f"  {icon} Draft generated: {client.get('profile', {}).get('name', client.get('name', '?'))} — {alert['obligation_type']} ({alert['level']})")
             
         except Exception as e:
-            print(f"  ❌ Failed to generate draft for {client['name']}: {e}")
+            print(f"  ❌ Failed to generate draft for {client.get('profile', {}).get('name', client.get('name', '?'))}: {e}")
     
     return generated_drafts
 

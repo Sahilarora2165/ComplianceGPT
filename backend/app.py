@@ -8,6 +8,7 @@ import json
 import logging
 import shutil
 import sys
+import time
 from pathlib import Path
 from typing import Optional, List
 from datetime import datetime, timezone, date
@@ -32,6 +33,22 @@ from apscheduler.triggers.interval import IntervalTrigger
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# ── Suppress noisy dashboard-polling GET logs from uvicorn access log ──────────
+_SILENT_PATHS = {
+    "/pipeline/status", "/circulars", "/drafts", "/audit",
+    "/deadlines", "/compliance-calendar", "/clients", "/scheduler/status", "/health",
+}
+
+class _SilentPollingFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        msg = record.getMessage()
+        return not any(
+            f'"GET {path} HTTP' in msg or f'"OPTIONS {path} HTTP' in msg
+            for path in _SILENT_PATHS
+        )
+
+logging.getLogger("uvicorn.access").addFilter(_SilentPollingFilter())
 
 PIPELINE_STATUS_PATH = Path(__file__).parent / "data" / "latest_pipeline_status.json"
 
@@ -118,6 +135,16 @@ def _run_monitoring_job():
         logger.error(f"❌ Monitoring job failed: {e}")
 
 
+def _run_reminder_job():
+    try:
+        logger.info("⏰ Reminder Agent — scanning client obligations...")
+        from agents.drafter_agent import scan_and_remind
+        drafts = scan_and_remind(days_window=14)
+        logger.info(f"✅ Reminder scan complete — {len(drafts)} reminder draft(s) generated")
+    except Exception as e:
+        logger.error(f"❌ Reminder job failed: {e}")
+
+
 def _run_deadline_job():
         try:
             logger.info("⏰ Deadline Watch Agent running...")
@@ -154,8 +181,15 @@ def start_scheduler():
         name="Deadline Watch — every 6 hours",
         replace_existing=True,
     )
+    scheduler.add_job(
+        _run_reminder_job,
+        trigger=IntervalTrigger(hours=24),
+        id="reminder_job",
+        name="Obligation Reminders — every 24 hours",
+        replace_existing=True,
+    )
     scheduler.start()
-    logger.info("⏰ Scheduler started — runs every 6 hours")
+    logger.info("⏰ Scheduler started — monitoring every 6h, reminders every 24h")
 
 @app.on_event("shutdown")
 def stop_scheduler():
@@ -245,11 +279,11 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             logger.info("🔄 Hash DB reset")
             _update_pipeline_result(status_message="Pipeline state reset. Monitoring stage started")
 
-        # Stage 1
+        # Stage 1 — scrape + save PDFs + ingest into ChromaDB
         new_docs = run_monitoring_agent(
             simulate_mode=simulate_mode,
             regulators=regulators,
-            auto_ingest=False
+            auto_ingest=True
         )
         _update_pipeline_result(
             new_documents=new_docs,
@@ -282,10 +316,29 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
         )
 
         # Stage 3
-        actionable = [r for r in match_results if r["match_count"] > 0]
+        # Deduplicate match_results: same circular can appear twice when scraped from
+        # two different RBI endpoints (press releases + circulars index). Keep the
+        # entry with the higher match_count (usually identical, but safer).
+        _seen_circulars: dict[str, dict] = {}
+        for r in match_results:
+            key = f"{r['regulator']}::{r['circular_title'].lower().strip()}"
+            if key not in _seen_circulars or r["match_count"] > _seen_circulars[key]["match_count"]:
+                _seen_circulars[key] = r
+        deduped_results = list(_seen_circulars.values())
+
+        # Sort: HIGH priority circulars first so rate-limit cap doesn't waste slots on LOW docs
+        actionable = sorted(
+            [r for r in deduped_results if r["match_count"] > 0],
+            key=lambda r: {"HIGH": 0, "MEDIUM": 1, "LOW": 2}.get(r.get("priority", "LOW"), 2),
+        )
+        # Cap total drafts per run and per client to ensure diversity.
+        # Without a per-client cap, one client with many matching circulars
+        # (e.g. Sunrise Finserv × 20 RBI penalty notices) consumes all slots.
+        MAX_DRAFTS_PER_RUN    = 20
+        MAX_DRAFTS_PER_CLIENT = 1   # 1 draft per client keeps demo diverse across all 10 clients
         _update_pipeline_result(
             stage="drafting",
-            status_message=f"Draft generation started for {len(actionable)} actionable circular(s)",
+            status_message=f"Draft generation started for {len(actionable)} actionable circular(s) (cap: {MAX_DRAFTS_PER_RUN}, {MAX_DRAFTS_PER_CLIENT}/client)",
         )
         drafts = []
         if actionable:
@@ -294,23 +347,37 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
                 client["id"]: client
                 for client in json.loads(clients_path.read_text(encoding="utf-8"))
             }
-            total_targets = sum(len(item.get("affected_clients", [])) for item in actionable)
-            processed_targets = 0
+            total_targets = min(
+                sum(len(item.get("affected_clients", [])) for item in actionable),
+                MAX_DRAFTS_PER_RUN,
+            )
+            processed_targets  = 0
+            drafts_per_client: dict[str, int] = {}   # client_id → draft count this run
 
             for item in actionable:
+                if processed_targets >= MAX_DRAFTS_PER_RUN:
+                    logger.info(f"Draft cap ({MAX_DRAFTS_PER_RUN}) reached — deferring remaining circulars to next run")
+                    break
                 circular = {
                     "title": item["circular_title"],
                     "regulator": item["regulator"],
                     "priority": item["priority"],
                     "summary": item.get("summary", ""),
+                    "url": item.get("url", ""),
                 }
                 for affected in item.get("affected_clients", []):
-                    client = clients_map.get(affected["client_id"])
+                    if processed_targets >= MAX_DRAFTS_PER_RUN:
+                        break
+                    client_id = affected["client_id"]
+                    if drafts_per_client.get(client_id, 0) >= MAX_DRAFTS_PER_CLIENT:
+                        continue   # this client already has enough drafts this run
+                    client = clients_map.get(client_id)
                     if not client:
                         continue
                     draft = draft_single(circular, client)
                     drafts.append(draft)
                     processed_targets += 1
+                    drafts_per_client[client_id] = drafts_per_client.get(client_id, 0) + 1
                     _update_pipeline_result(
                         drafts=drafts,
                         total_drafts=len(drafts),
@@ -319,6 +386,10 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
                             f"Drafting in progress: {processed_targets}/{total_targets} draft(s) generated"
                         ),
                     )
+                    # Pace LLM calls to stay under Groq free-tier rate limit (~30 req/min).
+                    # 2s gap = max 30 drafts/min; reduces 429 retries from hammering the API.
+                    if processed_targets < total_targets:
+                        time.sleep(2)
 
         _latest_result = {
             "new_documents":   new_docs,
@@ -444,13 +515,76 @@ def delete_draft(draft_id: str):
 # CLIENTS
 # ─────────────────────────────────────────────
 
+_CLIENTS_PATH = Path(__file__).parent / "clients.json"
+
+def _load_clients() -> list:
+    if not _CLIENTS_PATH.exists():
+        return []
+    return json.loads(_CLIENTS_PATH.read_text(encoding="utf-8"))
+
+def _save_clients(clients: list) -> None:
+    _CLIENTS_PATH.write_text(json.dumps(clients, indent=2, ensure_ascii=False), encoding="utf-8")
+
+def _next_client_id(clients: list) -> str:
+    nums = []
+    for c in clients:
+        cid = c.get("id", "")
+        if cid.startswith("CLT-"):
+            try:
+                nums.append(int(cid.split("-")[1]))
+            except (IndexError, ValueError):
+                pass
+    return f"CLT-{(max(nums, default=0) + 1):03d}"
+
+
 @app.get("/clients")
 def list_clients():
-    """Return all clients from clients.json."""
-    clients_path = Path(__file__).parent / "clients.json"
-    if not clients_path.exists():
-        raise HTTPException(status_code=404, detail="clients.json not found")
-    return {"clients": json.loads(clients_path.read_text(encoding="utf-8"))}
+    return {"clients": _load_clients()}
+
+
+@app.get("/clients/{client_id}")
+def get_client(client_id: str):
+    client = next((c for c in _load_clients() if c["id"] == client_id), None)
+    if not client:
+        raise HTTPException(status_code=404, detail=f"Client {client_id} not found")
+    return client
+
+
+@app.post("/clients", status_code=201)
+def create_client(body: dict):
+    clients = _load_clients()
+    client = dict(body)
+    client["id"] = _next_client_id(clients)
+    clients.append(client)
+    _save_clients(clients)
+    name = client.get("profile", {}).get("name", client.get("profile", {}).get("name", ""))
+    log_event(agent="CA", action="client_created", details={"client_id": client["id"], "name": name})
+    return client
+
+
+@app.put("/clients/{client_id}")
+def update_client(client_id: str, body: dict):
+    clients = _load_clients()
+    idx = next((i for i, c in enumerate(clients) if c["id"] == client_id), None)
+    if idx is None:
+        raise HTTPException(status_code=404, detail=f"Client {client_id} not found")
+    updated = dict(body)
+    updated["id"] = client_id
+    clients[idx] = updated
+    _save_clients(clients)
+    log_event(agent="CA", action="client_updated", details={"client_id": client_id})
+    return updated
+
+
+@app.delete("/clients/{client_id}", status_code=204)
+def delete_client(client_id: str):
+    clients = _load_clients()
+    new_clients = [c for c in clients if c["id"] != client_id]
+    if len(new_clients) == len(clients):
+        raise HTTPException(status_code=404, detail=f"Client {client_id} not found")
+    _save_clients(new_clients)
+    log_event(agent="CA", action="client_deleted", details={"client_id": client_id})
+    return None
 
 
 
@@ -565,6 +699,29 @@ def send_deadline_alert(alert_id: str, ca_name: str = "CA"):
         "draft_id": draft_id,
         "email_to": alert["client_email"],
         "sent_at": draft["email_sent_at"]
+    }
+
+
+# ─────────────────────────────────────────────
+# PROACTIVE REMINDER SCAN
+# ─────────────────────────────────────────────
+
+@app.post("/reminders/scan")
+def trigger_reminder_scan(days_window: int = 14):
+    """
+    Scan all client obligations and generate reminder drafts for:
+      - Obligations overdue
+      - Obligations due within `days_window` days (default 14)
+      - Obligations with status "critical" or "action_needed"
+
+    Drafts appear in the same review queue as circular-driven drafts.
+    """
+    from agents.drafter_agent import scan_and_remind
+    drafts = scan_and_remind(days_window=days_window)
+    return {
+        "generated": len(drafts),
+        "days_window": days_window,
+        "draft_ids": [d["draft_id"] for d in drafts],
     }
 
 
