@@ -36,20 +36,38 @@ const NAV = [
 ];
 
 function getClientName(client) {
-  return client?.name || client?.business_profile?.name || "Unknown";
+  return client?.profile?.name || client?.name || client?.business_profile?.name || "Unknown";
 }
 
-function getClientRiskScore(client) {
-  if (typeof client?.risk_profile?.compliance_score === "number") {
-    return client.risk_profile.compliance_score;
-  }
-  const level = (
-    client?.compliance_profile?.risk_level ||
-    client?.risk_profile?.risk_level ||
+function getClientPriority(client) {
+  return (
+    client?.profile?.priority ||
+    client?.business_profile?.priority ||
     client?.priority ||
     ""
   ).toUpperCase();
-  if (level === "HIGH") return 60;
+}
+
+function normalizeRiskScore(value, fallback = 85) {
+  if (typeof value !== "number" || Number.isNaN(value)) return fallback;
+  return Math.min(100, Math.max(1, value));
+}
+
+function getClientRiskScore(client) {
+  const directScore =
+    client?.risk?.compliance_score ??
+    client?.risk_profile?.compliance_score ??
+    client?.compliance_profile?.compliance_score;
+  if (typeof directScore === "number") return normalizeRiskScore(directScore);
+
+  const level = (
+    client?.risk?.risk_level ||
+    client?.compliance_profile?.risk_level ||
+    client?.risk_profile?.risk_level ||
+    getClientPriority(client) ||
+    ""
+  ).toUpperCase();
+  if (level === "HIGH" || level === "CRITICAL") return 60;
   if (level === "MEDIUM") return 78;
   if (level === "LOW") return 90;
   return 85;
@@ -177,18 +195,24 @@ export default function App() {
   const allDeadlines = useMemo(() => data.deadlines?.alerts || [], [data.deadlines]);
   const allCirculars = useMemo(() => data.pipeline?.match_results || [], [data.pipeline]);
   const calendarData = useMemo(() => data.calendar || null, [data.calendar]);
-  const clients = useMemo(() => data.clients?.clients || [], [data.clients]);
+  const clients = useMemo(() => {
+    if (Array.isArray(data.clients)) return data.clients;
+    if (Array.isArray(data.clients?.clients)) return data.clients.clients;
+    if (Array.isArray(data.clients?.data)) return data.clients.data;
+    return [];
+  }, [data.clients]);
   const auditEvents = useMemo(() => data.audit?.events || [], [data.audit]);
   const scheduler = useMemo(() => data.scheduler || null, [data.scheduler]);
 
   // Use metrics from API if available, otherwise compute from data
   const displayMetrics = useMemo(
     () => ({
-      circulars: metrics.total_circulars || data.pipeline?.total_circulars || allCirculars.length,
-      affectedClients: metrics.total_matches || data.pipeline?.total_matches || 0,
-      pendingDrafts: metrics.pending_drafts || allDrafts.filter((draft) => isDraftPendingReview(draft)).length,
-      deadlineAlerts: metrics.deadline_alerts || data.deadlines?.total || allDeadlines.length,
-      totalExposure: metrics.total_exposure || data.deadlines?.summary?.total_exposure || 0,
+      circulars: metrics.total_circulars ?? data.pipeline?.total_circulars ?? allCirculars.length,
+      affectedClients: metrics.total_matches ?? data.pipeline?.total_matches ?? 0,
+      pendingDrafts:
+        metrics.pending_drafts ?? allDrafts.filter((draft) => isDraftPendingReview(draft)).length,
+      deadlineAlerts: metrics.deadline_alerts ?? data.deadlines?.total ?? allDeadlines.length,
+      totalExposure: metrics.total_exposure ?? data.deadlines?.summary?.total_exposure ?? 0,
       timestamp: metrics.timestamp,
       last_run: metrics.last_run,
       run_mode: metrics.run_mode,
@@ -220,8 +244,22 @@ export default function App() {
   );
 
   const topRiskClients = useMemo(
-    () => [...clients].sort((a, b) => getClientRiskScore(a) - getClientRiskScore(b)).slice(0, 4),
-    [clients],
+    () => {
+      if (clients.length) {
+        return [...clients].sort((a, b) => getClientRiskScore(a) - getClientRiskScore(b)).slice(0, 4);
+      }
+
+      const fallbackRisk = data.deadlines?.summary?.highest_risk_clients;
+      if (!Array.isArray(fallbackRisk)) return [];
+
+      return fallbackRisk.slice(0, 4).map((entry, index) => ({
+        id: `fallback-risk-${index}`,
+        name: entry?.client || "Unknown",
+        risk_profile: { compliance_score: 65 + index * 3 },
+        fallback_obligation: entry?.obligation || "",
+      }));
+    },
+    [clients, data.deadlines],
   );
 
   async function refresh(action, label, successLabel) {
@@ -530,46 +568,25 @@ export default function App() {
               onOpenDocumentIntake={openDocumentIntakeWorkspace}
             />
           ) : (
-            <div className="flex h-full min-h-0 flex-col gap-3">
-              <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                <div className="space-y-1">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.26em] text-muted">
-                    Compliance Operations
-                  </p>
-                  <h1 className="font-headline text-[2.35rem] font-extrabold leading-tight tracking-tight text-slate-950">
-                    Compliance Dashboard
+            <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden pb-1 pr-1">
+              <div className="flex items-end justify-between">
+                <div>
+                  <h1 className="font-headline text-2xl font-bold text-slate-950">
+                    Dashboard
                   </h1>
-                  <p className="max-w-3xl text-sm text-slate-600">
-                    AI monitoring, client matching, advisory drafts, and deadline tracking for CA firms.
+                  <p className="mt-1 text-sm text-slate-600">
+                    Monitor compliance, review drafts, and track deadlines
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-3 xl:justify-end xl:pt-4">
-                    <button
-                      onClick={() =>
-                        handleRunPipeline({ simulateMode: true, reset: true, label: "Demo monitoring run" })
-                      }
-                      className="rounded-xl bg-shell px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-shellSoft"
-                    >
-                      Run Demo Monitoring
-                    </button>
-                    <button
-                      onClick={() =>
-                        handleRunPipeline({
-                          simulateMode: false,
-                          reset: false,
-                          label: "Real monitoring",
-                        })
-                      }
-                      className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                    >
-                      Run Real Monitoring
-                    </button>
-                    <button
-                      onClick={() => refresh(triggerDeadlineScan, "Deadline scan")}
-                      className="rounded-xl border border-line px-5 py-2.5 text-sm font-semibold text-muted transition hover:border-slate-300 hover:text-ink"
-                    >
-                      Trigger Scan
-                    </button>
+                  <button
+                    onClick={() =>
+                      handleRunPipeline({ simulateMode: true, reset: true, label: "Demo monitoring run" })
+                    }
+                    className="rounded-xl bg-shell px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-shellSoft"
+                  >
+                    Run Compliance Scan
+                  </button>
                 </div>
               </div>
 
@@ -579,7 +596,7 @@ export default function App() {
                 </div>
               ) : null}
 
-              <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                 {[
                   {
                     title: "New Circulars",
@@ -614,9 +631,9 @@ export default function App() {
                 ].map((metric) => (
                   <div
                     key={metric.title}
-                    className={`h-20 rounded-2xl border-l-4 ${metric.tone} bg-white p-3 shadow-panel`}
+                    className={`rounded-2xl border-l-4 ${metric.tone} bg-white p-4 shadow-panel`}
                   >
-                    <div className="mb-1.5 flex items-start justify-between">
+                    <div className="mb-2 flex items-start justify-between">
                       <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
                         {metric.title}
                       </span>
@@ -631,9 +648,9 @@ export default function App() {
                 ))}
               </div>
 
-              <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 xl:grid-cols-3">
-                <div className="flex min-h-0 flex-col gap-3">
-                  <div className="h-48 rounded-2xl bg-white shadow-panel overflow-hidden">
+              <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 xl:grid-cols-12">
+                <div className="flex min-h-0 flex-col gap-3 xl:col-span-4">
+                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-panel">
                     <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
                       <span className="material-symbols-outlined text-base text-danger">radar</span>
                       <h3 className="text-sm font-bold text-slate-950">Critical Now</h3>
@@ -644,7 +661,7 @@ export default function App() {
                         View all
                       </button>
                     </div>
-                    <div className="h-[calc(100%-45px)] space-y-1.5 overflow-y-auto p-3">
+                    <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-3">
                       {urgentDeadlines.length ? (
                         urgentDeadlines.map((alert) => (
                           <button
@@ -669,9 +686,14 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="h-52 rounded-2xl bg-white p-4 shadow-panel overflow-hidden">
-                    <h3 className="mb-3 text-sm font-bold text-slate-950">Top Risk Clients</h3>
-                    <div className="h-[calc(100%-30px)] space-y-2.5 overflow-y-auto pr-1">
+                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-panel">
+                    <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                      <h3 className="text-sm font-bold text-slate-950">Top Risk Clients</h3>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600">
+                        {topRiskClients.length}
+                      </span>
+                    </div>
+                    <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto p-4">
                       {topRiskClients.length ? (
                         topRiskClients.map((client) => {
                           const score = getClientRiskScore(client);
@@ -691,6 +713,11 @@ export default function App() {
                                 <p className="truncate text-xs font-semibold text-slate-900">
                                   {name}
                                 </p>
+                                {client.fallback_obligation ? (
+                                  <p className="mt-0.5 truncate text-[11px] text-muted">
+                                    {client.fallback_obligation}
+                                  </p>
+                                ) : null}
                                 <div className="mt-1 flex items-center gap-2">
                                   <div className="flex-1 rounded-full bg-slate-200 h-1">
                                     <div
@@ -717,8 +744,8 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="flex min-h-0 flex-col gap-3">
-                  <div className="h-48 rounded-2xl bg-white shadow-panel overflow-hidden">
+                <div className="flex min-h-0 flex-col gap-3 xl:col-span-4">
+                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-panel">
                     <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
                       <span className="material-symbols-outlined text-base text-warning">
                         assignment
@@ -731,7 +758,7 @@ export default function App() {
                         View all
                       </button>
                     </div>
-                    <div className="h-[calc(100%-45px)] space-y-1.5 overflow-y-auto p-3">
+                    <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-3">
                       {urgentDraftQueue.length ? (
                         urgentDraftQueue.map((draft) => (
                           <button
@@ -766,7 +793,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="flex h-52 flex-col rounded-2xl bg-white p-4 shadow-panel overflow-hidden">
+                  <div className="flex min-h-0 flex-1 flex-col rounded-2xl bg-white p-4 shadow-panel overflow-hidden">
                     <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-teal-50">
                       <span className="material-symbols-outlined text-accent">psychology</span>
                     </div>
@@ -786,7 +813,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="min-h-0 overflow-hidden rounded-2xl bg-white shadow-panel">
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-panel xl:col-span-4">
                   <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
                     <span className="material-symbols-outlined text-base text-accent">rss_feed</span>
                     <h3 className="text-sm font-bold text-slate-950">What Changed Today</h3>
@@ -797,7 +824,7 @@ export default function App() {
                       View all
                     </button>
                   </div>
-                  <div className="space-y-2 p-3 xl:h-[calc(100%-45px)] xl:overflow-y-auto">
+                  <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
                     {urgentCirculars.length ? (
                       urgentCirculars.map((item) => (
                         <button
