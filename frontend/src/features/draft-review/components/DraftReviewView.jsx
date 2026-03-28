@@ -215,22 +215,10 @@ export default function DraftReviewView({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-1">
-        <p className="text-[11px] font-bold uppercase tracking-[0.26em] text-muted">
-          Draft Governance
-        </p>
-        <h1 className="font-headline text-[2rem] font-extrabold leading-tight tracking-tight text-slate-950">
-          Draft Review
-        </h1>
-        <p className="text-sm text-slate-600">
-          Review the queue and finalize the advisory draft on the right.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-12 xl:h-[calc(100vh-230px)]">
-        <div className="xl:col-span-4">
-          <div className="overflow-hidden rounded-2xl bg-white shadow-panel xl:h-full">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-5 xl:grid-cols-12">
+        <div className="flex min-h-0 flex-col xl:col-span-4">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-panel">
             <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
               <span className="text-xs font-bold uppercase tracking-widest text-muted">Queue</span>
               <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600">
@@ -238,7 +226,7 @@ export default function DraftReviewView({
               </span>
             </div>
 
-            <div className="divide-y divide-slate-100 overflow-y-auto xl:h-[calc(100%-53px)]">
+            <div className="min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto">
               {queue.length ? (
                 queue.map((draft) => {
                   const active = selected?.draft_id === draft.draft_id;
@@ -294,9 +282,9 @@ export default function DraftReviewView({
           </div>
         </div>
 
-        <div className="xl:col-span-8">
+        <div className="flex min-h-0 flex-col xl:col-span-8">
           {selected ? (
-            <div className="overflow-hidden rounded-2xl bg-white shadow-panel xl:flex xl:h-full xl:flex-col">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-panel">
               <div className="border-b border-slate-200 bg-slate-50 p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
