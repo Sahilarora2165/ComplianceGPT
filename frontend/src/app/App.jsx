@@ -12,6 +12,7 @@ import {
   triggerDeadlineScan,
   triggerSchedulerMonitoring,
   uploadDocument,
+  getMetrics,
 } from "@/services/complianceApi";
 import ComplianceCalendarView from "@/ComplianceCalendarView";
 import AuditTrailView from "@/features/audit-trail";
@@ -111,6 +112,18 @@ export default function App() {
     audit: null,
     scheduler: null,
   });
+  const [metrics, setMetrics] = useState({
+    timestamp: null,
+    total_circulars: 0,
+    total_matches: 0,
+    total_drafts: 0,
+    pending_drafts: 0,
+    deadline_alerts: 0,
+    total_exposure: 0,
+    last_run: null,
+    run_mode: null,
+    message: null,
+  });
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState("");
   const [openIntakeSignal, setOpenIntakeSignal] = useState(0);
@@ -120,6 +133,17 @@ export default function App() {
 
     async function load() {
       setLoading(true);
+      // Load metrics immediately for dashboard display
+      try {
+        const metricsData = await getMetrics();
+        if (!ignore) {
+          setMetrics(metricsData);
+        }
+      } catch (error) {
+        console.error("Failed to load metrics:", error);
+      }
+      
+      // Load full dashboard data
       const next = await getDashboardData();
       if (!ignore) {
         setData(next);
@@ -136,6 +160,15 @@ export default function App() {
   async function reloadDashboard() {
     const next = await getDashboardData();
     setData(next);
+    
+    // Also refresh metrics
+    try {
+      const metricsData = await getMetrics();
+      setMetrics(metricsData);
+    } catch (error) {
+      console.error("Failed to refresh metrics:", error);
+    }
+    
     setLoading(false);
     return next;
   }
@@ -148,15 +181,20 @@ export default function App() {
   const auditEvents = useMemo(() => data.audit?.events || [], [data.audit]);
   const scheduler = useMemo(() => data.scheduler || null, [data.scheduler]);
 
-  const metrics = useMemo(
+  // Use metrics from API if available, otherwise compute from data
+  const displayMetrics = useMemo(
     () => ({
-      circulars: data.pipeline?.total_circulars || allCirculars.length,
-      affectedClients: data.pipeline?.total_matches || 0,
-      pendingDrafts: allDrafts.filter((draft) => isDraftPendingReview(draft)).length,
-      deadlineAlerts: data.deadlines?.total || allDeadlines.length,
-      totalExposure: data.deadlines?.summary?.total_exposure || 0,
+      circulars: metrics.total_circulars || data.pipeline?.total_circulars || allCirculars.length,
+      affectedClients: metrics.total_matches || data.pipeline?.total_matches || 0,
+      pendingDrafts: metrics.pending_drafts || allDrafts.filter((draft) => isDraftPendingReview(draft)).length,
+      deadlineAlerts: metrics.deadline_alerts || data.deadlines?.total || allDeadlines.length,
+      totalExposure: metrics.total_exposure || data.deadlines?.summary?.total_exposure || 0,
+      timestamp: metrics.timestamp,
+      last_run: metrics.last_run,
+      run_mode: metrics.run_mode,
+      message: metrics.message,
     }),
-    [data, allCirculars, allDrafts, allDeadlines],
+    [metrics, data, allCirculars, allDrafts, allDeadlines],
   );
 
   const urgentCirculars = useMemo(
@@ -432,7 +470,7 @@ export default function App() {
                   <span className="material-symbols-outlined cursor-pointer text-muted transition hover:text-ink">
                     notifications
                   </span>
-                  {metrics.deadlineAlerts > 0 ? (
+                  {displayMetrics.deadlineAlerts > 0 ? (
                     <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-danger" />
                   ) : null}
                 </div>
@@ -587,31 +625,31 @@ export default function App() {
                 {[
                   {
                     title: "New Circulars",
-                    value: metrics.circulars,
+                    value: displayMetrics.circulars,
                     tone: "border-accent",
                     icon: "policy",
                   },
                   {
                     title: "Clients Affected",
-                    value: metrics.affectedClients,
+                    value: displayMetrics.affectedClients,
                     tone: "border-accent",
                     icon: "group",
                   },
                   {
                     title: "Pending Reviews",
-                    value: metrics.pendingDrafts,
+                    value: displayMetrics.pendingDrafts,
                     tone: "border-warning",
                     icon: "pending_actions",
                   },
                   {
                     title: "Deadline Alerts",
-                    value: metrics.deadlineAlerts,
+                    value: displayMetrics.deadlineAlerts,
                     tone: "border-danger",
                     icon: "alarm",
                   },
                   {
                     title: "Exposure at Risk",
-                    value: currency(metrics.totalExposure),
+                    value: currency(displayMetrics.totalExposure),
                     tone: "border-warning",
                     icon: "monetization_on",
                   },

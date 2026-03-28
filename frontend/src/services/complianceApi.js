@@ -52,6 +52,10 @@ export function getDashboardData() {
   }));
 }
 
+export function getMetrics() {
+  return request("/metrics");
+}
+
 export function runPipeline({ simulateMode = true, reset = false } = {}) {
   return request("/pipeline/run", {
     method: "POST",
