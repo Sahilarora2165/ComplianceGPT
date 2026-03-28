@@ -1494,31 +1494,63 @@ def query(req: QueryRequest):
 @app.post("/documents/upload")
 async def upload_document(
     file: UploadFile = File(...),
-    regulator: str = Form(...),
+    regulator: Optional[str] = Form(None),  # Made optional - auto-detect if not provided
     title: str = Form(...),
     uploaded_by: str = Form("CA"),
 ):
     """
     Upload a PDF/TXT document, ingest it into ChromaDB, and return extraction preview.
     This does NOT trigger matching/drafting automatically.
+    
+    Regulator is optional:
+    - If provided: uses the specified regulator (user's explicit choice)
+    - If not provided: auto-detects from filename and content using improved scoring
     """
     if not file.filename:
         raise HTTPException(status_code=400, detail="File name is required")
 
-    regulator = regulator.strip()
-    if regulator not in SUPPORTED_REGULATORS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Unsupported regulator. Allowed: {', '.join(sorted(SUPPORTED_REGULATORS))}",
-        )
+    suffix = Path(file.filename).suffix.lower()
+    if suffix not in SUPPORTED_UPLOAD_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Only PDF and TXT files are accepted")
 
     title = title.strip()
     if not title:
         raise HTTPException(status_code=400, detail="Title is required")
 
-    suffix = Path(file.filename).suffix.lower()
-    if suffix not in SUPPORTED_UPLOAD_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="Only PDF and TXT files are accepted")
+    # Auto-detect regulator if not provided
+    if not regulator:
+        from core.ingest import detect_regulator, load_text_pages, load_pdf_pages
+        import tempfile
+        import os
+        
+        file_bytes = await file.read()
+        
+        # Write to temp file for detection
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+            tmp.write(file_bytes)
+            tmp_path = tmp.name
+        
+        try:
+            # Read first page for detection
+            if suffix == ".txt":
+                pages, _ = load_text_pages(tmp_path)
+            else:
+                pages, _ = load_pdf_pages(tmp_path)
+            sample_text = " ".join(p["text"] for p in pages[:1]) if pages else ""
+            regulator = detect_regulator(tmp_path, sample_text)
+            print(f"  🏷️  Auto-detected regulator: {regulator}")
+        except Exception as e:
+            print(f"  ⚠️  Auto-detection failed: {e}, using 'Unknown'")
+            regulator = "Unknown"
+        finally:
+            os.unlink(tmp_path)
+    else:
+        regulator = regulator.strip()
+        if regulator not in SUPPORTED_REGULATORS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported regulator. Allowed: {', '.join(sorted(SUPPORTED_REGULATORS))}",
+            )
 
     safe_original = _slugify_filename(Path(file.filename).stem)
     document_id = f"DOC_{uuid4().hex[:12].upper()}"
@@ -1526,7 +1558,9 @@ async def upload_document(
     destination = PDF_DIR / stored_filename
     PDF_DIR.mkdir(parents=True, exist_ok=True)
 
-    file_bytes = await file.read()
+    # Re-read file if we consumed it for detection
+    if 'file_bytes' not in locals():
+        file_bytes = await file.read()
     destination.write_bytes(file_bytes)
 
     ingest_result = ingest_pdf(

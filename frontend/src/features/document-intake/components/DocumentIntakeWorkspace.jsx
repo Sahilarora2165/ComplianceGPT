@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { formatDate } from "@/shared/ui";
 
-const REGULATOR_OPTIONS = ["RBI", "GST", "IncomeTax", "MCA", "SEBI"];
+const REGULATOR_OPTIONS = ["Auto-Detect (Recommended)", "RBI", "GST", "IncomeTax", "MCA", "SEBI"];
 
 function UploadFact({ label, value }) {
   return (
@@ -80,10 +80,8 @@ export default function DocumentIntakeWorkspace({
       return;
     }
 
-    if (!regulator) {
-      setUploadError("Please select a regulator.");
-      return;
-    }
+    // Regulator is now optional - auto-detect if not selected
+    const regulatorToUpload = regulator === "Auto-Detect (Recommended)" ? "" : regulator;
 
     setUploading(true);
     setKbOnlyConfirmed(false);
@@ -91,7 +89,7 @@ export default function DocumentIntakeWorkspace({
     try {
       const response = await onUploadDocument({
         file: selectedFile,
-        regulator,
+        regulator: regulatorToUpload,  // Empty string triggers auto-detect on backend
         title: title.trim(),
         uploadedBy: uploadedBy.trim() || "CA",
       });
@@ -141,7 +139,7 @@ export default function DocumentIntakeWorkspace({
             Step 1 · Upload Document
           </p>
           <p className="text-sm text-slate-600">
-            Allowed formats: PDF and TXT only. Regulator tagging is required for filtered Analyst Query retrieval.
+            Allowed formats: PDF and TXT only. Regulator auto-detection is enabled by default — manual selection is optional.
           </p>
         </div>
 

@@ -47,15 +47,30 @@ def _get_embed_model():
 # ── Regulator Detection ───────────────────────────────────────────────────────
 
 def detect_regulator(pdf_path: str, sample_text: str) -> str:
+    """
+    Detect regulator from filename and content.
+    Filename matches take priority (explicit naming is more reliable).
+    For text matching, we score all regulators and pick the best match
+    to avoid false positives from incidental keyword mentions.
+    """
     filename_lower = Path(pdf_path).stem.lower()
+    
+    # Priority 1: Filename match (explicit naming is most reliable)
     for prefix, tag in REGULATOR_FILENAME_MAP.items():
         if prefix in filename_lower:
             return tag
-    text_lower = sample_text[:2000].lower()
+    
+    # Priority 2: Score-based text matching (not first-match-wins)
+    text_lower = sample_text.lower()
+    scores = {}
     for regulator, keywords in REGULATOR_KEYWORDS.items():
-        for kw in keywords:
-            if kw in text_lower:
-                return regulator
+        score = sum(1 for kw in keywords if kw in text_lower)
+        if score > 0:
+            scores[regulator] = score
+    
+    if scores:
+        return max(scores, key=scores.get)
+    
     return "Unknown"
 
 
