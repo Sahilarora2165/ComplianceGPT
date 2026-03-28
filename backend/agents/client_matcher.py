@@ -33,9 +33,25 @@ CLIENTS_PATH = _BACKEND_DIR / "clients.json"
 
 def _load_clients() -> list[dict]:
     if not CLIENTS_PATH.exists():
-        raise FileNotFoundError(f"clients.json not found at: {CLIENTS_PATH}")
-    with open(CLIENTS_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
+        print(f"  Warning: clients.json not found at {CLIENTS_PATH} — returning empty client list")
+        log_event(agent="ClientMatcher", action="load_failed", details={"reason": "clients.json not found"})
+        return []
+    try:
+        with open(CLIENTS_PATH, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+    except (json.JSONDecodeError, Exception) as e:
+        print(f"  Warning: clients.json is corrupted — {e}")
+        log_event(agent="ClientMatcher", action="load_failed", details={"reason": str(e)})
+        return []
+
+    # Validate required fields — skip malformed records
+    valid = []
+    for client in raw:
+        if not isinstance(client, dict) or "id" not in client:
+            print(f"  Warning: skipping malformed client record (missing 'id'): {str(client)[:80]}")
+            continue
+        valid.append(client)
+    return valid
 
 
 # ─────────────────────────────────────────────
@@ -655,17 +671,22 @@ def match_clients(documents: list[dict]) -> list[dict]:
         affected: list[dict] = []
 
         for client in clients:
-            matched, reason = _match_client_to_circular(client, regulator, title=title, summary=summary)
-            if matched:
-                profile = client.get("profile", {})
-                affected.append({
-                    "client_id":    client["id"],
-                    "name":         profile.get("name", client.get("name", "Unknown")),
-                    "business_type": profile.get("industry", "Unknown"),
-                    "contact_email": profile.get("email", ""),
-                    "reason":       reason,
-                    "urgent":       urgent
-                })
+            try:
+                matched, reason = _match_client_to_circular(client, regulator, title=title, summary=summary)
+                if matched:
+                    profile = client.get("profile", {})
+                    affected.append({
+                        "client_id":    client["id"],
+                        "name":         profile.get("name", client.get("name", "Unknown")),
+                        "business_type": profile.get("industry", "Unknown"),
+                        "contact_email": profile.get("email", ""),
+                        "reason":       reason,
+                        "urgent":       urgent
+                    })
+            except Exception as e:
+                cid = client.get("id", "unknown")
+                print(f"  Warning: skipping client {cid} due to error: {e}")
+                continue
 
         result = {
             "circular_title":   title,
