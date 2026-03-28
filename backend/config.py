@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+SMTP_USER = os.environ.get("SMTP_USER", "")
+SMTP_PASS = os.environ.get("SMTP_PASS", "")
+
 # ── Paths ──────────────────────────────────────────────────────────────────────
 BASE_DIR        = Path(__file__).resolve().parent
 PDF_DIR         = BASE_DIR / "data" / "pdfs"

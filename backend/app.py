@@ -3,8 +3,9 @@ app.py — ComplianceGPT FastAPI Backend
 ────────────────────────────────────────
 Run: uvicorn app:app --reload --port 8000
 """
-
+import os
 import json
+import hashlib
 import logging
 import re
 import shutil
@@ -28,7 +29,7 @@ from core.retriever import query_rag, invalidate_collection_cache
 from core.audit     import read_audit_log, log_event
 from agents.monitoring_agent import run_monitoring_agent, HASH_DB_PATH, SIMULATED_DOCUMENTS
 from agents.client_matcher   import match_clients
-from agents.drafter_agent    import draft_advisories, draft_single, approve_draft, DRAFTS_DIR
+from agents.drafter_agent    import draft_single, DRAFTS_DIR
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -265,6 +266,23 @@ class QueryRequest(BaseModel):
 class ApproveRequest(BaseModel):
     approved: bool
     ca_name:  str = "CA"
+
+
+class SaveDraftRequest(BaseModel):
+    subject: str
+    body: str
+    ca_name: str = "CA"
+
+
+class SendDraftRequest(BaseModel):
+    subject: str
+    body: str
+    ca_name: str = "CA"
+    idempotency_key: Optional[str] = None
+
+
+class ReopenDraftRequest(BaseModel):
+    ca_name: str = "CA"
 
 class PipelineRequest(BaseModel):
     simulate_mode: bool = True
@@ -658,21 +676,217 @@ def get_simulated_circulars():
 # DRAFTS
 # ─────────────────────────────────────────────
 
+_REVIEW_STATUSES = {"pending", "approved", "rejected"}
+_DELIVERY_STATUSES = {"not_sent", "sent", "failed"}
+
+
+def _canonical_client_key(client_id: str) -> str:
+    value = str(client_id or "").strip().upper()
+    if not value:
+        return ""
+    if value.startswith("CLT-"):
+        suffix = value.split("-", 1)[1]
+        if suffix.isdigit():
+            return f"C{int(suffix)}"
+        return value
+    if value.startswith("C") and value[1:].isdigit():
+        return f"C{int(value[1:])}"
+    return value
+
+
+def _extract_client_contact(client: dict) -> tuple[str, str]:
+    profile = client.get("profile", {}) if isinstance(client, dict) else {}
+    contact = client.get("contact", {}) if isinstance(client, dict) else {}
+    name = (
+        str(profile.get("name") or client.get("name") or "").strip()
+        if isinstance(client, dict)
+        else ""
+    )
+    email = (
+        str(profile.get("email") or contact.get("email") or client.get("email") or "").strip()
+        if isinstance(client, dict)
+        else ""
+    )
+    return name, email
+
+
+def _build_clients_lookup() -> tuple[dict, dict]:
+    by_id: dict[str, dict] = {}
+    by_name: dict[str, dict] = {}
+    for client in _load_clients():
+        raw_id = str(client.get("id", "")).strip()
+        keys = {raw_id.upper(), _canonical_client_key(raw_id)}
+        for key in keys:
+            if key:
+                by_id[key] = client
+        name, _ = _extract_client_contact(client)
+        if name:
+            by_name[name.lower()] = client
+    return by_id, by_name
+
+
+def _hydrate_draft_client_contact(
+    draft: dict,
+    clients_by_id: Optional[dict] = None,
+    clients_by_name: Optional[dict] = None,
+) -> dict:
+    hydrated = dict(draft or {})
+    if clients_by_id is None or clients_by_name is None:
+        clients_by_id, clients_by_name = _build_clients_lookup()
+
+    raw_client_id = str(hydrated.get("client_id", "")).strip()
+    lookup_id = _canonical_client_key(raw_client_id)
+    client = (
+        clients_by_id.get(raw_client_id.upper())
+        or clients_by_id.get(lookup_id)
+    )
+    if not client:
+        draft_name = str(hydrated.get("client_name", "")).strip().lower()
+        if draft_name:
+            client = clients_by_name.get(draft_name)
+
+    if client:
+        live_name, live_email = _extract_client_contact(client)
+        if live_name:
+            hydrated["client_name"] = live_name
+        if live_email:
+            hydrated["client_email"] = live_email
+
+    return hydrated
+
+
+def _canonical_draft_status(review_status: str, delivery_status: str) -> str:
+    if review_status == "rejected":
+        return "rejected"
+    if review_status == "approved":
+        if delivery_status == "sent":
+            return "approved"
+        if delivery_status == "failed":
+            return "send_failed"
+        return "approved_not_sent"
+    return "pending_review"
+
+
+def _normalize_draft_state(draft: dict) -> dict:
+    normalized = dict(draft or {})
+
+    legacy_status = str(normalized.get("status", "")).strip().lower()
+    review_status = str(normalized.get("review_status", "")).strip().lower()
+    delivery_status = str(normalized.get("delivery_status", "")).strip().lower()
+    email_sent = bool(normalized.get("email_sent"))
+    send_error = normalized.get("send_error")
+
+    if review_status not in _REVIEW_STATUSES:
+        if legacy_status == "rejected":
+            review_status = "rejected"
+        elif legacy_status in {"approved", "approved_not_sent", "send_failed", "sent"}:
+            review_status = "approved"
+        else:
+            review_status = "pending"
+
+    if delivery_status not in _DELIVERY_STATUSES:
+        if review_status == "rejected":
+            delivery_status = "not_sent"
+        elif legacy_status == "send_failed":
+            delivery_status = "failed"
+        elif legacy_status == "approved_not_sent":
+            delivery_status = "not_sent"
+        elif legacy_status == "sent":
+            delivery_status = "sent"
+        elif legacy_status == "approved":
+            if email_sent:
+                delivery_status = "sent"
+            elif send_error:
+                delivery_status = "failed"
+            else:
+                delivery_status = "not_sent"
+        else:
+            delivery_status = "sent" if email_sent else "not_sent"
+
+    if review_status == "rejected":
+        delivery_status = "not_sent"
+    if delivery_status == "sent":
+        review_status = "approved"
+
+    normalized["review_status"] = review_status
+    normalized["delivery_status"] = delivery_status
+    normalized["status"] = _canonical_draft_status(review_status, delivery_status)
+    normalized["email_sent"] = delivery_status == "sent"
+
+    if delivery_status != "failed":
+        normalized["send_error"] = None
+
+    return normalized
+
+
+def _load_draft_for_update(draft_id: str) -> tuple[Path, dict]:
+    path = DRAFTS_DIR / f"{draft_id}.json"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail=f"Draft not found: {draft_id}")
+    draft = json.loads(path.read_text(encoding="utf-8"))
+    normalized = _normalize_draft_state(draft)
+    hydrated = _hydrate_draft_client_contact(normalized)
+    return path, hydrated
+
+
+def _write_draft(path: Path, draft: dict) -> dict:
+    normalized = _normalize_draft_state(draft)
+    normalized = _hydrate_draft_client_contact(normalized)
+    path.write_text(json.dumps(normalized, indent=2, ensure_ascii=False), encoding="utf-8")
+    return normalized
+
+
+def _matches_draft_filter(draft: dict, status_filter: str) -> bool:
+    value = (status_filter or "").strip().lower()
+    if not value:
+        return True
+    return value in {
+        str(draft.get("status", "")).lower(),
+        str(draft.get("review_status", "")).lower(),
+        str(draft.get("delivery_status", "")).lower(),
+    }
+
+
+def _send_fingerprint(client_email: str, subject: str, body: str) -> str:
+    payload = f"{client_email.strip().lower()}|{subject.strip()}|{body.strip()}"
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
 @app.get("/drafts")
-def list_drafts(status: Optional[str] = None):
+def list_drafts(
+    status: Optional[str] = None,
+    review_status: Optional[str] = None,
+    delivery_status: Optional[str] = None,
+):
     """
     List all draft files from backend/data/drafts/.
-    Optionally filter by status: pending_review | approved | rejected
+    Filters:
+      - status: pending_review | approved_not_sent | send_failed | approved | rejected
+      - review_status: pending | approved | rejected
+      - delivery_status: not_sent | sent | failed
     """
     if not DRAFTS_DIR.exists():
         return {"drafts": []}
 
+    review_filter = (review_status or "").strip().lower()
+    delivery_filter = (delivery_status or "").strip().lower()
+
     drafts = []
+    clients_by_id, clients_by_name = _build_clients_lookup()
     for path in sorted(DRAFTS_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
         try:
-            draft = json.loads(path.read_text(encoding="utf-8"))
-            if status is None or draft.get("status") == status:
-                drafts.append(draft)
+            draft = _normalize_draft_state(json.loads(path.read_text(encoding="utf-8")))
+            draft = _hydrate_draft_client_contact(
+                draft,
+                clients_by_id=clients_by_id,
+                clients_by_name=clients_by_name,
+            )
+            if status and not _matches_draft_filter(draft, status):
+                continue
+            if review_filter and draft.get("review_status") != review_filter:
+                continue
+            if delivery_filter and draft.get("delivery_status") != delivery_filter:
+                continue
+            drafts.append(draft)
         except Exception:
             continue
 
@@ -682,26 +896,305 @@ def list_drafts(status: Optional[str] = None):
 @app.get("/drafts/{draft_id}")
 def get_draft(draft_id: str):
     """Get a single draft by ID."""
-    path = DRAFTS_DIR / f"{draft_id}.json"
-    if not path.exists():
-        raise HTTPException(status_code=404, detail=f"Draft not found: {draft_id}")
-    return json.loads(path.read_text(encoding="utf-8"))
+    _, draft = _load_draft_for_update(draft_id)
+    return draft
 
 
 @app.post("/drafts/{draft_id}/approve")
 def approve_draft_endpoint(draft_id: str, req: ApproveRequest):
-    """CA approves or rejects a draft. Updates status + logs to audit trail."""
+    """CA marks review decision only. Delivery is handled by /drafts/{draft_id}/send."""
     try:
-        updated = approve_draft(draft_id=draft_id, approved=req.approved, ca_name=req.ca_name)
+        path, draft = _load_draft_for_update(draft_id)
+        now = datetime.now(timezone.utc).isoformat()
+
+        draft["reviewed_by"] = req.ca_name
+        draft["reviewed_at"] = now
+
+        if req.approved:
+            draft["review_status"] = "approved"
+            if draft.get("delivery_status") != "sent":
+                draft["delivery_status"] = draft.get("delivery_status") or "not_sent"
+                if draft["delivery_status"] not in _DELIVERY_STATUSES:
+                    draft["delivery_status"] = "not_sent"
+                if draft["delivery_status"] == "failed":
+                    # keep failed state so CA can explicitly retry send
+                    pass
+                elif draft["delivery_status"] != "sent":
+                    draft["delivery_status"] = "not_sent"
+            draft["approved_by"] = req.ca_name
+            draft["approved_at"] = now
+            action = "draft_approved"
+        else:
+            draft["review_status"] = "rejected"
+            draft["delivery_status"] = "not_sent"
+            draft["approved_by"] = None
+            draft["approved_at"] = None
+            draft["email_sent"] = False
+            draft["email_sent_at"] = None
+            draft["send_error"] = None
+            action = "draft_rejected"
+
+        updated = _write_draft(path, draft)
+
+        log_event(
+            agent="CA",
+            action=action,
+            details={
+                "draft_id": draft_id,
+                "client_id": updated.get("client_id"),
+                "client_name": updated.get("client_name"),
+                "ca_name": req.ca_name,
+                "review_status": updated.get("review_status"),
+                "delivery_status": updated.get("delivery_status"),
+                "status": updated.get("status"),
+            },
+            user_approval=req.approved,
+        )
+
         return {
-            "message":  f"Draft {'approved' if req.approved else 'rejected'} by {req.ca_name}",
+            "message": (
+                f"Draft approved by {req.ca_name}"
+                if req.approved
+                else f"Draft rejected by {req.ca_name}"
+            ),
             "draft_id": draft_id,
-            "status":   updated["status"],
+            "status": updated["status"],
+            "review_status": updated["review_status"],
+            "delivery_status": updated["delivery_status"],
         }
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Draft not found: {draft_id}")
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/drafts/{draft_id}/save")
+def save_draft_endpoint(draft_id: str, req: SaveDraftRequest):
+    """Save subject/body edits without changing review or delivery state."""
+    path, draft = _load_draft_for_update(draft_id)
+    if draft.get("delivery_status") == "sent":
+        raise HTTPException(
+            status_code=400,
+            detail="Draft is already sent. Reopen before editing for resend.",
+        )
+
+    now = datetime.now(timezone.utc).isoformat()
+    draft["email_subject"] = req.subject
+    draft["email_body"] = req.body
+    draft["last_edited_by"] = req.ca_name
+    draft["last_edited_at"] = now
+
+    updated = _write_draft(path, draft)
+    log_event(
+        agent="CA",
+        action="draft_saved",
+        details={
+            "draft_id": draft_id,
+            "client_id": updated.get("client_id"),
+            "client_name": updated.get("client_name"),
+            "ca_name": req.ca_name,
+            "review_status": updated.get("review_status"),
+            "delivery_status": updated.get("delivery_status"),
+            "status": updated.get("status"),
+        },
+    )
+
+    return {
+        "message": "Draft saved",
+        "draft_id": draft_id,
+        "status": updated["status"],
+        "review_status": updated["review_status"],
+        "delivery_status": updated["delivery_status"],
+    }
+
+
+@app.post("/drafts/{draft_id}/reopen")
+def reopen_draft_endpoint(draft_id: str, req: ReopenDraftRequest):
+    """Move draft back to pending review so CA can edit/review again."""
+    path, draft = _load_draft_for_update(draft_id)
+
+    now = datetime.now(timezone.utc).isoformat()
+    draft["review_status"] = "pending"
+    draft["delivery_status"] = "not_sent"
+    draft["reopened_by"] = req.ca_name
+    draft["reopened_at"] = now
+    draft["reviewed_by"] = None
+    draft["reviewed_at"] = None
+    draft["approved_by"] = None
+    draft["approved_at"] = None
+    draft["email_sent"] = False
+    draft["email_sent_at"] = None
+    draft["send_error"] = None
+    draft["last_send_result"] = None
+    draft["last_send_error"] = None
+    draft["last_send_idempotency_key"] = None
+    draft["last_send_fingerprint"] = None
+
+    updated = _write_draft(path, draft)
+    log_event(
+        agent="CA",
+        action="draft_reopened",
+        details={
+            "draft_id": draft_id,
+            "client_id": updated.get("client_id"),
+            "client_name": updated.get("client_name"),
+            "ca_name": req.ca_name,
+            "review_status": updated.get("review_status"),
+            "delivery_status": updated.get("delivery_status"),
+            "status": updated.get("status"),
+        },
+    )
+
+    return {
+        "message": "Draft moved back to pending review",
+        "draft_id": draft_id,
+        "status": updated["status"],
+        "review_status": updated["review_status"],
+        "delivery_status": updated["delivery_status"],
+    }
+
+
+@app.post("/drafts/{draft_id}/send")
+def send_draft_email(draft_id: str, req: SendDraftRequest):
+    """Send draft email to client. Auto-approves pending drafts before delivery."""
+    path, draft = _load_draft_for_update(draft_id)
+
+    if draft.get("review_status") == "rejected":
+        raise HTTPException(status_code=400, detail="Draft is rejected. Reopen before sending.")
+
+    client_email = draft.get("client_email", "")
+    if not client_email:
+        raise HTTPException(status_code=400, detail="No client email on this draft")
+
+    idempotency_key = (req.idempotency_key or str(uuid4())).strip()
+    fingerprint = _send_fingerprint(client_email, req.subject, req.body)
+
+    if draft.get("delivery_status") == "sent":
+        if draft.get("last_send_fingerprint") == fingerprint:
+            return {
+                "message": f"Email already sent to {client_email}",
+                "already_sent": True,
+                "draft_id": draft_id,
+                "client_email": client_email,
+                "sent_at": draft.get("email_sent_at"),
+                "status": draft.get("status"),
+                "review_status": draft.get("review_status"),
+                "delivery_status": draft.get("delivery_status"),
+            }
+        raise HTTPException(
+            status_code=400,
+            detail="Draft already sent. Reopen if you want to edit and send again.",
+        )
+
+    if idempotency_key and idempotency_key == draft.get("last_send_idempotency_key"):
+        last_result = draft.get("last_send_result")
+        if last_result == "sent":
+            return {
+                "message": f"Email already sent to {client_email}",
+                "already_sent": True,
+                "draft_id": draft_id,
+                "client_email": client_email,
+                "sent_at": draft.get("email_sent_at"),
+                "status": draft.get("status"),
+                "review_status": draft.get("review_status"),
+                "delivery_status": draft.get("delivery_status"),
+            }
+        if last_result == "failed":
+            raise HTTPException(
+                status_code=409,
+                detail=f"Previous send attempt with the same request key failed: {draft.get('last_send_error') or 'unknown error'}",
+            )
+
+    from config import SMTP_USER, SMTP_PASS
+    email_sent = False
+    send_error = None
+    requested_at = datetime.now(timezone.utc).isoformat()
+
+    if draft.get("review_status") == "pending":
+        draft["review_status"] = "approved"
+        draft["approved_by"] = req.ca_name
+        draft["approved_at"] = requested_at
+        draft["reviewed_by"] = req.ca_name
+        draft["reviewed_at"] = requested_at
+    elif draft.get("review_status") == "approved":
+        draft["approved_by"] = draft.get("approved_by") or req.ca_name
+        draft["approved_at"] = draft.get("approved_at") or requested_at
+
+    draft["email_subject"] = req.subject
+    draft["email_body"] = req.body
+    draft["last_send_attempt_at"] = requested_at
+    draft["last_send_idempotency_key"] = idempotency_key
+    draft["last_send_fingerprint"] = fingerprint
+
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+
+        if SMTP_USER and SMTP_PASS:
+            msg = MIMEMultipart()
+            msg["From"] = f"ComplianceGPT <{SMTP_USER}>"
+            msg["To"] = client_email
+            msg["Subject"] = req.subject
+            msg.attach(MIMEText(req.body, "plain", "utf-8"))
+
+            with smtplib.SMTP("smtp.gmail.com", 587) as server:
+                server.starttls()
+                server.login(SMTP_USER, SMTP_PASS)
+                server.sendmail(SMTP_USER, client_email, msg.as_string())
+            email_sent = True
+        else:
+            # Demo mode — no SMTP configured, just log it
+            logger.info(f"[DEMO EMAIL] To: {client_email} | Subject: {req.subject}")
+            email_sent = True
+
+    except Exception as e:
+        send_error = str(e)
+        logger.error(f"Email send failed for {draft_id}: {e}")
+
+    now = datetime.now(timezone.utc).isoformat()
+    draft["delivery_status"] = "sent" if email_sent else "failed"
+    draft["email_sent"] = email_sent
+    draft["email_sent_at"] = now if email_sent else None
+    draft["send_error"] = send_error
+    draft["last_send_result"] = "sent" if email_sent else "failed"
+    draft["last_send_error"] = send_error
+    updated = _write_draft(path, draft)
+
+    log_event(
+        agent="CA",
+        action="draft_sent" if email_sent else "draft_send_failed",
+        details={
+            "draft_id": draft_id,
+            "client_id": draft.get("client_id"),
+            "client_name": draft.get("client_name"),
+            "client_email": client_email,
+            "ca_name": req.ca_name,
+            "email_sent": email_sent,
+            "send_error": send_error,
+            "status": updated.get("status"),
+            "review_status": updated.get("review_status"),
+            "delivery_status": updated.get("delivery_status"),
+            "idempotency_key": idempotency_key,
+        }
+    )
+
+    if not email_sent:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Email failed: {send_error}"
+        )
+
+    return {
+        "message": f"Email sent to {client_email}",
+        "already_sent": False,
+        "draft_id": draft_id,
+        "client_email": client_email,
+        "sent_at": now,
+        "status": updated["status"],
+        "review_status": updated["review_status"],
+        "delivery_status": updated["delivery_status"],
+    }
 
 
 @app.delete("/drafts/{draft_id}")
@@ -867,16 +1360,21 @@ def send_deadline_alert(alert_id: str, ca_name: str = "CA"):
             raise HTTPException(status_code=500, detail="Failed to generate draft for this alert")
         draft_path = DRAFTS_DIR / f"{drafts[0]['draft_id']}.json"
     
-    # Load draft and mark as approved
-    draft = json.loads(draft_path.read_text(encoding="utf-8"))
-    draft["status"] = "approved"
+    # Load draft and mark as approved + sent
+    draft = _normalize_draft_state(json.loads(draft_path.read_text(encoding="utf-8")))
+    now = datetime.now(timezone.utc).isoformat()
+    draft["review_status"] = "approved"
+    draft["delivery_status"] = "sent"
     draft["approved_by"] = ca_name
-    draft["approved_at"] = datetime.now(timezone.utc).isoformat()
+    draft["approved_at"] = now
+    draft["reviewed_by"] = ca_name
+    draft["reviewed_at"] = now
     draft["email_sent"] = True
-    draft["email_sent_at"] = datetime.now(timezone.utc).isoformat()
-    
+    draft["email_sent_at"] = now
+    draft["send_error"] = None
+
     # Save updated draft
-    draft_path.write_text(json.dumps(draft, indent=2, ensure_ascii=False), encoding="utf-8")
+    updated = _write_draft(draft_path, draft)
     
     # Log to audit trail
     log_event(
@@ -890,7 +1388,10 @@ def send_deadline_alert(alert_id: str, ca_name: str = "CA"):
             "deadline_level": alert["level"],
             "ca_name": ca_name,
             "email_to": alert["client_email"],
-            "draft_id": draft_id
+            "draft_id": draft_id,
+            "status": updated.get("status"),
+            "review_status": updated.get("review_status"),
+            "delivery_status": updated.get("delivery_status"),
         }
     )
     
@@ -901,7 +1402,10 @@ def send_deadline_alert(alert_id: str, ca_name: str = "CA"):
         "deadline_level": alert["level"],
         "draft_id": draft_id,
         "email_to": alert["client_email"],
-        "sent_at": draft["email_sent_at"]
+        "sent_at": updated["email_sent_at"],
+        "status": updated["status"],
+        "review_status": updated["review_status"],
+        "delivery_status": updated["delivery_status"],
     }
 
 

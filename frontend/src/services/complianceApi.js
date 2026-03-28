@@ -16,7 +16,15 @@ async function request(path, options = {}) {
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed: ${response.status} ${response.statusText}`);
+    let detail = "";
+    try {
+      const payload = await response.json();
+      detail = payload?.detail || payload?.message || "";
+    } catch {
+      // no-op
+    }
+    const suffix = detail ? ` - ${detail}` : "";
+    throw new Error(`Request failed: ${response.status} ${response.statusText}${suffix}`);
   }
 
   return response.json();
@@ -67,6 +75,32 @@ export function approveDraft(draftId, approved, caName = "CA") {
   return request(`/drafts/${draftId}/approve`, {
     method: "POST",
     body: JSON.stringify({ approved, ca_name: caName }),
+  });
+}
+
+export function saveDraft(draftId, { subject, body, caName = "CA" }) {
+  return request(`/drafts/${draftId}/save`, {
+    method: "POST",
+    body: JSON.stringify({ subject, body, ca_name: caName }),
+  });
+}
+
+export function sendDraftEmail(draftId, { subject, body, caName = "CA", idempotencyKey }) {
+  return request(`/drafts/${draftId}/send`, {
+    method: "POST",
+    body: JSON.stringify({
+      subject,
+      body,
+      ca_name: caName,
+      idempotency_key: idempotencyKey,
+    }),
+  });
+}
+
+export function reopenDraft(draftId, caName = "CA") {
+  return request(`/drafts/${draftId}/reopen`, {
+    method: "POST",
+    body: JSON.stringify({ ca_name: caName }),
   });
 }
 

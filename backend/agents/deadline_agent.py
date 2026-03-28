@@ -163,8 +163,12 @@ def _scan_drafts_for_deadlines(clients: list, today: date, today_str: str) -> li
             if not deadline_str:
                 continue
 
-            status = draft.get("status", "pending_review")
-            if status in ("approved", "rejected", "sent"):
+            review_status = str(draft.get("review_status", "")).strip().lower()
+            legacy_status = str(draft.get("status", "pending_review")).strip().lower()
+            if (
+                review_status in ("approved", "rejected")
+                or legacy_status in ("approved", "rejected", "approved_not_sent", "send_failed", "sent")
+            ):
                 continue
             
             # Get client info
@@ -542,6 +546,8 @@ def generate_deadline_drafts(alerts: Optional[list[dict]] = None, auto_generate:
                 "generated_at": datetime.now(timezone.utc).isoformat(),
                 "version": "v1",
                 "status": "pending_review",
+                "review_status": "pending",
+                "delivery_status": "not_sent",
                 "metadata": {
                     "deadline_level": alert["level"],
                     "days_until_due": alert["days_until_due"],

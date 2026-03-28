@@ -960,7 +960,9 @@ def draft_single(circular: dict, client: dict) -> dict:
         "model_used":          model,
         "generated_at":        datetime.now(timezone.utc).isoformat(),
         "version":             "v1",
-        "status":              "pending_review"   # CA must approve before sending
+        "status":              "pending_review",   # legacy compatibility
+        "review_status":       "pending",
+        "delivery_status":     "not_sent",
     }
 
     # Step 5: persist to disk
@@ -1098,9 +1100,61 @@ def approve_draft(draft_id: str, approved: bool, ca_name: str = "CA") -> dict:
     path  = matches[0]
     draft = json.loads(path.read_text(encoding="utf-8"))
 
-    draft["status"]       = "approved" if approved else "rejected"
-    draft["reviewed_by"]  = ca_name
-    draft["reviewed_at"]  = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(timezone.utc).isoformat()
+    review_status = str(draft.get("review_status", "")).strip().lower()
+    delivery_status = str(draft.get("delivery_status", "")).strip().lower()
+    legacy_status = str(draft.get("status", "")).strip().lower()
+
+    if review_status not in {"pending", "approved", "rejected"}:
+        if legacy_status == "rejected":
+            review_status = "rejected"
+        elif legacy_status in {"approved", "approved_not_sent", "send_failed", "sent"}:
+            review_status = "approved"
+        else:
+            review_status = "pending"
+
+    if delivery_status not in {"not_sent", "sent", "failed"}:
+        if review_status == "rejected":
+            delivery_status = "not_sent"
+        elif legacy_status == "send_failed":
+            delivery_status = "failed"
+        elif legacy_status == "sent" or draft.get("email_sent"):
+            delivery_status = "sent"
+        else:
+            delivery_status = "not_sent"
+
+    if approved:
+        review_status = "approved"
+        if delivery_status != "sent":
+            delivery_status = "not_sent"
+        draft["approved_by"] = ca_name
+        draft["approved_at"] = now
+    else:
+        review_status = "rejected"
+        delivery_status = "not_sent"
+        draft["approved_by"] = None
+        draft["approved_at"] = None
+        draft["email_sent"] = False
+        draft["email_sent_at"] = None
+        draft["send_error"] = None
+
+    if review_status == "rejected":
+        status = "rejected"
+    elif review_status == "approved":
+        if delivery_status == "sent":
+            status = "approved"
+        elif delivery_status == "failed":
+            status = "send_failed"
+        else:
+            status = "approved_not_sent"
+    else:
+        status = "pending_review"
+
+    draft["status"] = status
+    draft["review_status"] = review_status
+    draft["delivery_status"] = delivery_status
+    draft["reviewed_by"] = ca_name
+    draft["reviewed_at"] = now
 
     path.write_text(json.dumps(draft, indent=2, ensure_ascii=False), encoding="utf-8")
 
@@ -1111,7 +1165,10 @@ def approve_draft(draft_id: str, approved: bool, ca_name: str = "CA") -> dict:
             "draft_id":    draft_id,
             "client_id":   draft["client_id"],
             "circular_id": draft["circular_id"],
-            "reviewed_by": ca_name
+            "reviewed_by": ca_name,
+            "status": status,
+            "review_status": review_status,
+            "delivery_status": delivery_status,
         },
         citation=draft.get("source_chunks", [{}])[0].get("source") if draft.get("source_chunks") else None,
         user_approval=approved
@@ -1374,6 +1431,8 @@ def draft_reminder(client: dict, obligation: dict) -> dict:
         "generated_at":        datetime.now(timezone.utc).isoformat(),
         "version":             "v1",
         "status":              "pending_review",
+        "review_status":       "pending",
+        "delivery_status":     "not_sent",
         "reminder_source":     True,
         "obligation_code":     code,
         "obligation_periods":  obligation.get("periods", []),
@@ -1471,7 +1530,12 @@ def scan_and_remind(days_window: int = 14) -> list[dict]:
 
             if draft_path.exists():
                 existing = json.loads(draft_path.read_text(encoding="utf-8"))
-                if existing.get("status") in ("approved", "rejected"):
+                existing_review = str(existing.get("review_status", "")).strip().lower()
+                existing_status = str(existing.get("status", "")).strip().lower()
+                if (
+                    existing_review in ("approved", "rejected")
+                    or existing_status in ("approved", "rejected", "approved_not_sent", "send_failed", "sent")
+                ):
                     skipped += 1
                     continue  # Already actioned — don't regenerate
                 # Re-generate only if draft is older than 7 days

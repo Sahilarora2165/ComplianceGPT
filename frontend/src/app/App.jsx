@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import {
   approveDraft,
   getDashboardData,
+  reopenDraft,
   runUploadedDocumentPipeline,
+  saveDraft,
+  sendDraftEmail,
   sendDeadlineAlert,
   resetPipelineState,
   runPipeline,
@@ -81,6 +84,20 @@ function regulatorTone(regulator) {
   return map[regulator] || "bg-slate-700 text-white";
 }
 
+function draftReviewStatus(draft) {
+  const review = (draft?.review_status || "").toLowerCase();
+  if (review === "pending" || review === "approved" || review === "rejected") return review;
+
+  const status = (draft?.status || "").toLowerCase();
+  if (status === "rejected") return "rejected";
+  if (["approved", "approved_not_sent", "send_failed", "sent"].includes(status)) return "approved";
+  return "pending";
+}
+
+function isDraftPendingReview(draft) {
+  return draftReviewStatus(draft) === "pending";
+}
+
 export default function App() {
   const [page, setPage] = useState("dashboard");
   const [data, setData] = useState({
@@ -134,7 +151,7 @@ export default function App() {
     () => ({
       circulars: data.pipeline?.total_circulars || allCirculars.length,
       affectedClients: data.pipeline?.total_matches || 0,
-      pendingDrafts: allDrafts.filter((draft) => draft.status === "pending_review").length,
+      pendingDrafts: allDrafts.filter((draft) => isDraftPendingReview(draft)).length,
       deadlineAlerts: data.deadlines?.total || allDeadlines.length,
       totalExposure: data.deadlines?.summary?.total_exposure || 0,
     }),
@@ -149,7 +166,7 @@ export default function App() {
   const urgentDraftQueue = useMemo(
     () =>
       allDrafts
-        .filter((draft) => draft.status === "pending_review")
+        .filter((draft) => isDraftPendingReview(draft))
         .sort(
           (a, b) =>
             (a.risk_level === "HIGH" ? 0 : 1) - (b.risk_level === "HIGH" ? 0 : 1),
@@ -252,14 +269,62 @@ export default function App() {
     setOpenIntakeSignal((current) => current + 1);
   }
 
-  async function handleDraftDecision(draftId, approved) {
-    setActionMessage(approved ? "Approving draft..." : "Rejecting draft...");
+  async function handleDraftReject(draftId) {
+    setActionMessage("Rejecting draft...");
     try {
-      await approveDraft(draftId, approved, "CA");
+      await approveDraft(draftId, false, "CA");
       await reloadDashboard();
-      setActionMessage(approved ? "Draft approved" : "Draft rejected");
-    } catch {
-      setActionMessage("Action failed");
+      setActionMessage("Draft rejected");
+    } catch (error) {
+      setActionMessage(error?.message || "Draft rejection failed");
+    }
+  }
+
+  async function handleDraftSave(draftId, { subject, body }) {
+    setActionMessage("Saving draft...");
+    try {
+      await saveDraft(draftId, { subject, body, caName: "CA" });
+      await reloadDashboard();
+      setActionMessage("Draft saved");
+    } catch (error) {
+      setActionMessage(error?.message || "Draft save failed");
+      throw error;
+    }
+  }
+
+  async function handleDraftSend(draftId, { subject, body }) {
+    setActionMessage("Sending email...");
+    const idempotencyKey =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random()}`;
+
+    try {
+      const res = await sendDraftEmail(draftId, {
+        subject,
+        body,
+        caName: "CA",
+        idempotencyKey,
+      });
+      await reloadDashboard();
+      setActionMessage(res?.already_sent ? "Email was already sent" : "Email sent");
+      return res;
+    } catch (error) {
+      await reloadDashboard();
+      setActionMessage(error?.message || "Email send failed");
+      throw error;
+    }
+  }
+
+  async function handleDraftReopen(draftId) {
+    setActionMessage("Reopening draft...");
+    try {
+      await reopenDraft(draftId, "CA");
+      await reloadDashboard();
+      setActionMessage("Draft reopened for review");
+    } catch (error) {
+      setActionMessage(error?.message || "Draft reopen failed");
+      throw error;
     }
   }
 
@@ -406,8 +471,10 @@ export default function App() {
               actionMessage={actionMessage}
               allDrafts={allDrafts}
               loading={loading}
-              onApproveDraft={(id) => handleDraftDecision(id, true)}
-              onRejectDraft={(id) => handleDraftDecision(id, false)}
+              onSaveDraft={handleDraftSave}
+              onRejectDraft={handleDraftReject}
+              onSendDraft={handleDraftSend}
+              onReopenDraft={handleDraftReopen}
             />
           ) : page === "deadlines" ? (
             <DeadlineWatchView

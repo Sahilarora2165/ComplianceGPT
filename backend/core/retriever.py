@@ -857,6 +857,42 @@ def _validate_answer(answer: str, valid_source_ids: set[str]) -> bool:
     return True
 
 
+def _verify_citation_support(answer: str, sources: list[dict], reranked: list[dict]) -> bool:
+    """
+    Check that key terms in each cited answer line appear in the cited chunks.
+    """
+    for raw_line in answer.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        cited_groups = _INLINE_SOURCE_PATTERN.findall(line)
+        if not cited_groups:
+            continue
+
+        line_no_citations = _INLINE_SOURCE_PATTERN.sub("", line.lower())
+        answer_terms = [
+            token
+            for token in _WORD_PATTERN.findall(line_no_citations)
+            if token not in _STOPWORDS and len(token) > 3
+        ]
+        if not answer_terms:
+            continue
+
+        for group in cited_groups:
+            for sid in group.split(","):
+                sid = sid.strip()
+                if not re.fullmatch(r"S\d+", sid):
+                    return False
+                idx = int(sid[1:]) - 1
+                if idx < 0 or idx >= len(reranked):
+                    return False
+                chunk_text = str(reranked[idx].get("doc", "")).lower()
+                matches = sum(1 for term in answer_terms if term in chunk_text)
+                if matches / len(answer_terms) < 0.4:
+                    return False
+    return True
+
+
 def _support_summary(question: str, candidates: list[dict]) -> dict:
     signals = _extract_query_signals(question)
     entity_hits = set()
@@ -964,6 +1000,19 @@ def _abstain(
     )
 
 
+def _infer_regulator_filter(question: str) -> Optional[str]:
+    lower = question.lower()
+    if any(t in lower for t in ["rbi", "fema", "nbfc", "softex"]):
+        return "RBI"
+    if any(t in lower for t in ["gst", "gstr", "input tax", "ims", "invoice management"]):
+        return "GST"
+    if any(t in lower for t in ["tds", "income tax", "cbdt", "194c", "194j", "itr"]):
+        return "IncomeTax"
+    if any(t in lower for t in ["mca", "llp", "aoc-4", "mgt-7", "form 11"]):
+        return "MCA"
+    return None
+
+
 def query_rag(user_question: str, filters: Optional[dict] = None, active_document: Optional[str] = None) -> dict:
     standalone_question = user_question.strip()
     filters, active_document_used = _apply_active_document(filters, standalone_question, active_document)
@@ -992,6 +1041,11 @@ def query_rag(user_question: str, filters: Optional[dict] = None, active_documen
         log_event(agent="AnalystAgent", action="query_abstained", details={"question": user_question, "reason": "empty_collection"})
         return result
 
+    inferred = _infer_regulator_filter(standalone_question)
+    if inferred and not (filters or {}).get("regulator"):
+        filters = dict(filters or {})
+        filters["regulator"] = inferred
+
     queries = expand_query(standalone_question)
     fetch_k = min(_MAX_FETCH_K, max(TOP_K * 3, _MIN_FETCH_K))
     all_chunks = _hybrid_search(collection, model, queries, fetch_k, filters)
@@ -1005,6 +1059,44 @@ def query_rag(user_question: str, filters: Optional[dict] = None, active_documen
         )
         log_event(agent="AnalystAgent", action="query_abstained", details={"question": user_question, "reason": "no_matching_documents", "filters": filters or {}})
         return result
+
+    rrf_sorted = sorted(
+        all_chunks.values(),
+        key=lambda x: x.get("rrf_score", 0),
+        reverse=True,
+    )[:6]
+
+    fast_path_sources = [
+        {
+            "source_id": f"S{i+1}",
+            "source": _enrich_metadata(c["meta"])["source"],
+            "page": _enrich_metadata(c["meta"])["page"],
+        }
+        for i, c in enumerate(rrf_sorted)
+    ]
+
+    fast_result = _try_fast_path(standalone_question, rrf_sorted, fast_path_sources)
+    if fast_result:
+        chunk_text = rrf_sorted[0]["doc"].lower()
+        answer_terms = [
+            t for t in _WORD_PATTERN.findall(fast_result["answer"].lower())
+            if t not in _STOPWORDS and len(t) > 3
+        ]
+        if answer_terms:
+            match_ratio = sum(1 for t in answer_terms if t in chunk_text) / len(answer_terms)
+            if match_ratio >= 0.4:
+                return _response_payload(
+                    answer=fast_result["answer"],
+                    status="answered",
+                    sources=fast_path_sources[:2],
+                    supporting_quotes=[],
+                    confidence=0.9,
+                    standalone_question=standalone_question,
+                    filters=filters,
+                    history_used=active_document_used,
+                    abstained=False,
+                    not_found_reason=None,
+                )
 
     reranked = _rerank(standalone_question, list(all_chunks.values()), top_n=TOP_K)
     if not reranked:
@@ -1062,36 +1154,6 @@ def query_rag(user_question: str, filters: Optional[dict] = None, active_documen
         log_event(agent="AnalystAgent", action="query_abstained", details={"question": user_question, "reason": "low_relevance", "summary": reason, "score": max_score})
         return result
 
-    fast_path_result = _try_fast_path(standalone_question, reranked, sources)
-    if fast_path_result:
-        fast_sources = [source for source in sources if source["source_id"] in fast_path_result["source_ids"]][:2]
-        fast_quotes = [quote for quote in supporting_quotes if quote["source_id"] in fast_path_result["source_ids"]][:2]
-        fast_confidence = max([source["score"] for source in fast_sources] or [max_score, 0.9])
-        result = _response_payload(
-            answer=fast_path_result["answer"],
-            status="answered",
-            sources=fast_sources,
-            supporting_quotes=fast_quotes,
-            confidence=fast_confidence,
-            standalone_question=standalone_question,
-            filters=filters,
-            history_used=active_document_used,
-            abstained=False,
-            not_found_reason=None,
-        )
-        log_event(
-            agent="FastPath",
-            action="extraction_success",
-            details={
-                "question": user_question,
-                "mode": _classify_question_type(standalone_question),
-                "source_ids": fast_path_result["source_ids"],
-                "filters": filters or {},
-            },
-            citation=fast_sources[0]["source"] if fast_sources else None,
-        )
-        return result
-
     context = "\n\n".join(
         "\n".join(
             [
@@ -1126,6 +1188,7 @@ Rules:
 4. Never cite a source id that is not in the evidence.
 5. Keep the answer concise.
 6. If the question asks for important points, alerts, highlights, or a summary of a clearly scoped document/topic, summarize only what is explicitly present in the evidence.
+7. If you are not certain the evidence EXPLICITLY states the answer — not implies, not suggests, not is consistent with — return not_found. For compliance facts (deadlines, rates, penalties, section numbers), the document must state it directly. Do not infer.
 
 Evidence:
 {context}
@@ -1170,7 +1233,11 @@ Question:
     not_found_reason = _normalize_text_field(payload.get("not_found_reason")) or None
 
     if status == "answered":
-        if not _validate_answer(answer, valid_source_ids) or not used_source_ids:
+        if (
+            not _validate_answer(answer, valid_source_ids)
+            or not used_source_ids
+            or not _verify_citation_support(answer, sources, reranked)
+        ):
             result = _abstain(
                 reason="The retrieved evidence did not support a precise answer.",
                 confidence=max_score,
