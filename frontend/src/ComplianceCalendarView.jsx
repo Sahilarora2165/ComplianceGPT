@@ -209,9 +209,9 @@ export default function ComplianceCalendarView({ calendarData, loading, clients 
   }, [clients, selectedEntry]);
 
   return (
-    <div className="space-y-8">
+    <div className="flex h-full min-h-0 flex-col gap-4 overflow-hidden">
       {hasCalendarData ? (
-        <section className="rounded-3xl bg-slate-100 p-5 shadow-panel">
+        <section className="shrink-0 rounded-3xl bg-slate-100 p-5 shadow-panel">
           <div className="flex flex-col gap-5">
             <div className="flex flex-wrap items-center justify-between gap-6">
               <div className="flex flex-wrap items-center gap-2">
@@ -301,145 +301,146 @@ export default function ComplianceCalendarView({ calendarData, loading, clients 
           </p>
         </section>
       ) : (
-        <>
-          <section className="hidden overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-panel xl:block">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-100">
-                  {["Obligation", "Regulator", "Next Due Date", "Days Left", "Frequency", "Status"].map(
-                    (label) => (
-                      <th
-                        key={label}
-                        className="px-6 py-4 text-[11px] font-black uppercase tracking-[0.18em] text-slate-500"
-                      >
-                        {label}
-                      </th>
-                    ),
-                  )}
-                  <th className="px-6 py-4" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200/70">
-                {filteredEntries.map((entry) => {
-                  const entryKey = `${entry.regulator}-${entry.obligation}`;
-                  const isExpanded = selectedKey === entryKey;
-                  return (
-                    <React.Fragment key={entryKey}>
-                      <tr
-                        className={`group cursor-pointer transition ${rowTone(entry.urgency)} ${isExpanded ? "!bg-teal-50" : ""}`}
-                        onClick={() => setSelectedEntry(isExpanded ? null : entry)}
-                      >
-                        <td className="px-6 py-5">
-                          <div className="flex items-start gap-3">
-                            <div
-                              className={`mt-1 h-10 w-1.5 rounded-full ${
-                                entry.urgency === "MISSED"
-                                  ? "bg-rose-600"
-                                  : entry.urgency === "CRITICAL"
-                                    ? "bg-red-400"
-                                    : entry.urgency === "WARNING"
-                                      ? "bg-amber-400"
-                                      : "bg-teal-600"
-                              }`}
-                            />
-                            <div>
-                              <span className={`text-left text-sm font-bold transition ${isExpanded ? "text-teal-700" : "text-slate-950 group-hover:text-teal-700"}`}>
-                                {entry.obligation}
-                              </span>
-                              <p className="mt-1 text-xs font-medium text-slate-500">{entry.description}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-5">
-                          <span className={`rounded px-2 py-1 text-[10px] font-bold ${regulatorTone(entry.regulator)}`}>
-                            {entry.regulator}
-                          </span>
-                        </td>
-                        <td className="px-6 py-5 text-sm font-semibold text-slate-900">
-                          {formatDate(entry.next_due_date)}
-                        </td>
-                        <td className="px-6 py-5">
-                          <span
-                            className={`text-sm font-extrabold ${
-                              entry.urgency === "MISSED" || entry.urgency === "CRITICAL"
-                                ? "text-rose-600"
-                                : entry.urgency === "WARNING"
-                                  ? "text-amber-700"
-                                  : "text-slate-900"
-                            }`}
-                          >
-                            {formatDays(entry.days_until)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-5 text-xs font-medium text-slate-500">{entry.frequency}</td>
-                        <td className="px-6 py-5">
-                          <span className={`inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${urgencyTone(entry.urgency)}`}>
-                            {entry.urgency === "CRITICAL" ? <span className="h-2 w-2 rounded-full bg-rose-500" /> : null}
-                            {entry.urgency === "OK" ? "On Track" : entry.urgency}
-                          </span>
-                        </td>
-                        <td className="px-6 py-5 text-right">
-                          <span className={`material-symbols-outlined text-slate-500 transition ${isExpanded ? "rotate-90" : ""}`}>
-                            arrow_forward_ios
-                          </span>
-                        </td>
-                      </tr>
-
-                      {isExpanded && (
-                        <tr>
-                          <td colSpan={7} className="bg-teal-50/60 px-6 py-4">
-                            <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
-                              {matchingClients.length} client{matchingClients.length === 1 ? "" : "s"} with this obligation
-                            </p>
-                            {matchingClients.length ? (
-                              <div className="flex flex-wrap gap-2">
-                                {matchingClients.map((client) => (
-                                  <button
-                                    key={client.id}
-                                    type="button"
-                                    onClick={(e) => { e.stopPropagation(); onSelectClient?.(client.id); }}
-                                    className="flex items-center gap-2 rounded-xl border border-teal-200 bg-white px-3 py-2 text-left transition hover:border-teal-400 hover:shadow-sm"
-                                  >
-                                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-700 text-[10px] font-bold text-white">
-                                      {getClientName(client).charAt(0)}
-                                    </div>
-                                    <div>
-                                      <p className="text-xs font-bold text-slate-900">{getClientName(client)}</p>
-                                      <p className="text-[10px] text-slate-500">{client?.profile?.constitution || client?.client_type || "Client"}</p>
-                                    </div>
-                                    <span className="material-symbols-outlined ml-1 text-teal-600" style={{ fontSize: 14 }}>open_in_new</span>
-                                  </button>
-                                ))}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-panel">
+          <div className="flex h-full flex-col overflow-hidden">
+            <div className="overflow-y-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="sticky top-0 z-10 bg-slate-100">
+                  <tr className="border-b border-slate-200">
+                    {["Obligation", "Regulator", "Next Due Date", "Days Left", "Frequency", "Status"].map(
+                      (label) => (
+                        <th
+                          key={label}
+                          className="px-6 py-4 text-[11px] font-black uppercase tracking-[0.18em] text-slate-500"
+                        >
+                          {label}
+                        </th>
+                      ),
+                    )}
+                    <th className="px-6 py-4" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200/70">
+                  {filteredEntries.map((entry) => {
+                    const entryKey = `${entry.regulator}-${entry.obligation}`;
+                    const isExpanded = selectedKey === entryKey;
+                    return (
+                      <React.Fragment key={entryKey}>
+                        <tr
+                          className={`group cursor-pointer transition ${rowTone(entry.urgency)} ${isExpanded ? "!bg-teal-50" : ""}`}
+                          onClick={() => setSelectedEntry(isExpanded ? null : entry)}
+                        >
+                          <td className="px-6 py-5">
+                            <div className="flex items-start gap-3">
+                              <div
+                                className={`mt-1 h-10 w-1.5 rounded-full ${
+                                  entry.urgency === "MISSED"
+                                    ? "bg-rose-600"
+                                    : entry.urgency === "CRITICAL"
+                                      ? "bg-red-400"
+                                      : entry.urgency === "WARNING"
+                                        ? "bg-amber-400"
+                                        : "bg-teal-600"
+                                }`}
+                              />
+                              <div>
+                                <span className={`text-left text-sm font-bold transition ${isExpanded ? "text-teal-700" : "text-slate-950 group-hover:text-teal-700"}`}>
+                                  {entry.obligation}
+                                </span>
+                                <p className="mt-1 text-xs font-medium text-slate-500">{entry.description}</p>
                               </div>
-                            ) : (
-                              <p className="text-xs text-slate-500">No clients matched this obligation.</p>
-                            )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-5">
+                            <span className={`rounded px-2 py-1 text-[10px] font-bold ${regulatorTone(entry.regulator)}`}>
+                              {entry.regulator}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5 text-sm font-semibold text-slate-900">
+                            {formatDate(entry.next_due_date)}
+                          </td>
+                          <td className="px-6 py-5">
+                            <span
+                              className={`text-sm font-extrabold ${
+                                entry.urgency === "MISSED" || entry.urgency === "CRITICAL"
+                                  ? "text-rose-600"
+                                  : entry.urgency === "WARNING"
+                                    ? "text-amber-700"
+                                    : "text-slate-900"
+                              }`}
+                            >
+                              {formatDays(entry.days_until)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5 text-xs font-medium text-slate-500">{entry.frequency}</td>
+                          <td className="px-6 py-5">
+                            <span className={`inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${urgencyTone(entry.urgency)}`}>
+                              {entry.urgency === "CRITICAL" ? <span className="h-2 w-2 rounded-full bg-rose-500" /> : null}
+                              {entry.urgency === "OK" ? "On Track" : entry.urgency}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5 text-right">
+                            <span className={`material-symbols-outlined text-slate-500 transition ${isExpanded ? "rotate-90" : ""}`}>
+                              arrow_forward_ios
+                            </span>
                           </td>
                         </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </section>
 
-          <section className="grid grid-cols-1 gap-4 xl:hidden">
-            {filteredEntries.map((entry) => (
-              <button
-                key={`${entry.regulator}-${entry.obligation}`}
-                type="button"
-                onClick={() => setSelectedEntry(entry)}
-                className="text-left"
-              >
-                <MobileCard entry={entry} />
-              </button>
-            ))}
-          </section>
-        </>
+                        {isExpanded && (
+                          <tr>
+                            <td colSpan={7} className="bg-teal-50/60 px-6 py-4">
+                              <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                                {matchingClients.length} client{matchingClients.length === 1 ? "" : "s"} with this obligation
+                              </p>
+                              {matchingClients.length ? (
+                                <div className="flex flex-wrap gap-2">
+                                  {matchingClients.map((client) => (
+                                    <button
+                                      key={client.id}
+                                      type="button"
+                                      onClick={(e) => { e.stopPropagation(); onSelectClient?.(client.id); }}
+                                      className="flex items-center gap-2 rounded-xl border border-teal-200 bg-white px-3 py-2 text-left transition hover:border-teal-400 hover:shadow-sm"
+                                    >
+                                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-700 text-[10px] font-bold text-white">
+                                        {getClientName(client).charAt(0)}
+                                      </div>
+                                      <div>
+                                        <p className="text-xs font-bold text-slate-900">{getClientName(client)}</p>
+                                        <p className="text-[10px] text-slate-500">{client?.profile?.constitution || client?.client_type || "Client"}</p>
+                                      </div>
+                                      <span className="material-symbols-outlined ml-1 text-teal-600" style={{ fontSize: 14 }}>open_in_new</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-slate-500">No clients matched this obligation.</p>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       )}
 
-      {/* clients now show inline in the table rows */}
+      {/* Mobile view */}
+      <div className="grid grid-cols-1 gap-4 overflow-y-auto xl:hidden">
+        {filteredEntries.map((entry) => (
+          <button
+            key={`${entry.regulator}-${entry.obligation}`}
+            type="button"
+            onClick={() => setSelectedEntry(entry)}
+            className="text-left"
+          >
+            <MobileCard entry={entry} />
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

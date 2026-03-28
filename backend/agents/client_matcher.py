@@ -102,177 +102,531 @@ _MARKET_OPS_SKIP: dict[str, list[str]] = {
 # regulator and the regulator-level tag match (from _MATCH_RULES) stands.
 _CONTENT_RULES: dict[str, list[dict]] = {
     "RBI": [
+        # ─── FEMA / Foreign Exchange ──────────────────────────────────────
         {
             "keywords": [
                 "fema", "foreign exchange management", "foreign transaction",
                 "export realisation", "iec", "softex", "lrs", "liberalised remittance",
                 "ecb", "external commercial borrowing", "nri", "fcnr",
                 "import payment", "overseas direct investment", "odi",
+                "current account transaction", "capital account transaction",
             ],
             "required_tags": ["FEMA"],
             "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
         },
+        # ─── NBFC / Financial Institutions ─────────────────────────────────
         {
             "keywords": [
                 "nbfc", "non-banking financial", "microfinance institution",
-                "mfi", "housing finance company",
+                "mfi", "housing finance company", "hfc", "asset finance company",
+                "investment company", "loan company", "infrastructure finance company",
             ],
             "required_tags": ["RBI"],
-            "business_contains": ["nbfc", "microfinance", "housing finance"],
+            "business_contains": ["nbfc", "microfinance", "housing finance", "financial services"],
             "reason": "NBFC/microfinance circular — applicable to NBFC-type clients",
         },
+        # ─── Co-operative Banks ────────────────────────────────────────────
         {
             "keywords": [
                 "co-operative bank", "cooperative bank", "urban co-op",
                 "urban cooperative", "credit cooperative", "mahila co-operative",
+                "district central cooperative", "state cooperative bank",
             ],
             "required_tags": ["RBI"],
             "business_contains": ["bank", "cooperative", "credit society"],
             "reason": "Co-operative bank circular — applicable to cooperative banking clients",
         },
+        # ─── KYC / AML / PMLA ──────────────────────────────────────────────
         {
             "keywords": [
                 "kyc", "know your customer", "anti-money laundering",
                 "aml", "pmla", "beneficial owner", "customer due diligence",
+                "cdd", "edd", "enhanced due diligence", "sanctions",
+                "fugitive economic offender", "wilful defaulter",
             ],
             "required_tags": ["RBI"],
             "reason": "KYC/AML circular — applicable to RBI-regulated entities",
         },
+        # ─── Monetary Penalty / Enforcement ────────────────────────────────
         {
             "keywords": [
                 "imposes monetary penalty", "monetary penalty on", "penalty imposed",
-                "penalised", "rbi penalises",
+                "penalised", "rbi penalises", "enforcement action",
+                "section 30", "section 31", "section 32",
             ],
             "required_client_type": "business",
             "required_tags": ["RBI"],
             "reason": "RBI monetary penalty — applicable to RBI-regulated banking entities only",
         },
+        # ─── Banking Regulation / Enforcement ──────────────────────────────
         {
             "keywords": [
                 "section 35a", "directions under section", "banking regulation act",
                 "enforcement action", "corrective action plan", "amalgamat",
-                "voluntary amalgamation",
+                "voluntary amalgamation", "prompt corrective action", "pca framework",
+                "banking ombudsman", "customer protection", "fair practices code",
             ],
             "required_tags": ["RBI"],
             "required_client_type": "business",
             "business_contains": ["bank", "cooperative", "financial", "nbfc"],
             "reason": "Banking enforcement/amalgamation — applicable to banking/financial clients",
         },
+        # ─── Priority Sector Lending ───────────────────────────────────────
         {
             "keywords": [
                 "priority sector", "agricultural credit", "msme lending",
-                "kisan credit", "crop loan",
+                "kisan credit", "crop loan", "self-help group",
+                "weaker sections", "differential rate of interest",
             ],
             "required_tags": ["RBI"],
             "business_contains": ["bank", "cooperative", "nbfc", "microfinance"],
             "reason": "Priority sector lending circular — applicable to RBI-regulated lenders",
         },
+        # ─── Digital Payments / Fintech ────────────────────────────────────
+        {
+            "keywords": [
+                "digital payment", "upi", "prepaid instrument", "payout",
+                "wallet", "payment bank", "small finance bank",
+                "card tokenisation", "e-mandate", "bbps", "imps", "neft", "rtgs",
+            ],
+            "required_tags": ["RBI"],
+            "business_contains": ["bank", "fintech", "payment", "wallet"],
+            "reason": "Digital payments circular — applicable to payment service providers",
+        },
+        # ─── Interest Rate / Deposit ───────────────────────────────────────
+        {
+            "keywords": [
+                "interest rate", "deposit rate", "savings bank", "term deposit",
+                "repo rate", "reverse repo", "mclr", "base rate",
+            ],
+            "required_tags": ["RBI"],
+            "business_contains": ["bank", "cooperative", "nbfc"],
+            "reason": "Interest rate/deposit circular — applicable to deposit-taking institutions",
+        },
     ],
     "MCA": [
+        # ─── LLP Filings ───────────────────────────────────────────────────
         {
             "keywords": [
                 "llp", "form 11", "form 8", "limited liability partnership",
-                "llp annual",
+                "llp annual", "llp agreement", "form 3", "form 4",
+                "form 5", "form 14", "llp settlement",
             ],
             "required_constitution": "llp",
             "reason": "LLP filing circular — applicable only to LLP clients",
         },
+        # ─── Company Annual Filings ────────────────────────────────────────
         {
             "keywords": [
                 "aoc-4", "mgt-7", "annual return", "annual filing",
+                "form aoc-4", "form mgt-7", "board report", "financial statement",
+                "annual general meeting", "agm", "notice of agm",
             ],
             "required_constitution": "company",
             "reason": "Company annual filing circular — applicable only to company clients",
         },
+        # ─── Director Related ──────────────────────────────────────────────
+        {
+            "keywords": [
+                "din", "director identification", "disqualification of director",
+                "form dir-3", "form dir-12", "appointment of director",
+                "independent director", "women director", "resident director",
+                "director report", "board composition",
+            ],
+            "required_constitution": "company",
+            "reason": "Director-related circular — applicable to companies with directors",
+        },
+        # ─── Charge / Sec 8 / Registration ─────────────────────────────────
+        {
+            "keywords": [
+                "form chg-1", "registration of charge", "satisfaction of charge",
+                "sec 8 company", "section 8", "one person company", "opc",
+                "producer company", "nidhi company", "section 455",
+            ],
+            "required_constitution": "company",
+            "reason": "Company registration/charge circular — applicable to registered companies",
+        },
+        # ─── Compliance / Prosecution ──────────────────────────────────────
+        {
+            "keywords": [
+                "compounding", "prosecution", "adjudication", "penalty",
+                "form coc", "condonation of delay", "additional fee",
+                "late filing", "extra fee", "penalty for delay",
+            ],
+            "required_constitution": "company",
+            "reason": "MCA compliance/prosecution circular — applicable to companies",
+        },
+        # ─── Beneficial Owner / Significant Control ────────────────────────
+        {
+            "keywords": [
+                "significant beneficial owner", "sbo", "beneficial interest",
+                "form ben-1", "form ben-2", "form ben-4", "beneficial ownership",
+            ],
+            "required_constitution": "company",
+            "reason": "Beneficial ownership reporting — applicable to companies",
+        },
+        # ─── CSR / Related Party ───────────────────────────────────────────
+        {
+            "keywords": [
+                "corporate social responsibility", "csr", "section 135",
+                "related party transaction", "rpt", "section 188", "form aoc-2",
+                "arm's length transaction",
+            ],
+            "required_constitution": "company",
+            "reason": "CSR/RPT circular — applicable to companies meeting threshold",
+        },
+        # ─── Generic MCA (catch companies) ─────────────────────────────────
+        {
+            "keywords": [
+                "companies act", "company law", "mca21", "roc",
+                "registrar of companies", "corporate affairs",
+            ],
+            "required_constitution": "company",
+            "reason": "Companies Act circular — applicable to all companies",
+        },
     ],
     "IncomeTax": [
+        # ─── TDS/TCS (Deductors Only) ──────────────────────────────────────
         {
             "keywords": [
                 "tds", "tax deduction at source", "tcs", "tax collection at source",
                 "section 194", "section 206", "deductor", "deductee",
-                "form 24q", "form 26q", "tds return", "tds rate",
+                "form 24q", "form 26q", "form 27q", "form 27eq",
+                "tds return", "tds rate", "tds certificate", "form 16", "form 16a",
+                "tan", "tax deduction account", "section 200", "section 203",
             ],
             "required_tags": ["TDS"],
-            "alt_field": "registrations.tan",
-            "require_field": "registrations.tan",
-            "reason": "TDS/TCS circular — applicable to clients with TAN (deductors)",
+            "required_constitution_exclude": ["individual", "salaried"],
+            "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
         },
+        # ─── Transfer Pricing ──────────────────────────────────────────────
         {
             "keywords": [
                 "transfer pricing", "arm's length", "associated enterprise",
                 "form 3ceb", "international transaction", "specified domestic",
+                "section 92", "section 93", "country by country report", "master file",
+                "local file", "safe harbour", "advance pricing agreement", "apa",
             ],
             "required_tags": ["Transfer Pricing"],
-            "reason": "Transfer pricing circular — applicable to TP-assessed clients",
+            "reason": "Transfer pricing circular — applicable to TP-assessed clients with international transactions",
         },
+        # ─── Presumptive Taxation ──────────────────────────────────────────
         {
             "keywords": [
-                "44ada", "44ad", "presumptive taxation", "presumptive income",
-                "section 44", "presumptive scheme",
+                "44ada", "44ad", "44ae", "presumptive taxation", "presumptive income",
+                "section 44", "presumptive scheme", "turnover basis",
+                "eligible profession", "specified profession",
             ],
             "required_tags": ["Presumptive Tax"],
             "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
         },
+        # ─── Capital Gains ─────────────────────────────────────────────────
         {
             "keywords": [
                 "capital gain", "ltcg", "stcg", "section 112", "section 111a",
                 "securities transaction tax", "stt", "mutual fund redemption",
+                "property sale", "share sale", "bond sale", "indexation benefit",
+                "section 54", "section 54f", "section 54ec", "capital loss",
             ],
             "required_tags": ["Capital Gains"],
             "reason": "Capital gains circular — applicable to clients with capital gain transactions",
         },
+        # ─── NRI / DTAA ────────────────────────────────────────────────────
         {
             "keywords": [
                 "nri", "non-resident indian", "dtaa", "double taxation",
                 "section 195", "foreign remittance", "repatriation",
+                "residential status", "ordinarily resident", "not ordinarily resident",
+                "form 10f", "tax residency certificate",
             ],
             "required_tags": ["NRI"],
             "reason": "NRI/DTAA circular — applicable to non-resident clients",
         },
+        # ─── Scrutiny / Assessment / Appeal ────────────────────────────────
         {
             "keywords": [
                 "scrutiny", "section 143", "section 148", "assessment order",
-                "appeal", "itat", "cit(a)", "demand notice",
+                "appeal", "itat", "cit(a)", "demand notice", "rectification",
+                "section 154", "revision", "section 263", "section 264",
+                "faceless assessment", "e-assessment", "national faceless",
             ],
             "required_client_type": "business",
             "reason": "Scrutiny/assessment circular — applicable to business clients under IT assessment",
         },
+        # ─── ITR Filing (Generic) ──────────────────────────────────────────
+        {
+            "keywords": [
+                "income tax return", "itr filing", "itr form", "itr-1", "itr-2",
+                "itr-3", "itr-4", "itr-5", "itr-6", "itr-7", "belated return",
+                "revised return", "section 139", "due date for return",
+            ],
+            "required_tags": ["IncomeTax"],
+            "reason": "ITR filing circular — applicable to all income tax filers",
+        },
+        # ─── Advance Tax / Self Assessment ─────────────────────────────────
+        {
+            "keywords": [
+                "advance tax", "self assessment tax", "section 208", "section 211",
+                "instalment of tax", "deferred tax", "interest 234b", "interest 234c",
+            ],
+            "required_tags": ["IncomeTax"],
+            "required_client_type": "business",
+            "reason": "Advance tax circular — applicable to business clients with tax liability",
+        },
+        # ─── Tax Audit ─────────────────────────────────────────────────────
+        {
+            "keywords": [
+                "tax audit", "section 44ab", "form 3ca", "form 3cb", "form 3cd",
+                "audit report", "chartered accountant", "turnover audit",
+            ],
+            "required_tags": ["Tax Audit"],
+            "reason": "Tax audit circular — applicable to clients requiring tax audit",
+        },
+        # ─── GST Overlap (Business Only) ───────────────────────────────────
+        {
+            "keywords": [
+                "gst audit", "reconciliation statement", "gstr-9c", "annual return",
+                "turnover reconciliation", "input tax credit", "itc",
+            ],
+            "required_tags": ["GST", "IncomeTax"],
+            "reason": "GST-ITR reconciliation circular — applicable to clients with both GST and Income tax obligations",
+        },
     ],
     "EPFO": [
+        # ─── EPFO / PF / ESI ───────────────────────────────────────────────
+        {
+            "keywords": [
+                "epf", "employee provident fund", "pf contribution", "pf return",
+                "form 3a", "form 6a", "form 12a", "form 5", "form 10", "form 19",
+                "form 31", "form 10c", "eps", "employee pension scheme",
+            ],
+            "required_tags": ["EPFO"],
+            "reason": "EPFO/PF circular — applicable to EPFO-registered employers",
+        },
+        # ─── ESIC ──────────────────────────────────────────────────────────
+        {
+            "keywords": [
+                "esic", "employee state insurance", "esi contribution",
+                "medical benefit", "sickness benefit", "esi return",
+                "dispensary", "esi hospital",
+            ],
+            "required_tags": ["EPFO"],
+            "reason": "ESIC circular — applicable to ESIC-registered employers",
+        },
+        # ─── International Worker ──────────────────────────────────────────
         {
             "keywords": [
                 "international worker", "iw", "cross-border",
-                "foreign national", "overseas employee",
+                "foreign national", "overseas employee", "social security agreement",
             ],
             "required_tags": ["FEMA"],
             "reason": "EPFO international worker circular — applicable to entities with foreign employees",
         },
+        # ─── Wage Ceiling / Coverage ───────────────────────────────────────
         {
             "keywords": [
-                "esic", "employee state insurance", "esi contribution",
-                "medical benefit", "sickness benefit",
+                "wage ceiling", "coverage", "member", "subscriber",
+                "mandatory coverage", "voluntary coverage", "excluded employee",
             ],
             "required_tags": ["EPFO"],
-            "reason": "ESIC circular — applicable to EPFO-registered employers",
+            "reason": "EPFO coverage circular — applicable to employers with employees",
+        },
+    ],
+    "GST": [
+        # ─── GSTR-1 / GSTR-3B (Regular Returns) ────────────────────────────
+        {
+            "keywords": [
+                "gstr-1", "gstr-3b", "gstr-2b", "gstr-2a", "monthly return",
+                "outward supply", "inward supply", "purchase register", "sales register",
+                "return filing", "nil return", "late fee", "section 39",
+            ],
+            "required_tags": ["GST"],
+            "reason": "GST return filing circular — applicable to GST-registered entities",
+        },
+        # ─── GSTR-9 / Annual Return ────────────────────────────────────────
+        {
+            "keywords": [
+                "gstr-9", "gstr-9c", "annual return", "reconciliation statement",
+                "annual statement", "form gst annx", "financial year return",
+            ],
+            "required_tags": ["GST"],
+            "reason": "GST annual return circular — applicable to GST-registered entities",
+        },
+        # ─── Input Tax Credit (ITC) ────────────────────────────────────────
+        {
+            "keywords": [
+                "input tax credit", "itc", "eligibility", "blocked credit",
+                "section 16", "section 17", "reversal of credit", "common credit",
+                "itc mismatch", "gstr-2b vs books", "section 17(5)",
+            ],
+            "required_tags": ["GST"],
+            "reason": "Input tax credit circular — applicable to GST-registered entities claiming ITC",
+        },
+        # ─── E-Invoice / E-Way Bill ────────────────────────────────────────
+        {
+            "keywords": [
+                "e-invoice", "eway bill", "invoice reference number", "irn",
+                "qr code", "e-way bill rules", "turnover limit", "part-a", "part-b",
+                "consignment", "goods movement", "transportation",
+            ],
+            "required_tags": ["GST"],
+            "reason": "E-invoice/e-way bill circular — applicable to entities with goods movement",
+        },
+        # ─── GST Audit / Assessment ────────────────────────────────────────
+        {
+            "keywords": [
+                "gst audit", "scrutiny", "assessment", "section 61", "section 65",
+                "special audit", "section 66", "demand", "show cause notice",
+                "section 73", "section 74", "adjudication",
+            ],
+            "required_tags": ["GST"],
+            "required_client_type": "business",
+            "reason": "GST audit/assessment circular — applicable to business entities under GST scrutiny",
+        },
+        # ─── Rate Change / Classification ──────────────────────────────────
+        {
+            "keywords": [
+                "gst rate", "tax rate", "hsn code", "sac code", "classification",
+                "schedule", "rate change", "exemption", "nil rated", "zero rated",
+            ],
+            "required_tags": ["GST"],
+            "reason": "GST rate/classification circular — applicable to GST-registered entities",
+        },
+        # ─── Composition Scheme ────────────────────────────────────────────
+        {
+            "keywords": [
+                "composition scheme", "composition levy", "section 10",
+                "cmp-02", "cmp-08", "turnover limit", "quarterly return",
+            ],
+            "required_tags": ["GST"],
+            "reason": "Composition scheme circular — applicable to small taxpayers under composition",
+        },
+        # ─── Refund / Export ───────────────────────────────────────────────
+        {
+            "keywords": [
+                "gst refund", "refund claim", "export refund", "lut", "bond",
+                "zero-rated supply", "refund rules", "form gst rfd",
+                "unutilised credit", "inverted duty",
+            ],
+            "required_tags": ["GST", "FEMA"],
+            "reason": "GST refund/export circular — applicable to exporters with GST registration",
+        },
+        # ─── TCS / E-Commerce ──────────────────────────────────────────────
+        {
+            "keywords": [
+                "tcs", "tax collection at source", "e-commerce operator",
+                "section 52", "gst on e-commerce", "gst portal",
+            ],
+            "required_tags": ["GST"],
+            "reason": "GST TCS/e-commerce circular — applicable to e-commerce operators",
+        },
+    ],
+    "SEBI": [
+        # ─── Listed Company Compliance ─────────────────────────────────────
+        {
+            "keywords": [
+                "listed company", "listing agreement", "listing regulation",
+                "lodr", "stock exchange", "bse", "nse", "disclosure",
+                "price sensitive", "unpublished price sensitive", "upsi",
+            ],
+            "required_tags": ["SEBI"],
+            "business_contains": ["listed"],
+            "reason": "Listed company compliance circular — applicable to SEBI-regulated listed entities",
+        },
+        # ─── Insider Trading / Code of Conduct ─────────────────────────────
+        {
+            "keywords": [
+                "insider trading", "pit regulations", "code of conduct",
+                "designated person", "trading window", "pre-clearance",
+                "related party", "immediate relative",
+            ],
+            "required_tags": ["SEBI"],
+            "reason": "Insider trading circular — applicable to SEBI-regulated entities",
+        },
+        # ─── Corporate Governance ──────────────────────────────────────────
+        {
+            "keywords": [
+                "corporate governance", "board committee", "audit committee",
+                "nomination and remuneration", "stakeholder relationship",
+                "independent director", "women director", "board evaluation",
+            ],
+            "required_tags": ["SEBI"],
+            "business_contains": ["listed"],
+            "reason": "Corporate governance circular — applicable to listed companies",
+        },
+        # ─── SAST / Substantial Acquisition ────────────────────────────────
+        {
+            "keywords": [
+                "sast", "substantial acquisition", "shareholding", "open offer",
+                "trigger point", "creeping acquisition", "disclosure of acquisition",
+            ],
+            "required_tags": ["SEBI"],
+            "business_contains": ["listed"],
+            "reason": "SAST circular — applicable to listed companies and acquirers",
+        },
+        # ─── PIT / Prohibition ─────────────────────────────────────────────
+        {
+            "keywords": [
+                "prohibition", "fraudulent", "unfair trade practice",
+                "market manipulation", "front running", "pump and dump",
+            ],
+            "required_tags": ["SEBI"],
+            "reason": "SEBI prohibition circular — applicable to market participants",
+        },
+        # ─── Mutual Fund / AIF / Portfolio Manager ─────────────────────────
+        {
+            "keywords": [
+                "mutual fund", "aif", "alternative investment", "portfolio manager",
+                "investment adviser", "research analyst", "fund manager",
+                "scheme information", "sid", "kiim",
+            ],
+            "required_tags": ["SEBI"],
+            "business_contains": ["fund", "asset management", "portfolio", "wealth management"],
+            "reason": "SEBI fund/adviser circular — applicable to fund managers and investment advisers",
+        },
+        # ─── ESG / BRSR / Sustainability ───────────────────────────────────
+        {
+            "keywords": [
+                "esg", "brsr", "business responsibility", "sustainability reporting",
+                "integrated reporting", "carbon disclosure", "gri",
+            ],
+            "required_tags": ["SEBI"],
+            "business_contains": ["listed"],
+            "reason": "ESG/sustainability circular — applicable to listed entities",
+        },
+        # ─── Delisting / Buyback / SRE ─────────────────────────────────────
+        {
+            "keywords": [
+                "delisting", "buyback", "share buyback", "rights issue",
+                "preferential allotment", "qualified institutions placement", "qip",
+                "further issue", "bonus issue",
+            ],
+            "required_tags": ["SEBI"],
+            "business_contains": ["listed"],
+            "reason": "SEBI corporate action circular — applicable to listed companies",
         },
     ],
 }
 
 # ─────────────────────────────────────────────
-# CATCH-ALL POLICY
-# When no content rule keyword matches a circular, these policies restrict
+# Catch-all policy: when no content rule keyword matches a circular, these policies restrict
 # the generic pass-through to a narrower audience instead of every client
 # with any obligation under that regulator.
-# ─────────────────────────────────────────────
 _CATCH_ALL_POLICY: dict[str, dict] = {
     # Generic RBI circulars (no FEMA/NBFC/KYC/penalty keyword) → banking entities only.
     # Arvind Textiles and Kapoor Tech have FEMA obligations under RBI but should NOT
     # receive every bank-governance or WMA circular that slips past content rules.
     "RBI": {"required_tags": ["RBI"]},
-    # Generic IncomeTax circulars → business filers only.
+    # Generic IncomeTax circulars → business filers only (not salaried individuals).
     # Individual clients (CLT-008/009/010) get only circulars whose keywords
     # match their specific tags (NRI, Capital Gains, Presumptive Tax).
     "IncomeTax": {"required_client_type": "business"},
+    # Generic GST circulars → all GST-registered entities
+    "GST": {"required_tags": ["GST"]},
+    # Generic MCA circulars → companies and LLPs only (not individuals)
+    "MCA": {"required_constitution": "company"},
+    # Generic SEBI circulars → listed companies and fund managers only
+    "SEBI": {"required_tags": ["SEBI"]},
 }
 
 
@@ -352,69 +706,43 @@ def _content_match(
     text = (title + " " + summary).lower()
     client_tags = [t.upper() for t in client.get("tags", [])]
     biz = client.get("profile", {}).get("industry", "").lower()
-
-    # A circular may match MULTIPLE content rules (e.g. a TDS circular that
-    # also mentions 44ADA or NRI provisions).  Accept the client if ANY
-    # matching rule passes — don't block on the first failed rule.
-    any_rule_matched_keywords = False
-    accepted_reason = ""
+    constitution = client.get("profile", {}).get("constitution", "").lower()
 
     for rule in rules:
         if not _matches_any(text, rule["keywords"]):
             continue
-
-        any_rule_matched_keywords = True
 
         # Keywords matched — check required client type (business vs individual)
         required_client_type = rule.get("required_client_type")
         if required_client_type:
             actual_type = client.get("client_type", "business")
             if actual_type != required_client_type:
-                continue  # try next rule
-
-        # Hard field gate: require_field must be present even for obligation-matched
-        # clients.  E.g. TDS circulars require TAN — individuals without TAN are
-        # deductees (TDS is deducted FROM them), not deductors.
-        require_field = rule.get("require_field")
-        if require_field:
-            val = _resolve_field(client, require_field)
-            if val is None or str(val).strip() in ("", "None", "null"):
-                continue  # try next rule
+                return False, ""
 
         # Tag check: skip for obligation-matched clients (they already proved relevance).
         required_tags = rule.get("required_tags", [])
         if required_tags and not obligation_matched:
-            tag_ok = any(t.upper() in client_tags for t in required_tags)
-            # alt_field: accept clients who have this field set (e.g. TAN holders
-            # are deductors even if they lack the "TDS" tag in their profile).
-            alt_field = rule.get("alt_field")
-            alt_ok = False
-            if alt_field:
-                alt_val = _resolve_field(client, alt_field)
-                alt_ok = alt_val is not None and str(alt_val).strip() not in ("", "None", "null")
-            if not tag_ok and not alt_ok:
-                continue  # try next rule
+            if not any(t.upper() in client_tags for t in required_tags):
+                return False, ""
 
+        # Constitution requirement (e.g., "llp", "company")
         required_constitution = rule.get("required_constitution")
         if required_constitution:
-            constitution = client.get("profile", {}).get("constitution", "").lower()
             if required_constitution not in constitution:
-                continue  # try next rule
+                return False, ""
+
+        # Constitution exclusion (e.g., exclude "individual", "salaried" for TDS)
+        required_constitution_exclude = rule.get("required_constitution_exclude", [])
+        if required_constitution_exclude:
+            if any(excl in constitution for excl in required_constitution_exclude):
+                return False, ""
 
         # Optionally narrow by business type
         biz_kws = rule.get("business_contains", [])
         if biz_kws and not _matches_any(biz, biz_kws):
-            continue  # try next rule
+            return False, ""
 
-        accepted_reason = rule["reason"]
-        break  # accepted — stop checking
-
-    if accepted_reason:
-        return True, accepted_reason
-    if any_rule_matched_keywords:
-        # At least one rule's keywords matched the circular, but this client
-        # failed all of them — reject.
-        return False, ""
+        return True, rule["reason"]
 
     # No content rule matched → apply catch-all policy.
     # Obligation-matched clients bypass tag checks here too — they have a real
@@ -430,6 +758,11 @@ def _content_match(
         required_client_type = catch_all.get("required_client_type")
         if required_client_type:
             if client.get("client_type", "business") != required_client_type:
+                return False, ""
+        required_constitution = catch_all.get("required_constitution")
+        if required_constitution:
+            constitution = client.get("profile", {}).get("constitution", "").lower()
+            if required_constitution not in constitution:
                 return False, ""
     return True, ""
 
@@ -733,16 +1066,6 @@ def match_clients(documents: list[dict]) -> list[dict]:
             "match_count":      len(affected)
         }
         results.append(result)
-
-        # Console log for visibility
-        print(f"\n[CLIENT MATCHER] Circular: {title[:80]}")
-        print(f"[CLIENT MATCHER] Regulator: {regulator} | Priority: {priority}")
-        print(f"[CLIENT MATCHER] Matched {len(affected)} client(s):")
-        if affected:
-            for c in affected:
-                print(f"  ✓ {c['client_id']} — {c['name']} | Reason: {c['reason']}")
-        else:
-            print("  (no matches)")
 
         # Audit log every match event
         log_event(

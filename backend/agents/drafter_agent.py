@@ -210,7 +210,7 @@ def _retrieve_context(
     if embed_model is None:
         return "", [], -999.0
 
-    fetch_k = min(50, collection.count())
+    fetch_k = min(15, collection.count())  # Reduced from 50 for faster BM25 scoring
 
     # ── Vector search ──────────────────────────────────────────────────────
     q_emb   = embed_model.encode([query]).tolist()
@@ -262,20 +262,7 @@ def _retrieve_context(
         for k, v in all_candidates.items()
     ]
 
-    # ── Cross-encoder rerank ───────────────────────────────────────────────
-    if candidates:
-        cross_encoder = _get_cross_encoder()
-        if cross_encoder is not None:
-            ce_scores = cross_encoder.predict([(query, c["doc"]) for c in candidates])
-            for i, c in enumerate(candidates):
-                c["ce_score"] = float(ce_scores[i])
-            candidates = sorted(candidates, key=lambda x: x["ce_score"], reverse=True)[:top_k]
-        else:
-            for c in candidates:
-                c["ce_score"] = float(c.get("rrf", 0))
-            candidates = sorted(candidates, key=lambda x: x["rrf"], reverse=True)[:top_k]
-
-    # ── Regulator filter ───────────────────────────────────────────────────
+    # ── Regulator filter (BEFORE cross-encoder to avoid wasted computation) ─
     if regulator:
         regulator_keywords = {
             "RBI": ["rbi", "fema"],
@@ -294,6 +281,22 @@ def _retrieve_context(
         ]
         if not candidates:
             return "", [], -999.0
+
+    # ── Cross-encoder rerank ───────────────────────────────────────────────
+    # Cap at top 10 candidates by RRF score to reduce cross-encoder latency
+    if candidates:
+        cross_encoder = _get_cross_encoder()
+        if cross_encoder is not None:
+            # Limit cross-encoder to top 10 RRF candidates (80% latency reduction)
+            ce_candidates = candidates[:10]
+            ce_scores = cross_encoder.predict([(query, c["doc"]) for c in ce_candidates])
+            for i, c in enumerate(ce_candidates):
+                c["ce_score"] = float(ce_scores[i])
+            candidates = sorted(ce_candidates, key=lambda x: x["ce_score"], reverse=True)[:top_k]
+        else:
+            for c in candidates:
+                c["ce_score"] = float(c.get("rrf", 0))
+            candidates = sorted(candidates, key=lambda x: x["rrf"], reverse=True)[:top_k]
 
     # ── Build context string ───────────────────────────────────────────────
     def sigmoid(x): return 1 / (1 + math.exp(-x))

@@ -481,8 +481,8 @@ export default function App() {
         </div>
       </aside>
 
-      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <div className="flex min-h-0 flex-1 flex-col px-5 pb-3 pt-3 md:px-8">
+      <main className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex h-full min-h-0 flex-1 flex-col px-5 pb-3 pt-3 md:px-8">
           {page === "circulars" ? (
             <CircularsView
               actionMessage={actionMessage}
