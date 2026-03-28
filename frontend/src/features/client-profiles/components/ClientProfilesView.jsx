@@ -65,7 +65,7 @@ function getHighRiskAreas(client) {
 
 const PRIORITY_OPTIONS = ["All", "HIGH", "MEDIUM", "LOW"];
 
-export default function ClientProfilesView({ clients: initialClients, loading, onClientsChanged }) {
+export default function ClientProfilesView({ clients: initialClients, loading, onClientsChanged, initialSelectedId, onClearDeepLink }) {
   const [clients, setClients] = useState(initialClients || []);
   const [search, setSearch] = useState("");
   const [priFilter, setPriFilter] = useState("All");
@@ -76,8 +76,22 @@ export default function ClientProfilesView({ clients: initialClients, loading, o
   const [editingClient, setEditingClient] = useState(null);
   const [actionMsg, setActionMsg] = useState("");
   const filterRef = useRef(null);
+  const detailRef = useRef(null);
 
   useEffect(() => { setClients(initialClients || []); }, [initialClients]);
+
+  // Deep-link from calendar: auto-select the client, clear filters, scroll to detail panel
+  useEffect(() => {
+    if (!initialSelectedId) return;
+    setSelectedId(initialSelectedId);
+    setSearch("");
+    setPriFilter("All");
+    setIndustryFilter("All");
+    if (onClearDeepLink) onClearDeepLink();
+    setTimeout(() => {
+      detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }, [initialSelectedId]);
 
   async function handleSave(data) {
     if (editingClient) {
@@ -331,7 +345,7 @@ export default function ClientProfilesView({ clients: initialClients, loading, o
           </div>
         </div>
 
-        <div className="xl:col-span-8">
+        <div className="xl:col-span-8" ref={detailRef}>
           {selected ? (
             <div className="rounded-2xl bg-white shadow-panel overflow-hidden">
               <div className="border-b border-slate-200 bg-slate-50 p-6">

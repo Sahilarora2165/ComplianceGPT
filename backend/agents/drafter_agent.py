@@ -27,6 +27,7 @@ import math
 import re
 import sys
 import time
+from functools import lru_cache
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -66,8 +67,25 @@ DRAFTS_DIR.mkdir(parents=True, exist_ok=True)
 CLIENTS_PATH = _BACKEND_DIR / "clients.json"
 
 # ── Models (loaded once at module level — not per call) ────────────────────────
-_EMBED_MODEL   = SentenceTransformer(EMBEDDING_MODEL)
-_CROSS_ENCODER = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+_CROSS_ENCODER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+
+
+@lru_cache(maxsize=1)
+def _get_embed_model() -> Optional[SentenceTransformer]:
+    try:
+        return SentenceTransformer(EMBEDDING_MODEL)
+    except Exception as exc:
+        print(f"  Warning: embedding model unavailable ({EMBEDDING_MODEL}): {exc}")
+        return None
+
+
+@lru_cache(maxsize=1)
+def _get_cross_encoder() -> Optional[CrossEncoder]:
+    try:
+        return CrossEncoder(_CROSS_ENCODER_MODEL)
+    except Exception as exc:
+        print(f"  Warning: cross-encoder unavailable ({_CROSS_ENCODER_MODEL}): {exc}")
+        return None
 
 
 # ─────────────────────────────────────────────
@@ -188,10 +206,14 @@ def _retrieve_context(
     if collection.count() == 0:
         return "", [], -999.0
 
+    embed_model = _get_embed_model()
+    if embed_model is None:
+        return "", [], -999.0
+
     fetch_k = min(50, collection.count())
 
     # ── Vector search ──────────────────────────────────────────────────────
-    q_emb   = _EMBED_MODEL.encode([query]).tolist()
+    q_emb   = embed_model.encode([query]).tolist()
     results = collection.query(
         query_embeddings=q_emb,
         n_results=fetch_k,
@@ -242,10 +264,16 @@ def _retrieve_context(
 
     # ── Cross-encoder rerank ───────────────────────────────────────────────
     if candidates:
-        ce_scores = _CROSS_ENCODER.predict([(query, c["doc"]) for c in candidates])
-        for i, c in enumerate(candidates):
-            c["ce_score"] = float(ce_scores[i])
-        candidates = sorted(candidates, key=lambda x: x["ce_score"], reverse=True)[:top_k]
+        cross_encoder = _get_cross_encoder()
+        if cross_encoder is not None:
+            ce_scores = cross_encoder.predict([(query, c["doc"]) for c in candidates])
+            for i, c in enumerate(candidates):
+                c["ce_score"] = float(ce_scores[i])
+            candidates = sorted(candidates, key=lambda x: x["ce_score"], reverse=True)[:top_k]
+        else:
+            for c in candidates:
+                c["ce_score"] = float(c.get("rrf", 0))
+            candidates = sorted(candidates, key=lambda x: x["rrf"], reverse=True)[:top_k]
 
     # ── Regulator filter ───────────────────────────────────────────────────
     if regulator:

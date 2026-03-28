@@ -110,13 +110,21 @@ _DISPLAY_LABELS = {
 
 
 @lru_cache(maxsize=1)
-def _get_embedding_model() -> SentenceTransformer:
-    return SentenceTransformer(EMBEDDING_MODEL)
+def _get_embedding_model() -> Optional[SentenceTransformer]:
+    try:
+        return SentenceTransformer(EMBEDDING_MODEL)
+    except Exception as exc:
+        print(f"Warning: embedding model unavailable ({EMBEDDING_MODEL}): {exc}")
+        return None
 
 
 @lru_cache(maxsize=1)
-def _get_cross_encoder() -> CrossEncoder:
-    return CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+def _get_cross_encoder() -> Optional[CrossEncoder]:
+    try:
+        return CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+    except Exception as exc:
+        print("Warning: cross-encoder unavailable (cross-encoder/ms-marco-MiniLM-L-6-v2):", exc)
+        return None
 
 
 # Module-level singleton — NOT lru_cache.
@@ -497,6 +505,13 @@ def _rerank(question: str, candidates: list[dict], top_n: int) -> list[dict]:
         reverse=True,
     )[:_MAX_RERANK_CANDIDATES]
     cross_encoder = _get_cross_encoder()
+    if cross_encoder is None:
+        for candidate in limited_candidates:
+            candidate["ce_score"] = float(candidate.get("rrf_score", 0.0))
+            candidate["precision_score"] = _score_candidate_precision(question, candidate)
+            candidate["combined_score"] = candidate["ce_score"] + (candidate["precision_score"] * 0.15)
+        return sorted(limited_candidates, key=lambda item: item["combined_score"], reverse=True)[:top_n]
+
     scores = cross_encoder.predict([(question, candidate["doc"]) for candidate in limited_candidates])
     for index, candidate in enumerate(limited_candidates):
         candidate["ce_score"] = float(scores[index])
@@ -1029,6 +1044,16 @@ def query_rag(user_question: str, filters: Optional[dict] = None, active_documen
         return result
 
     model = _get_embedding_model()
+    if model is None:
+        result = _abstain(
+            reason="The local embedding model is unavailable in this offline environment.",
+            confidence=0.0,
+            standalone_question=standalone_question,
+            filters=filters,
+            history_used=False,
+        )
+        log_event(agent="AnalystAgent", action="query_abstained", details={"question": user_question, "reason": "embedding_model_unavailable"})
+        return result
     collection = _get_collection()
     if collection.count() == 0:
         result = _abstain(
