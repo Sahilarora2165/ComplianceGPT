@@ -403,7 +403,7 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
         # Cap total drafts per run and per client to ensure diversity.
         # Without a per-client cap, one client with many matching circulars
         # (e.g. Sunrise Finserv × 20 RBI penalty notices) consumes all slots.
-        MAX_DRAFTS_PER_RUN    = 20
+        MAX_DRAFTS_PER_RUN    = 4
         MAX_DRAFTS_PER_CLIENT = 1   # 1 draft per client keeps demo diverse across all 10 clients
         _update_pipeline_result(
             stage="drafting",

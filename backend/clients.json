@@ -93,15 +93,6 @@
         "regulator": "MCA",
         "due_date": "2025-11-29",
         "penalty": "₹100/day — currently ₹12,000+ accrued"
-      },
-      {
-        "code": "IT_TP_REPORT",
-        "status": "pending",
-        "periods": ["AY2025-26"],
-        "frequency": "yearly",
-        "regulator": "IncomeTax",
-        "due_date": "2025-10-31",
-        "penalty": "2% of international transaction value"
       }
     ],
     "risk": {
@@ -109,7 +100,7 @@
       "high_risk_areas": ["FEMA", "MCA", "GST"],
       "recent_misses": 3
     },
-    "tags": ["GST", "FEMA", "IncomeTax", "MCA", "Transfer Pricing", "Export"],
+    "tags": ["GST", "FEMA", "MCA", "Export"],
     "notes": "Textile exporter to UAE and UK. Exports via HDFC Bank Fort Branch. LUT holder since FY2022. Related party transactions with Arvind Global FZE (UAE) — TP applicable. AOC-4 and MGT-7 for FY24 unfiled — director attention needed."
   },
 
@@ -187,8 +178,8 @@
       "high_risk_areas": [],
       "recent_misses": 0
     },
-    "tags": ["GST", "IncomeTax", "EPFO", "ESIC"],
-    "notes": "Quarterly GST filer. 18 employees — PF and ESIC both applicable. No exports, no FEMA. Proprietor files ITR-3. PF ECR for Jan and Feb pending submission."
+    "tags": ["GST", "EPFO", "ESIC"],
+    "notes": "Quarterly GST filer. 18 employees — PF and ESIC both applicable. No exports, no FEMA. Proprietor files ITR-3 personally. PF ECR for Jan and Feb pending submission."
   },
 
   {
@@ -423,24 +414,6 @@
         "regulator": "SEBI",
         "due_date": "2026-04-30",
         "penalty": "SEBI enforcement action — broker license at risk"
-      },
-      {
-        "code": "GST_GSTR3B",
-        "status": "pending",
-        "periods": ["2026-02", "2026-03"],
-        "frequency": "monthly",
-        "regulator": "GST",
-        "due_date": "2026-04-20",
-        "penalty": "₹50/day per month"
-      },
-      {
-        "code": "TDS_26Q",
-        "status": "filed",
-        "periods": ["2025-Q3"],
-        "frequency": "quarterly",
-        "regulator": "IncomeTax",
-        "due_date": "2026-01-31",
-        "penalty": null
       }
     ],
     "risk": {
@@ -448,7 +421,7 @@
       "high_risk_areas": ["SEBI"],
       "recent_misses": 0
     },
-    "tags": ["SEBI", "GST", "IncomeTax", "TDS"],
+    "tags": ["SEBI"],
     "notes": "NSE/BSE registered broker. SEBI half-yearly internal audit report due April 30 — auditor engagement not yet confirmed. Client fund segregation report included in SEBI audit scope."
   },
 
@@ -522,15 +495,6 @@
         "regulator": "GST",
         "due_date": "2026-04-20",
         "penalty": "₹50/day per month"
-      },
-      {
-        "code": "TDS_26Q",
-        "status": "pending",
-        "periods": ["2025-Q3", "2025-Q4"],
-        "frequency": "quarterly",
-        "regulator": "IncomeTax",
-        "due_date": "2026-04-30",
-        "penalty": "₹200/day + 1.5%/month interest"
       }
     ],
     "risk": {
@@ -538,7 +502,7 @@
       "high_risk_areas": ["MCA"],
       "recent_misses": 2
     },
-    "tags": ["GST", "IncomeTax", "MCA", "LLP", "TDS"],
+    "tags": ["MCA", "LLP", "GST"],
     "notes": "LLP constitution — Form 11 (Annual Return) and Form 8 (Statement of Account & Solvency) apply instead of AOC-4/MGT-7. Both overdue for FY2023-24. No export activity. 3 designated partners. Turnover ₹1.2Cr — below statutory audit threshold but partners file ITR-3."
   },
 
@@ -602,15 +566,6 @@
         "penalty": "₹50/day per month"
       },
       {
-        "code": "TDS_26Q",
-        "status": "pending",
-        "periods": ["2025-Q3", "2025-Q4"],
-        "frequency": "quarterly",
-        "regulator": "IncomeTax",
-        "due_date": "2026-04-30",
-        "penalty": "₹200/day + 1.5%/month interest"
-      },
-      {
         "code": "PF_ECR",
         "status": "pending",
         "periods": ["2026-02", "2026-03"],
@@ -618,23 +573,14 @@
         "regulator": "EPFO",
         "due_date": "2026-04-15",
         "penalty": "₹5,000/month + 12% p.a. interest"
-      },
-      {
-        "code": "IT_ADVANCE_TAX",
-        "status": "pending",
-        "periods": ["FY2025-26-Q4"],
-        "frequency": "quarterly",
-        "regulator": "IncomeTax",
-        "due_date": "2026-03-15",
-        "penalty": "1% per month interest under Section 234C"
       }
     ],
     "risk": {
       "compliance_score": 66,
-      "high_risk_areas": ["MCA", "IncomeTax"],
+      "high_risk_areas": ["MCA"],
       "recent_misses": 2
     },
-    "tags": ["GST", "IncomeTax", "MCA", "TDS", "EPFO"],
+    "tags": ["GST", "MCA", "EPFO"],
     "notes": "Pharma distributor — high volume, e-invoicing mandatory (turnover > ₹5Cr). MGT-7 for FY24 overdue. Drug license held under Karnataka State FDA. No export activity. Turnover ₹14.5Cr — tax audit mandatory. Q4 advance tax and Q3/Q4 TDS both pending."
   },
 
@@ -707,7 +653,7 @@
       "high_risk_areas": [],
       "recent_misses": 0
     },
-    "tags": ["IncomeTax", "TDS", "Capital Gains"],
+    "tags": ["IncomeTax", "Capital Gains"],
     "notes": "Salaried employee at Infosys. LTCG ₹2.1L from equity mutual fund redemptions — ₹1.1L taxable at 10% above ₹1L exemption. STCG ₹85K at 15%. Form 16 not yet issued by employer. 80C gap of ₹5,000 to reach ₹1.5L limit — invest before March 31. Pending TDS refund of ₹12K from AY2025-26."
   },
 
@@ -850,7 +796,7 @@
       "high_risk_areas": [],
       "recent_misses": 0
     },
-    "tags": ["IncomeTax", "TDS", "Presumptive Tax", "Freelancer"],
+    "tags": ["IncomeTax", "Presumptive Tax", "Freelancer"],
     "notes": "IT consultant billing Wipro and HCL. Under Section 44ADA — 50% of ₹28L = ₹14L deemed profit. TDS deducted by clients ₹95K (verify via Form 26AS). Advance tax paid ₹1.8L across Q1–Q3. Q4 installment ~₹80K due March 15. 80C fully utilized at ₹1.5L. ITR-4 applicable."
   }
 ]
