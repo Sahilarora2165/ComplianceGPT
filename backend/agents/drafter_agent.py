@@ -1097,9 +1097,18 @@ def draft_advisories(match_results: list[dict]) -> list[dict]:
                 print(f"  ⚠️  Client {client_id} not found in clients.json — skipping")
                 continue
 
-            draft = draft_single(circular, client)
-            all_drafts.append(draft)
-            client_draft_count[client_id] = client_draft_count.get(client_id, 0) + 1
+            try:
+                draft = draft_single(circular, client)
+                all_drafts.append(draft)
+                client_draft_count[client_id] = client_draft_count.get(client_id, 0) + 1
+            except Exception as e:
+                print(f"  ⚠️  Draft failed for {client_id} × {circular.get('regulator', '?')} — {e}")
+                log_event(
+                    agent="DrafterAgent",
+                    action="draft_failed",
+                    details={"client_id": client_id, "circular": circular.get("title", ""), "error": str(e)},
+                )
+                continue
 
     return all_drafts
 
