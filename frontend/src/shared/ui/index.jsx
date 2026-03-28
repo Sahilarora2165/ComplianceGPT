@@ -37,12 +37,20 @@ export function extractEmailBody(emailBody) {
   if (typeof emailBody !== "string") return String(emailBody);
   try {
     const parsed = JSON.parse(emailBody);
-    const body = parsed.body || emailBody;
-    // Fix literal \n from LLM output
-    return body.replace(/\\n/g, "\n").replace(/\\t/g, "\t").trim();
+    const body = parsed.body || parsed.email_body || emailBody;
+    // Fix escaped characters from LLM/JSON output
+    return body
+      .replace(/\\n/g, "\n")
+      .replace(/\\t/g, "  ")
+      .replace(/\\\\/g, "\\")
+      .trim();
   } catch {
-    // Still fix escaped newlines even in raw strings
-    return emailBody.replace(/\\n/g, "\n").replace(/\\t/g, "\t").trim();
+    // Handle raw strings with escaped characters
+    return emailBody
+      .replace(/\\n/g, "\n")
+      .replace(/\\t/g, "  ")
+      .replace(/\\\\/g, "\\")
+      .trim();
   }
 }
 
