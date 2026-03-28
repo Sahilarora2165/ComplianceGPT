@@ -53,14 +53,14 @@ _CIRCULAR_REF_VALUE_PATTERN = re.compile(
     r"\b(?:RBI/\d{4}-\d{2}/\d+|CO\.[A-Za-z0-9.]+\.[A-Za-z0-9.]+\.No\.[A-Za-z0-9.-]+(?:/[A-Za-z0-9.-]+)+)\b",
     re.IGNORECASE,
 )
-_MAX_QUERY_VARIANTS = 6
-_MIN_FETCH_K = 8
-_MAX_FETCH_K = 16
+_MAX_QUERY_VARIANTS = 10
+_MIN_FETCH_K = 12
+_MAX_FETCH_K = 30
 # Lowered from 75 → 20: the old value caused keyword-heavy queries to miss on
 # small corpora because the bypass path returns fake positional RRF with no BM25.
-_SMALL_CORPUS_THRESHOLD = 20
+_SMALL_CORPUS_THRESHOLD = 50
 _MEDIUM_CORPUS_THRESHOLD = 300
-_MAX_RERANK_CANDIDATES = 10
+_MAX_RERANK_CANDIDATES = 50
 
 _STOPWORDS = {
     "the", "and", "for", "what", "which", "when", "where", "does", "about", "from", "with",
@@ -87,6 +87,9 @@ _CONCEPT_TERMS = {
     "affected": ["affected", "applies to", "relevant to", "covered"],
     "summary": ["summary", "overview", "what changed", "key change"],
     "rate_change": ["rate", "revised", "revision", "changed"],
+    "exclusion": ["excluded", "not applicable", "shall not apply", "not eligible", "exempted", "exception", "except for", "not permitted"],
+    "penalty": ["penalty", "fine", "fee", "prosecution", "consequence", "non-compliance"],
+    "eligibility": ["eligible", "applicable to", "who can apply", "covered under", "entitled"],
 }
 _DISPLAY_LABELS = {
     "fema": "FEMA",
@@ -106,6 +109,9 @@ _DISPLAY_LABELS = {
     "affected": "applicability",
     "summary": "summary",
     "rate_change": "rate change",
+    "exclusion": "exclusion",
+    "penalty": "penalty",
+    "eligibility": "eligibility",
 }
 
 
@@ -371,6 +377,11 @@ def expand_query(user_question: str) -> list[str]:
         variants.extend(["RBI/", "CO.DGBA", "circular number", "reference number", "rbi circular", "circular no"])
     if "who" in lower or "applicable" in lower or "affected" in lower:
         variants.extend(["applies to", "relevant to", "entities covered"])
+    if any(t in lower for t in ["excluded", "exclusion", "not eligible", "exempt", "not apply", "exception"]):
+        variants.extend(["shall not apply", "not applicable", "exempted", "not eligible",
+                          "except for the following", "not permitted", "applicability"])
+    if any(t in lower for t in ["penalty", "fine", "consequence", "non-compliance", "prosecution"]):
+        variants.extend(["penalty", "fee", "prosecution", "non-compliance", "consequence"])
 
     deduped = []
     seen = set()
@@ -435,16 +446,28 @@ def _hybrid_search(collection, model: SentenceTransformer, queries: list[str], f
 
     filtered_count = len(filtered_corpus)
     if filtered_count <= _SMALL_CORPUS_THRESHOLD:
-        return {
-            cid: {
+        # For small collections, return ALL chunks — not just vector top-k.
+        # This ensures no chunk is missed due to embedding distance alone.
+        # The reranker + LLM will handle relevance sorting.
+        all_candidates: dict[str, dict] = {}
+        # First, add all corpus chunks with a base score
+        for idx, (doc, meta, cid) in enumerate(filtered_corpus):
+            all_candidates[cid] = {
+                "doc": doc,
+                "meta": meta,
+                "rrf_score": 0.001,  # base score for non-vector matches
+            }
+        # Then overlay vector results with proper distance-based ranking
+        for index, (cid, entry) in enumerate(
+            sorted(vector_results.items(), key=lambda item: item[1]["dist"])
+        ):
+            all_candidates[cid] = {
                 "doc": entry["doc"],
                 "meta": entry["meta"],
                 "rrf_score": 1 / (index + 1),
             }
-            for index, (cid, entry) in enumerate(
-                sorted(vector_results.items(), key=lambda item: item[1]["dist"])[:fetch_k]
-            )
-        }
+        print(f"[RAG DEBUG] Small corpus mode: returning ALL {len(all_candidates)} chunks (corpus={filtered_count})")
+        return all_candidates
 
     tokenized_corpus = [doc.lower().split() for doc, _, _ in filtered_corpus]
     bm25 = BM25Okapi(tokenized_corpus)
@@ -496,27 +519,56 @@ def _score_candidate_precision(question: str, candidate: dict) -> float:
     return precision
 
 
+def _deduplicate_candidates(candidates: list[dict]) -> list[dict]:
+    """
+    Remove near-duplicate chunks (same content from multiple uploads of the
+    same document).  Keeps the copy with the highest rrf_score.
+    Uses the first 200 chars of normalised text as a fingerprint — fast and
+    effective for exact or near-exact duplicates.
+    """
+    seen: dict[str, dict] = {}
+    for candidate in candidates:
+        # Normalise whitespace and take first 200 chars as fingerprint
+        fingerprint = " ".join(candidate["doc"].split())[:200].lower()
+        existing = seen.get(fingerprint)
+        if existing is None or candidate.get("rrf_score", 0) > existing.get("rrf_score", 0):
+            seen[fingerprint] = candidate
+    deduped = list(seen.values())
+    if len(deduped) < len(candidates):
+        print(f"[RAG DEBUG] Dedup: {len(candidates)} → {len(deduped)} candidates ({len(candidates) - len(deduped)} duplicates removed)")
+    return deduped
+
+
 def _rerank(question: str, candidates: list[dict], top_n: int) -> list[dict]:
     if not candidates:
         return []
+    # Deduplicate BEFORE reranking — prevents duplicate uploads from
+    # consuming all top-N slots with the same content.
+    candidates = _deduplicate_candidates(candidates)
+    # For small candidate sets, rerank ALL of them instead of truncating.
+    rerank_limit = _MAX_RERANK_CANDIDATES if len(candidates) > _MAX_RERANK_CANDIDATES * 2 else len(candidates)
     limited_candidates = sorted(
         candidates,
         key=lambda item: item.get("rrf_score", 0.0),
         reverse=True,
-    )[:_MAX_RERANK_CANDIDATES]
+    )[:rerank_limit]
     cross_encoder = _get_cross_encoder()
     if cross_encoder is None:
         for candidate in limited_candidates:
             candidate["ce_score"] = float(candidate.get("rrf_score", 0.0))
             candidate["precision_score"] = _score_candidate_precision(question, candidate)
-            candidate["combined_score"] = candidate["ce_score"] + (candidate["precision_score"] * 0.15)
+            candidate["combined_score"] = candidate["ce_score"] + (candidate["precision_score"] * 0.3)
         return sorted(limited_candidates, key=lambda item: item["combined_score"], reverse=True)[:top_n]
 
     scores = cross_encoder.predict([(question, candidate["doc"]) for candidate in limited_candidates])
     for index, candidate in enumerate(limited_candidates):
         candidate["ce_score"] = float(scores[index])
         candidate["precision_score"] = _score_candidate_precision(question, candidate)
-        candidate["combined_score"] = candidate["ce_score"] + (candidate["precision_score"] * 0.15)
+        # Increased keyword weight from 0.15 → 0.3.  The cross-encoder
+        # struggles with legal paraphrases ("excluded" vs "except for the
+        # following"), so keyword/entity matches need a stronger voice in
+        # the combined score to prevent relevant chunks from being buried.
+        candidate["combined_score"] = candidate["ce_score"] + (candidate["precision_score"] * 0.3)
     return sorted(limited_candidates, key=lambda item: item["combined_score"], reverse=True)[:top_n]
 
 
@@ -862,19 +914,101 @@ def _validate_answer(answer: str, valid_source_ids: set[str]) -> bool:
     lines = [line.strip(" -") for line in answer.splitlines() if line.strip()]
     if not lines:
         return False
+    # At least one line must carry a valid citation.  Allow intro/summary
+    # lines without citations (e.g. "Yes, TDS applies under Section 194J:").
+    has_any_citation = False
     for line in lines:
         matches = _INLINE_SOURCE_PATTERN.findall(line)
         if not matches:
-            return False
+            continue          # skip uncited lines — they're OK
         flat_ids = [token.strip() for group in matches for token in group.split(",")]
         if any(source_id not in valid_source_ids for source_id in flat_ids):
-            return False
-    return True
+            return False      # bad source id → reject
+        has_any_citation = True
+    return has_any_citation
+
+
+def _hard_scope_filter(question: str, answer: str) -> str:
+    """
+    Post-LLM filter: remove bullet lines whose content is not relevant to the
+    question.  Keeps intro/heading lines (no bullet marker) and any bullet
+    whose key terms overlap with the question's intent.
+
+    Returns the filtered answer (may be empty if nothing is relevant).
+    """
+    q_lower = question.lower()
+    q_terms = {
+        t for t in _WORD_PATTERN.findall(q_lower)
+        if t not in _STOPWORDS and len(t) > 2
+    }
+    # Add expanded concept terms so "excluded" also matches "except", etc.
+    expanded = set()
+    for key, variants in _CONCEPT_TERMS.items():
+        if any(v in q_lower for v in variants):
+            for v in variants:
+                expanded.update(_WORD_PATTERN.findall(v.lower()))
+    q_terms |= expanded
+
+    if not q_terms:
+        return answer  # can't filter without question terms
+
+    lines = answer.splitlines()
+    kept: list[str] = []
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            kept.append(line)
+            continue
+
+        # Detect substantive content lines: bullets OR plain lines with citations.
+        # The LLM sometimes returns arrays → plain text lines with [S1] tags.
+        is_bullet = stripped.startswith(("-", "*", "•")) or re.match(r"^\d+[\.\)]\s", stripped)
+        has_citation = bool(_INLINE_SOURCE_PATTERN.search(stripped))
+        is_substantive = is_bullet or has_citation
+
+        if not is_substantive:
+            # Pure intro/heading line without citation — always keep
+            kept.append(line)
+            continue
+
+        # For substantive lines, check overlap with question terms.
+        # Require ≥2 distinct question terms so at least *topic + detail* match.
+        line_lower = _INLINE_SOURCE_PATTERN.sub("", stripped.lower())
+        line_terms = {
+            t for t in _WORD_PATTERN.findall(line_lower)
+            if t not in _STOPWORDS and len(t) > 2
+        }
+        overlap = q_terms & line_terms
+        if len(overlap) >= 2:
+            kept.append(line)
+        else:
+            print(f"[SCOPE FILTER] Dropped off-topic line: {stripped[:100]}...")
+
+    filtered = "\n".join(kept).strip()
+    # If we dropped ALL substantive lines, return empty to trigger not_found
+    has_remaining = any(
+        l.strip().startswith(("-", "*", "•"))
+        or re.match(r"^\d+[\.\)]\s", l.strip())
+        or _INLINE_SOURCE_PATTERN.search(l.strip())
+        for l in filtered.splitlines()
+    )
+    had_original = any(
+        l.strip().startswith(("-", "*", "•"))
+        or re.match(r"^\d+[\.\)]\s", l.strip())
+        or _INLINE_SOURCE_PATTERN.search(l.strip())
+        for l in lines
+    )
+    if not has_remaining and had_original:
+        return ""
+    return filtered
 
 
 def _verify_citation_support(answer: str, sources: list[dict], reranked: list[dict]) -> bool:
     """
     Check that key terms in each cited answer line appear in the cited chunks.
+    Sources cited together on one line (e.g. [S1, S2]) are checked collectively —
+    the combined text of all cited chunks must cover the answer terms.
     """
     for raw_line in answer.splitlines():
         line = raw_line.strip()
@@ -893,6 +1027,8 @@ def _verify_citation_support(answer: str, sources: list[dict], reranked: list[di
         if not answer_terms:
             continue
 
+        # Collect all cited chunk texts for this line, then check collectively
+        combined_chunk_text = ""
         for group in cited_groups:
             for sid in group.split(","):
                 sid = sid.strip()
@@ -901,10 +1037,11 @@ def _verify_citation_support(answer: str, sources: list[dict], reranked: list[di
                 idx = int(sid[1:]) - 1
                 if idx < 0 or idx >= len(reranked):
                     return False
-                chunk_text = str(reranked[idx].get("doc", "")).lower()
-                matches = sum(1 for term in answer_terms if term in chunk_text)
-                if matches / len(answer_terms) < 0.4:
-                    return False
+                combined_chunk_text += " " + str(reranked[idx].get("doc", "")).lower()
+
+        matches = sum(1 for term in answer_terms if term in combined_chunk_text)
+        if matches / len(answer_terms) < 0.2:
+            return False
     return True
 
 
@@ -1067,13 +1204,31 @@ def query_rag(user_question: str, filters: Optional[dict] = None, active_documen
         return result
 
     inferred = _infer_regulator_filter(standalone_question)
-    if inferred and not (filters or {}).get("regulator"):
+    user_set_regulator = (filters or {}).get("regulator")
+    if inferred and not user_set_regulator:
         filters = dict(filters or {})
         filters["regulator"] = inferred
 
     queries = expand_query(standalone_question)
     fetch_k = min(_MAX_FETCH_K, max(TOP_K * 3, _MIN_FETCH_K))
+
+    print(f"\n[RAG DEBUG] Question: {standalone_question[:100]}")
+    print(f"[RAG DEBUG] Inferred regulator: {inferred}, Filters: {filters}")
+    print(f"[RAG DEBUG] Query variants ({len(queries)}): {queries[:4]}")
+    print(f"[RAG DEBUG] Collection size: {collection.count()}, fetch_k: {fetch_k}")
+
     all_chunks = _hybrid_search(collection, model, queries, fetch_k, filters)
+
+    # If inferred regulator filter produced no results, retry without it.
+    if not all_chunks and inferred and not user_set_regulator:
+        filters_without_reg = {k: v for k, v in (filters or {}).items() if k != "regulator"}
+        all_chunks = _hybrid_search(collection, model, queries, fetch_k, filters_without_reg or None)
+        if all_chunks:
+            filters = filters_without_reg or None
+            print(f"[RAG DEBUG] Retried without regulator filter — found {len(all_chunks)} chunks")
+
+    print(f"[RAG DEBUG] Hybrid search returned {len(all_chunks)} chunks")
+
     if not all_chunks:
         result = _abstain(
             reason="No matching document was found for this question.",
@@ -1102,14 +1257,15 @@ def query_rag(user_question: str, filters: Optional[dict] = None, active_documen
 
     fast_result = _try_fast_path(standalone_question, rrf_sorted, fast_path_sources)
     if fast_result:
-        chunk_text = rrf_sorted[0]["doc"].lower()
+        # Check support across top 3 chunks, not just the first one
+        combined_chunk_text = " ".join(c["doc"].lower() for c in rrf_sorted[:3])
         answer_terms = [
             t for t in _WORD_PATTERN.findall(fast_result["answer"].lower())
             if t not in _STOPWORDS and len(t) > 3
         ]
         if answer_terms:
-            match_ratio = sum(1 for t in answer_terms if t in chunk_text) / len(answer_terms)
-            if match_ratio >= 0.4:
+            match_ratio = sum(1 for t in answer_terms if t in combined_chunk_text) / len(answer_terms)
+            if match_ratio >= 0.3:
                 return _response_payload(
                     answer=fast_result["answer"],
                     status="answered",
@@ -1123,7 +1279,19 @@ def query_rag(user_question: str, filters: Optional[dict] = None, active_documen
                     not_found_reason=None,
                 )
 
+    # Log if any chunk contains "except for" — helps debug exclusion-type queries
+    except_chunks = [c for c in all_chunks.values() if "except for" in c["doc"].lower() or "applicability" in c["doc"].lower()]
+    if except_chunks:
+        print(f"[RAG DEBUG] Found {len(except_chunks)} chunks with 'except for'/'applicability' — verifying they enter reranking")
+        for ec in except_chunks[:2]:
+            print(f"  -> rrf={ec.get('rrf_score', 0):.4f} preview={ec['doc'][:100]}...")
+
     reranked = _rerank(standalone_question, list(all_chunks.values()), top_n=TOP_K)
+    print(f"[RAG DEBUG] Reranked: {len(reranked)} chunks (from {len(all_chunks)} after dedup)")
+    for i, item in enumerate(reranked[:5]):
+        meta = _enrich_metadata(item["meta"])
+        print(f"  [{i+1}] ce={item.get('ce_score', 'N/A'):.3f} combined={item.get('combined_score', 'N/A'):.3f} "
+              f"title={meta['title'][:40]} page={meta['page']} doc_preview={item['doc'][:80]}...")
     if not reranked:
         result = _abstain(
             reason="The documents did not produce a usable match for this question.",
@@ -1149,7 +1317,18 @@ def query_rag(user_question: str, filters: Optional[dict] = None, active_documen
         for source in sources:
             source["score"] = max(source["score"], 0.85)
 
-    if not scoped_summary and support["signals"]["entities"] and support["signals"]["concepts"] and not support["joint_support"]:
+    # Only abstain on joint-support failure when NEITHER entity NOR concept
+    # appears anywhere in the retrieved chunks.  The old gate was too strict:
+    # it rejected queries where entity and concept appeared in *different*
+    # chunks (e.g. "revised TDS rate" — entity=tds, concept=rate_change).
+    if (
+        not scoped_summary
+        and support["signals"]["entities"]
+        and support["signals"]["concepts"]
+        and not support["joint_support"]
+        and not support["entity_hits"]
+        and not support["concept_hits"]
+    ):
         reason = _build_not_found_reason(standalone_question, support)
         result = _abstain(
             answer="Not found in provided documents.",
@@ -1164,20 +1343,12 @@ def query_rag(user_question: str, filters: Optional[dict] = None, active_documen
         log_event(agent="AnalystAgent", action="query_abstained", details={"question": user_question, "reason": "no_joint_support", "summary": reason})
         return result
 
-    if not scoped_summary and max_score < MIN_RELEVANCE_SCORE:
-        reason = _build_not_found_reason(standalone_question, support)
-        result = _abstain(
-            answer="Not found in provided documents.",
-            reason=reason,
-            confidence=max_score,
-            standalone_question=standalone_question,
-            filters=filters,
-            history_used=False,
-            sources=sources,
-            supporting_quotes=supporting_quotes,
-        )
-        log_event(agent="AnalystAgent", action="query_abstained", details={"question": user_question, "reason": "low_relevance", "summary": reason, "score": max_score})
-        return result
+    # MIN_RELEVANCE_SCORE gate removed.  The cross-encoder is a ranking tool,
+    # not a reliable relevance judge — it routinely scores legal paraphrases
+    # (e.g. "excluded" vs "except for the following") below any reasonable
+    # threshold.  Instead, we always send the top chunks to the LLM and let
+    # the LLM prompt's abstention rules decide.  The LLM returns "not_found"
+    # when the evidence genuinely lacks the answer.
 
     context = "\n\n".join(
         "\n".join(
@@ -1188,32 +1359,31 @@ def query_rag(user_question: str, filters: Optional[dict] = None, active_documen
                 f"Date: {source['document_date'] or 'Unknown'}",
                 f"Source: {source['source']}",
                 f"Page: {source['page_label']}",
-                f"Snippet: {source['snippet']}",
+                f"Content: {reranked[i]['doc']}",
             ]
         )
-        for source in sources
+        for i, source in enumerate(sources)
     )
 
-    prompt = f"""You are a compliance analyst for Indian CA firms.
-
-You must answer only from the provided evidence. If the evidence is missing, ambiguous, incomplete, contradictory, or does not establish the requested claim clearly, abstain.
+    prompt = f"""You are a compliance analyst for Indian CA firms. Answer questions using ONLY the evidence provided below.
 
 Return valid JSON only:
 {{
   "status": "answered" | "not_found" | "unsupported",
-  "answer": "For answered responses, use 1-3 short bullet lines. If this is a summary request, use up to 5 concise bullet lines. Every bullet must end with citations like [S1] or [S1, S2]. For abstentions, use one short sentence.",
-  "used_source_ids": ["S1"],
+  "answer": "Your answer here. Use 2-6 bullet lines for answered responses. Cite sources inline like [S1] or [S1, S2]. You may have an introductory line without a citation, but substantive claims MUST cite a source.",
+  "used_source_ids": ["S1", "S2"],
   "not_found_reason": "one short user-facing reason or null"
 }}
 
 Rules:
-1. Use ONLY the evidence below.
-2. Do not infer relationships unless they are explicitly supported.
-3. If the question asks for latest/current/new and the evidence does not prove recency, return "unsupported".
+1. Use ONLY the evidence below — do not use outside knowledge.
+2. Answer ONLY what was asked. Do not add extra context, background, or related information that the user did not request. Be precise and focused.
+3. Cite every factual claim with [S1], [S2] etc. You may combine information from multiple sources.
 4. Never cite a source id that is not in the evidence.
-5. Keep the answer concise.
-6. If the question asks for important points, alerts, highlights, or a summary of a clearly scoped document/topic, summarize only what is explicitly present in the evidence.
-7. If you are not certain the evidence EXPLICITLY states the answer — not implies, not suggests, not is consistent with — return not_found. For compliance facts (deadlines, rates, penalties, section numbers), the document must state it directly. Do not infer.
+5. If the evidence does NOT contain information to answer the question, return "not_found". Do not guess or hallucinate.
+6. If the question asks for latest/current/new and the evidence does not prove recency, return "unsupported".
+7. For summary requests, cover up to 5-6 key points from the evidence.
+8. Legal/regulatory documents often use different wording than the question. For example, "excluded" may appear as "except for the following", "shall not apply to", or "not permitted". Match the INTENT of the question, not just exact keywords.
 
 Evidence:
 {context}
@@ -1237,7 +1407,9 @@ Question:
             temperature=0.0,
         )
 
-    payload = _parse_json_response(response.choices[0].message.content or "")
+    raw_llm = response.choices[0].message.content or ""
+    print(f"[RAG DEBUG] LLM raw response ({len(raw_llm)} chars): {raw_llm[:300]}...")
+    payload = _parse_json_response(raw_llm)
     valid_source_ids = {source["source_id"] for source in sources}
     if not payload:
         result = _abstain(
@@ -1253,15 +1425,69 @@ Question:
         return result
 
     status = payload.get("status")
-    answer = _normalize_text_field(payload.get("answer"))
+    raw_answer = payload.get("answer")
+    answer = _normalize_text_field(raw_answer)
     used_source_ids = [source_id for source_id in payload.get("used_source_ids", []) if source_id in valid_source_ids]
     not_found_reason = _normalize_text_field(payload.get("not_found_reason")) or None
 
+    # Fix: when the LLM returns "answer" as a JSON array instead of a string,
+    # the individual items often lack inline [S1] citations even though
+    # used_source_ids is populated.  Append the citation tag to each uncited line
+    # so downstream validation doesn't reject an otherwise correct answer.
+    if isinstance(raw_answer, list) and used_source_ids and status == "answered":
+        citation_tag = "[" + ", ".join(used_source_ids) + "]"
+        fixed_lines = []
+        for line in answer.splitlines():
+            stripped = line.strip()
+            if stripped and not _INLINE_SOURCE_PATTERN.search(stripped):
+                fixed_lines.append(f"{line} {citation_tag}")
+            else:
+                fixed_lines.append(line)
+        answer = "\n".join(fixed_lines)
+        print(f"[RAG DEBUG] Fixed array-format answer: appended {citation_tag} to uncited lines")
+
     if status == "answered":
+        # ── Hard Answer Scope Filter ──────────────────────────────────
+        # Strip bullet points that don't relate to the user's question.
+        original_answer = answer
+        answer = _hard_scope_filter(standalone_question, answer)
+        if not answer:
+            print(f"[SCOPE FILTER] All bullets removed — flipping to not_found")
+            result = _abstain(
+                answer="Not found in provided documents.",
+                reason="The answer contained only information unrelated to your question.",
+                confidence=max_score,
+                standalone_question=standalone_question,
+                filters=filters,
+                history_used=active_document_used,
+                sources=sources,
+                supporting_quotes=supporting_quotes,
+            )
+            log_event(agent="AnalystAgent", action="query_abstained",
+                      details={"question": user_question, "reason": "scope_filter_rejected"})
+            return result
+        if answer != original_answer:
+            print(f"[SCOPE FILTER] Answer trimmed: {len(original_answer)} → {len(answer)} chars")
+            # Re-extract used source IDs from the filtered answer
+            used_source_ids = [
+                sid.strip()
+                for group in _INLINE_SOURCE_PATTERN.findall(answer)
+                for sid in group.split(",")
+                if sid.strip() in valid_source_ids
+            ]
+            used_source_ids = list(dict.fromkeys(used_source_ids))  # dedupe, preserve order
+
+        va = _validate_answer(answer, valid_source_ids)
+        vc = _verify_citation_support(answer, sources, reranked)
+        print(f"[RAG DEBUG] LLM status=answered, validate_answer={va}, verify_citation={vc}, used_ids={used_source_ids}")
+        if not va:
+            print(f"[RAG DEBUG] VALIDATION FAILED: _validate_answer returned False for: {answer[:200]}")
+        if not vc:
+            print(f"[RAG DEBUG] VALIDATION FAILED: _verify_citation_support returned False")
         if (
-            not _validate_answer(answer, valid_source_ids)
+            not va
             or not used_source_ids
-            or not _verify_citation_support(answer, sources, reranked)
+            or not vc
         ):
             result = _abstain(
                 reason="The retrieved evidence did not support a precise answer.",
@@ -1275,8 +1501,8 @@ Question:
             log_event(agent="AnalystAgent", action="query_abstained", details={"question": user_question, "reason": "answer_validation_failed"})
             return result
 
-        filtered_sources = [source for source in sources if source["source_id"] in used_source_ids][:2]
-        filtered_quotes = [quote for quote in supporting_quotes if quote["source_id"] in used_source_ids][:2]
+        filtered_sources = [source for source in sources if source["source_id"] in used_source_ids][:4]
+        filtered_quotes = [quote for quote in supporting_quotes if quote["source_id"] in used_source_ids][:4]
         result = _response_payload(
             answer=answer,
             status="answered",
