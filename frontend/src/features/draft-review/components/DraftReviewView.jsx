@@ -100,6 +100,7 @@ export default function DraftReviewView({
   const [tab, setTab] = useState("email");
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
+  const [notification, setNotification] = useState(null);
 
   const queue = useMemo(() => {
     return [...allDrafts].sort((a, b) => {
@@ -140,8 +141,9 @@ export default function DraftReviewView({
         subject: emailSubject,
         body: emailBody,
       });
+      showNotification("Draft saved successfully", "success");
     } catch (error) {
-      alert(error?.message || "Could not save draft");
+      showNotification(error?.message || "Could not save draft", "error");
     } finally {
       setBusy(null);
     }
@@ -155,8 +157,9 @@ export default function DraftReviewView({
         subject: emailSubject,
         body: emailBody,
       });
+      showNotification("Email sent successfully to client", "success");
     } catch (error) {
-      alert(error?.message || "Could not send email");
+      showNotification(error?.message || "Could not send email", "error");
     } finally {
       setBusy(null);
     }
@@ -167,6 +170,7 @@ export default function DraftReviewView({
     setBusy("reject");
     try {
       await onRejectDraft(selected.draft_id);
+      showNotification("Draft rejected", "success");
     } finally {
       setBusy(null);
     }
@@ -177,11 +181,17 @@ export default function DraftReviewView({
     setBusy("reopen");
     try {
       await onReopenDraft(selected.draft_id);
+      showNotification("Draft reopened for review", "success");
     } catch (error) {
-      alert(error?.message || "Could not reopen draft");
+      showNotification(error?.message || "Could not reopen draft", "error");
     } finally {
       setBusy(null);
     }
+  }
+
+  function showNotification(message, type = "success") {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
   }
 
   const selectedReview = reviewStatus(selected);
@@ -215,8 +225,26 @@ export default function DraftReviewView({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-5 xl:grid-cols-12">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      {/* Notification Toast */}
+      {notification && (
+        <div className="fixed right-6 top-6 z-50 animate-fade-in">
+          <div
+            className={`flex items-center gap-3 rounded-lg px-4 py-3 shadow-lg ${
+              notification.type === "success"
+                ? "bg-emerald-600 text-white"
+                : "bg-rose-600 text-white"
+            }`}
+          >
+            <span className="material-symbols-outlined text-base">
+              {notification.type === "success" ? "check_circle" : "error"}
+            </span>
+            <p className="text-sm font-medium">{notification.message}</p>
+          </div>
+        </div>
+      )}
+
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 xl:grid-cols-12">
         <div className="flex min-h-0 flex-col xl:col-span-4">
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-panel">
             <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
@@ -342,57 +370,63 @@ export default function DraftReviewView({
                 ))}
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto p-6">
+              <div className="min-h-0 flex-1 overflow-y-auto p-0">
                 {tab === "email" ? (
-                  <div className="space-y-4">
+                  <div className="flex h-full flex-col">
                     {selectedStatus === "send_failed" && selected.send_error ? (
-                      <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-800">
+                      <div className="mx-6 mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-800">
                         Last send error: {selected.send_error}
                       </div>
                     ) : null}
 
-                    <div className="overflow-hidden rounded-xl border border-slate-200">
-                      <div className="border-b border-slate-200 bg-slate-100 px-4 py-3">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
-                          Subject
-                        </span>
-                        <input
-                          value={emailSubject}
-                          onChange={(event) => setEmailSubject(event.target.value)}
-                          className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-accent"
-                          placeholder="Email subject"
-                        />
+                    <div className="flex-1 p-6">
+                      <div className="overflow-hidden rounded-xl border border-slate-200">
+                        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted">
+                            Subject
+                          </label>
+                          <input
+                            value={emailSubject}
+                            onChange={(event) => setEmailSubject(event.target.value)}
+                            className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+                            placeholder="Email subject"
+                          />
+                        </div>
+                        <div className="bg-white p-5">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted">
+                            Message Body
+                          </label>
+                          <textarea
+                            value={emailBody}
+                            onChange={(event) => setEmailBody(event.target.value)}
+                            rows={16}
+                            className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-4 text-sm leading-7 text-slate-800 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 font-sans"
+                            placeholder="No email body available."
+                          />
+                        </div>
                       </div>
-                      <div className="bg-white p-5">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
-                          Body
-                        </span>
-                        <textarea
-                          value={emailBody}
-                          onChange={(event) => setEmailBody(event.target.value)}
-                          rows={14}
-                          className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-7 text-slate-700 outline-none focus:border-accent focus:bg-white"
-                          placeholder="No email body available."
-                        />
-                      </div>
+                      <p className="mt-3 text-xs text-muted">
+                        Recipient: <strong className="text-slate-700">{selected.client_email}</strong>
+                      </p>
                     </div>
-                    <p className="text-xs text-muted">
-                      This email will be sent to <strong>{selected.client_email}</strong>.
-                    </p>
                   </div>
                 ) : null}
 
                 {tab === "actions" ? (
-                  <div className="space-y-4">
-                    <p className="text-xs font-bold uppercase tracking-widest text-muted">
-                      {selected.actions?.length || 0} required action
-                      {selected.actions?.length !== 1 ? "s" : ""}
-                    </p>
+                  <div className="space-y-5 p-6">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-widest text-muted">
+                        Required Actions
+                      </p>
+                      <p className="mt-1 text-2xl font-bold text-slate-950">
+                        {selected.actions?.length || 0}
+                      </p>
+                    </div>
                     {selected.actions?.length ? (
                       <ul className="space-y-3">
                         {selected.actions.map((action, index) => (
-                          <li key={index} className="flex gap-3 rounded-xl bg-slate-50 p-4">
-                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-white">
+                          <li key={index} className="flex gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
                               {index + 1}
                             </span>
                             <span className="text-sm leading-6 text-slate-800">{action}</span>
@@ -418,7 +452,7 @@ export default function DraftReviewView({
                 ) : null}
 
                 {tab === "meta" ? (
-                  <div className="space-y-6">
+                  <div className="space-y-6 p-6">
                     <div>
                       <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted">
                         Circular
@@ -429,8 +463,8 @@ export default function DraftReviewView({
                       <p className="mt-1 text-sm text-slate-600">{getDraftSummary(selected)}</p>
                     </div>
 
-                    <div>
-                      <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted">
                         Filing details
                       </p>
                       <DetailRow
@@ -458,14 +492,16 @@ export default function DraftReviewView({
                 ) : null}
               </div>
 
-              <div className="flex items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4">
-                <p className="text-xs text-muted">{actionSummaryText(selected)}</p>
-                <div className="flex gap-3">
+              <div className="flex items-center justify-between gap-4 border-t border-slate-200 bg-slate-50 px-6 py-5">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-slate-700">{actionSummaryText(selected)}</p>
+                </div>
+                <div className="flex shrink-0 gap-3">
                   {showSave ? (
                     <button
                       onClick={handleSave}
                       disabled={!!busy}
-                      className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {busy === "save" ? "Saving..." : "Save Draft"}
                     </button>
@@ -475,7 +511,7 @@ export default function DraftReviewView({
                     <button
                       onClick={handleReject}
                       disabled={!!busy}
-                      className="rounded-xl border border-rose-200 px-5 py-2.5 text-sm font-bold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="rounded-lg border border-rose-300 bg-white px-5 py-2.5 text-sm font-semibold text-rose-700 shadow-sm transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {busy === "reject" ? "Rejecting..." : "Reject"}
                     </button>
@@ -485,7 +521,7 @@ export default function DraftReviewView({
                     <button
                       onClick={primaryAction.onClick}
                       disabled={!!busy}
-                      className="rounded-xl bg-slate-950 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="rounded-lg bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {primaryAction.label}
                     </button>
