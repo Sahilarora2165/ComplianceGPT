@@ -165,13 +165,17 @@ def extract_document_metadata(
 
 # ── Structure-Aware Chunking ──────────────────────────────────────────────────
 
-# Matches: "1.", "1.1", "Section 5", "CHAPTER 3", "A.", blank-line separators
+# Matches structural headings and paragraph boundaries for chunking.
+# IMPORTANT: "Section 248 of the Act" inside body text must NOT trigger a
+# split — only standalone headings like "Section 5" or "Section 5. Heading".
 _SECTION_PATTERN = re.compile(
     r'(?m)^(?:'
-    r'\d+\.\d*\s+[A-Z]'           # "1. Heading" or "1.1 Heading"
-    r'|(?:Section|SECTION|Clause|CLAUSE|Chapter|CHAPTER)\s+\d+'
-    r'|[A-Z][A-Z\s]{4,}$'         # ALL-CAPS heading line
-    r'|(?:\n\s*\n)'                # blank line separator
+    r'\d+\.\d*\s+[A-Z]'                        # "1. Heading" or "1.1 Heading"
+    r'|(?:Section|SECTION|Clause|CLAUSE|Chapter|CHAPTER)\s+\d+(?:\.\d+)*\s*[-:.]\s+[A-Z]'
+                                                 # "Section 5. Heading" or "Section 5 - Title"
+                                                 # but NOT "section 248 of the Act"
+    r'|[A-Z][A-Z\s]{4,}$'                       # ALL-CAPS heading line
+    r'|(?:\n\s*\n)'                              # blank line separator
     r')'
 )
 

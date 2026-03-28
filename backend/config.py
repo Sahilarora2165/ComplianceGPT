@@ -30,8 +30,8 @@ GROQ_MODEL   = "llama-3.3-70b-versatile"
 # ── RAG ────────────────────────────────────────────────────────────────────────
 CHUNK_SIZE          = 1500
 CHUNK_OVERLAP       = 150
-TOP_K               = 5
-MIN_RELEVANCE_SCORE = 0.35
+TOP_K               = 10
+MIN_RELEVANCE_SCORE = 0.20
 
 # ── OCR ────────────────────────────────────────────────────────────────────────
 OCR_CHAR_THRESHOLD = 50
