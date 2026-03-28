@@ -100,6 +100,7 @@ function isDraftPendingReview(draft) {
 
 export default function App() {
   const [page, setPage] = useState("dashboard");
+  const [deepLinkedClientId, setDeepLinkedClientId] = useState(null);
   const [data, setData] = useState({
     pipeline: null,
     circulars: null,
@@ -487,9 +488,23 @@ export default function App() {
               }
             />
           ) : page === "calendar" ? (
-            <ComplianceCalendarView calendarData={calendarData} loading={loading} />
+            <ComplianceCalendarView
+              calendarData={calendarData}
+              loading={loading}
+              clients={clients}
+              onSelectClient={(clientId) => {
+                setDeepLinkedClientId(clientId);
+                setPage("clients");
+              }}
+            />
           ) : page === "clients" ? (
-            <ClientProfilesView clients={clients} loading={loading} onClientsChanged={reloadDashboard} />
+            <ClientProfilesView
+              clients={clients}
+              loading={loading}
+              onClientsChanged={reloadDashboard}
+              initialSelectedId={deepLinkedClientId}
+              onClearDeepLink={() => setDeepLinkedClientId(null)}
+            />
           ) : page === "audit" ? (
             <AuditTrailView events={auditEvents} loading={loading} />
           ) : page === "analyst" ? (

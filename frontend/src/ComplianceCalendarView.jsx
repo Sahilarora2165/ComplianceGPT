@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 
 function regulatorTone(regulator) {
   const tones = {
@@ -52,6 +52,79 @@ function formatDays(daysUntil) {
   return `${daysUntil} days`;
 }
 
+function getClientName(client) {
+  return client?.profile?.name || client?.name || "Unknown";
+}
+
+function normalizeValue(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function buildNeedles(entry) {
+  const obligation = normalizeValue(entry?.obligation);
+  const regulator = normalizeValue(entry?.regulator);
+  const needles = new Set([obligation]);
+
+  const aliases = {
+    "gstr 1": ["gst_gstr1", "gstr1"],
+    "gstr 3b": ["gst_gstr3b", "gstr3b"],
+    "tds": ["tds_24q", "tds_26q", "24q", "26q", "tds return", "form 24q", "form 26q"],
+    "tds return": ["tds_24q", "tds_26q", "24q", "26q", "form 24q", "form 26q"],
+    "form 24q": ["tds_24q", "24q", "tds"],
+    "form 26q": ["tds_26q", "26q", "tds"],
+    "pf": ["pf_ecr", "epfo", "pf"],
+    "esi": ["esic_return", "esic", "esi"],
+    "softex": ["fema_softex", "softex", "export"],
+    "export realisation": ["fema", "export", "forex"],
+    "fema": ["fema", "softex", "export"],
+    "lut": ["lut_renewal", "lut", "export"],
+    "llp annual": ["mca_llp11", "mca_llp8", "llp", "form 11", "form 8"],
+    "llp form 11": ["mca_llp11", "llp11", "form 11", "llp"],
+    "llp form 8": ["mca_llp8", "llp8", "form 8", "llp"],
+    "aoc 4": ["mca_aoc4", "aoc4", "aoc 4"],
+    "mgt 7": ["mca_mgt7", "mgt7", "mgt 7"],
+    "itr": ["it itr filing", "itr", "income tax"],
+    "advance tax": ["it_advance_tax", "it_advance_tax_q4", "advance tax"],
+    "transfer pricing": ["it_tp_report", "transfer pricing", "tp report"],
+    "tp report": ["it_tp_report", "transfer pricing", "tp report"],
+    "annual": ["sebi_half_yearly_audit", "sebi", "annual"],
+    "half yearly": ["sebi_half_yearly_audit", "half yearly", "sebi"],
+    "quarterly": ["quarterly"],
+  };
+
+  (aliases[obligation] || []).forEach((value) => needles.add(normalizeValue(value)));
+  if (regulator) needles.add(regulator);
+  return [...needles].filter(Boolean);
+}
+
+function clientMatchesEntry(client, entry) {
+  const needles = buildNeedles(entry);
+  const haystacks = [
+    client?.tags || [],
+    (client?.obligations || []).flatMap((obligation) => [
+      obligation?.code,
+      obligation?.regulator,
+      obligation?.status,
+      obligation?.frequency,
+      ...(obligation?.periods || []),
+    ]),
+    [
+      client?.client_type,
+      client?.profile?.constitution,
+      client?.profile?.industry,
+      client?.notes,
+    ],
+  ]
+    .flat(2)
+    .map((value) => normalizeValue(value))
+    .filter(Boolean);
+
+  return needles.some((needle) => haystacks.some((value) => value.includes(needle)));
+}
+
 function MobileCard({ entry }) {
   return (
     <article className={`rounded-3xl border border-slate-200 p-5 shadow-panel ${rowTone(entry.urgency)}`}>
@@ -88,10 +161,11 @@ function MobileCard({ entry }) {
   );
 }
 
-export default function ComplianceCalendarView({ calendarData, loading }) {
+export default function ComplianceCalendarView({ calendarData, loading, clients = [], onSelectClient }) {
   const [regulatorFilter, setRegulatorFilter] = useState("All");
   const [frequencyFilter, setFrequencyFilter] = useState("All");
   const [urgencyOnly, setUrgencyOnly] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState(null);
 
   const calendarEntries = calendarData?.calendar || [];
   const totalEntries = calendarData?.total || calendarEntries.length;
@@ -124,6 +198,15 @@ export default function ComplianceCalendarView({ calendarData, loading }) {
       return matchesRegulator && matchesFrequency && matchesUrgency;
     });
   }, [calendarEntries, regulatorFilter, frequencyFilter, urgencyOnly]);
+
+  const selectedKey = selectedEntry
+    ? `${selectedEntry.regulator}-${selectedEntry.obligation}`
+    : null;
+
+  const matchingClients = useMemo(() => {
+    if (!selectedEntry) return [];
+    return clients.filter((client) => clientMatchesEntry(client, selectedEntry));
+  }, [clients, selectedEntry]);
 
   return (
     <div className="space-y-8">
@@ -237,73 +320,126 @@ export default function ComplianceCalendarView({ calendarData, loading }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200/70">
-                {filteredEntries.map((entry) => (
-                  <tr key={`${entry.regulator}-${entry.obligation}`} className={`group transition ${rowTone(entry.urgency)}`}>
-                    <td className="px-6 py-5">
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`mt-1 h-10 w-1.5 rounded-full ${
-                            entry.urgency === "MISSED"
-                              ? "bg-rose-600"
-                              : entry.urgency === "CRITICAL"
-                                ? "bg-red-400"
-                                : entry.urgency === "WARNING"
-                                  ? "bg-amber-400"
-                                  : "bg-teal-600"
-                          }`}
-                        />
-                        <div>
-                          <p className="text-sm font-bold text-slate-950">{entry.obligation}</p>
-                          <p className="mt-1 text-xs font-medium text-slate-500">{entry.description}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <span className={`rounded px-2 py-1 text-[10px] font-bold ${regulatorTone(entry.regulator)}`}>
-                        {entry.regulator}
-                      </span>
-                    </td>
-                    <td className="px-6 py-5 text-sm font-semibold text-slate-900">
-                      {formatDate(entry.next_due_date)}
-                    </td>
-                    <td className="px-6 py-5">
-                      <span
-                        className={`text-sm font-extrabold ${
-                          entry.urgency === "MISSED" || entry.urgency === "CRITICAL"
-                            ? "text-rose-600"
-                            : entry.urgency === "WARNING"
-                              ? "text-amber-700"
-                              : "text-slate-900"
-                        }`}
+                {filteredEntries.map((entry) => {
+                  const entryKey = `${entry.regulator}-${entry.obligation}`;
+                  const isExpanded = selectedKey === entryKey;
+                  return (
+                    <React.Fragment key={entryKey}>
+                      <tr
+                        className={`group cursor-pointer transition ${rowTone(entry.urgency)} ${isExpanded ? "!bg-teal-50" : ""}`}
+                        onClick={() => setSelectedEntry(isExpanded ? null : entry)}
                       >
-                        {formatDays(entry.days_until)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-5 text-xs font-medium text-slate-500">{entry.frequency}</td>
-                    <td className="px-6 py-5">
-                      <span className={`inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${urgencyTone(entry.urgency)}`}>
-                        {entry.urgency === "CRITICAL" ? <span className="h-2 w-2 rounded-full bg-rose-500" /> : null}
-                        {entry.urgency === "OK" ? "On Track" : entry.urgency}
-                      </span>
-                    </td>
-                    <td className="px-6 py-5 text-right">
-                      <span className="material-symbols-outlined opacity-0 transition group-hover:opacity-100 text-slate-500">
-                        arrow_forward_ios
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                        <td className="px-6 py-5">
+                          <div className="flex items-start gap-3">
+                            <div
+                              className={`mt-1 h-10 w-1.5 rounded-full ${
+                                entry.urgency === "MISSED"
+                                  ? "bg-rose-600"
+                                  : entry.urgency === "CRITICAL"
+                                    ? "bg-red-400"
+                                    : entry.urgency === "WARNING"
+                                      ? "bg-amber-400"
+                                      : "bg-teal-600"
+                              }`}
+                            />
+                            <div>
+                              <span className={`text-left text-sm font-bold transition ${isExpanded ? "text-teal-700" : "text-slate-950 group-hover:text-teal-700"}`}>
+                                {entry.obligation}
+                              </span>
+                              <p className="mt-1 text-xs font-medium text-slate-500">{entry.description}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <span className={`rounded px-2 py-1 text-[10px] font-bold ${regulatorTone(entry.regulator)}`}>
+                            {entry.regulator}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5 text-sm font-semibold text-slate-900">
+                          {formatDate(entry.next_due_date)}
+                        </td>
+                        <td className="px-6 py-5">
+                          <span
+                            className={`text-sm font-extrabold ${
+                              entry.urgency === "MISSED" || entry.urgency === "CRITICAL"
+                                ? "text-rose-600"
+                                : entry.urgency === "WARNING"
+                                  ? "text-amber-700"
+                                  : "text-slate-900"
+                            }`}
+                          >
+                            {formatDays(entry.days_until)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5 text-xs font-medium text-slate-500">{entry.frequency}</td>
+                        <td className="px-6 py-5">
+                          <span className={`inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${urgencyTone(entry.urgency)}`}>
+                            {entry.urgency === "CRITICAL" ? <span className="h-2 w-2 rounded-full bg-rose-500" /> : null}
+                            {entry.urgency === "OK" ? "On Track" : entry.urgency}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5 text-right">
+                          <span className={`material-symbols-outlined text-slate-500 transition ${isExpanded ? "rotate-90" : ""}`}>
+                            arrow_forward_ios
+                          </span>
+                        </td>
+                      </tr>
+
+                      {isExpanded && (
+                        <tr>
+                          <td colSpan={7} className="bg-teal-50/60 px-6 py-4">
+                            <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                              {matchingClients.length} client{matchingClients.length === 1 ? "" : "s"} with this obligation
+                            </p>
+                            {matchingClients.length ? (
+                              <div className="flex flex-wrap gap-2">
+                                {matchingClients.map((client) => (
+                                  <button
+                                    key={client.id}
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); onSelectClient?.(client.id); }}
+                                    className="flex items-center gap-2 rounded-xl border border-teal-200 bg-white px-3 py-2 text-left transition hover:border-teal-400 hover:shadow-sm"
+                                  >
+                                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-700 text-[10px] font-bold text-white">
+                                      {getClientName(client).charAt(0)}
+                                    </div>
+                                    <div>
+                                      <p className="text-xs font-bold text-slate-900">{getClientName(client)}</p>
+                                      <p className="text-[10px] text-slate-500">{client?.profile?.constitution || client?.client_type || "Client"}</p>
+                                    </div>
+                                    <span className="material-symbols-outlined ml-1 text-teal-600" style={{ fontSize: 14 }}>open_in_new</span>
+                                  </button>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-slate-500">No clients matched this obligation.</p>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </section>
 
           <section className="grid grid-cols-1 gap-4 xl:hidden">
             {filteredEntries.map((entry) => (
-              <MobileCard key={`${entry.regulator}-${entry.obligation}`} entry={entry} />
+              <button
+                key={`${entry.regulator}-${entry.obligation}`}
+                type="button"
+                onClick={() => setSelectedEntry(entry)}
+                className="text-left"
+              >
+                <MobileCard entry={entry} />
+              </button>
             ))}
           </section>
         </>
       )}
+
+      {/* clients now show inline in the table rows */}
     </div>
   );
 }
