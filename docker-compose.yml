@@ -16,6 +16,8 @@ services:
     volumes:
       - pdf_data:/app/data/pdfs
       - vectorstore_data:/app/vectorstore
+      - ./backend/logs:/app/logs
+      - ~/.cache/huggingface:/root/.cache/huggingface 
 
     restart: unless-stopped
 

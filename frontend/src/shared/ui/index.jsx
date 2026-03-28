@@ -37,9 +37,12 @@ export function extractEmailBody(emailBody) {
   if (typeof emailBody !== "string") return String(emailBody);
   try {
     const parsed = JSON.parse(emailBody);
-    return parsed.body || emailBody;
+    const body = parsed.body || emailBody;
+    // Fix literal \n from LLM output
+    return body.replace(/\\n/g, "\n").replace(/\\t/g, "\t").trim();
   } catch {
-    return emailBody;
+    // Still fix escaped newlines even in raw strings
+    return emailBody.replace(/\\n/g, "\n").replace(/\\t/g, "\t").trim();
   }
 }
 
@@ -54,6 +57,9 @@ export function initials(name = "") {
 
 // ─── Tone helpers ─────────────────────────────────────────────
 export function statusTone(status) {
+  if (status === "pending_review") return "bg-amber-100 text-amber-800";
+  if (status === "approved_not_sent") return "bg-indigo-100 text-indigo-800";
+  if (status === "send_failed") return "bg-rose-100 text-rose-800";
   if (status === "approved") return "bg-emerald-100 text-emerald-800";
   if (status === "rejected") return "bg-rose-100 text-rose-800";
   return "bg-amber-100 text-amber-800";

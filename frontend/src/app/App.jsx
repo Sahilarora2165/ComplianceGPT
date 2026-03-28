@@ -2,11 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import {
   approveDraft,
   getDashboardData,
+  reopenDraft,
+  runUploadedDocumentPipeline,
+  saveDraft,
+  sendDraftEmail,
   sendDeadlineAlert,
   resetPipelineState,
   runPipeline,
   triggerDeadlineScan,
   triggerSchedulerMonitoring,
+  uploadDocument,
 } from "@/services/complianceApi";
 import ComplianceCalendarView from "@/ComplianceCalendarView";
 import AuditTrailView from "@/features/audit-trail";
@@ -26,7 +31,7 @@ const NAV = [
   { key: "clients", label: "Clients", icon: "group" },
   { key: "analyst", label: "Analyst Query", icon: "psychology" },
   { key: "audit", label: "Audit Trail", icon: "history_edu" },
-  { key: "pipeline", label: "Pipeline", icon: "account_tree" },
+  { key: "operations", label: "Operations Center", icon: "account_tree" },
 ];
 
 function getClientName(client) {
@@ -79,6 +84,20 @@ function regulatorTone(regulator) {
   return map[regulator] || "bg-slate-700 text-white";
 }
 
+function draftReviewStatus(draft) {
+  const review = (draft?.review_status || "").toLowerCase();
+  if (review === "pending" || review === "approved" || review === "rejected") return review;
+
+  const status = (draft?.status || "").toLowerCase();
+  if (status === "rejected") return "rejected";
+  if (["approved", "approved_not_sent", "send_failed", "sent"].includes(status)) return "approved";
+  return "pending";
+}
+
+function isDraftPendingReview(draft) {
+  return draftReviewStatus(draft) === "pending";
+}
+
 export default function App() {
   const [page, setPage] = useState("dashboard");
   const [data, setData] = useState({
@@ -93,6 +112,7 @@ export default function App() {
   });
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState("");
+  const [openIntakeSignal, setOpenIntakeSignal] = useState(0);
 
   useEffect(() => {
     let ignore = false;
@@ -131,7 +151,7 @@ export default function App() {
     () => ({
       circulars: data.pipeline?.total_circulars || allCirculars.length,
       affectedClients: data.pipeline?.total_matches || 0,
-      pendingDrafts: allDrafts.filter((draft) => draft.status === "pending_review").length,
+      pendingDrafts: allDrafts.filter((draft) => isDraftPendingReview(draft)).length,
       deadlineAlerts: data.deadlines?.total || allDeadlines.length,
       totalExposure: data.deadlines?.summary?.total_exposure || 0,
     }),
@@ -146,7 +166,7 @@ export default function App() {
   const urgentDraftQueue = useMemo(
     () =>
       allDrafts
-        .filter((draft) => draft.status === "pending_review")
+        .filter((draft) => isDraftPendingReview(draft))
         .sort(
           (a, b) =>
             (a.risk_level === "HIGH" ? 0 : 1) - (b.risk_level === "HIGH" ? 0 : 1),
@@ -187,6 +207,33 @@ export default function App() {
     }
   }
 
+  async function handleDocumentUpload({ file, regulator, title, uploadedBy }) {
+    setActionMessage("Uploading and ingesting document...");
+    try {
+      const result = await uploadDocument({ file, regulator, title, uploadedBy });
+      setActionMessage(
+        `${result?.document?.title || file.name} ingested. It is now available in Analyst Query.`,
+      );
+      return result;
+    } catch {
+      setActionMessage("Document upload failed");
+      throw new Error("Upload failed");
+    }
+  }
+
+  async function handleRunDocumentPipeline(documentId, title) {
+    const label = title ? `Document processing (${title})` : "Document processing";
+    setActionMessage(`${label} starting...`);
+    try {
+      await runUploadedDocumentPipeline(documentId, "CA");
+      setActionMessage(`${label} started - monitoring for completion...`);
+      pollCompletion(label);
+    } catch {
+      setActionMessage(`${label} failed to start`);
+      throw new Error("Document processing start failed");
+    }
+  }
+
   function pollCompletion(label) {
     let attempts = 0;
     const timer = setInterval(async () => {
@@ -212,19 +259,72 @@ export default function App() {
 
       if (attempts >= 180) {
         clearInterval(timer);
-        setActionMessage("Pipeline still running - check back shortly.");
+        setActionMessage("Processing is still running - check back shortly.");
       }
     }, 2000);
   }
 
-  async function handleDraftDecision(draftId, approved) {
-    setActionMessage(approved ? "Approving draft..." : "Rejecting draft...");
+  function openDocumentIntakeWorkspace() {
+    setPage("analyst");
+    setOpenIntakeSignal((current) => current + 1);
+  }
+
+  async function handleDraftReject(draftId) {
+    setActionMessage("Rejecting draft...");
     try {
-      await approveDraft(draftId, approved, "CA");
+      await approveDraft(draftId, false, "CA");
       await reloadDashboard();
-      setActionMessage(approved ? "Draft approved" : "Draft rejected");
-    } catch {
-      setActionMessage("Action failed");
+      setActionMessage("Draft rejected");
+    } catch (error) {
+      setActionMessage(error?.message || "Draft rejection failed");
+    }
+  }
+
+  async function handleDraftSave(draftId, { subject, body }) {
+    setActionMessage("Saving draft...");
+    try {
+      await saveDraft(draftId, { subject, body, caName: "CA" });
+      await reloadDashboard();
+      setActionMessage("Draft saved");
+    } catch (error) {
+      setActionMessage(error?.message || "Draft save failed");
+      throw error;
+    }
+  }
+
+  async function handleDraftSend(draftId, { subject, body }) {
+    setActionMessage("Sending email...");
+    const idempotencyKey =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random()}`;
+
+    try {
+      const res = await sendDraftEmail(draftId, {
+        subject,
+        body,
+        caName: "CA",
+        idempotencyKey,
+      });
+      await reloadDashboard();
+      setActionMessage(res?.already_sent ? "Email was already sent" : "Email sent");
+      return res;
+    } catch (error) {
+      await reloadDashboard();
+      setActionMessage(error?.message || "Email send failed");
+      throw error;
+    }
+  }
+
+  async function handleDraftReopen(draftId) {
+    setActionMessage("Reopening draft...");
+    try {
+      await reopenDraft(draftId, "CA");
+      await reloadDashboard();
+      setActionMessage("Draft reopened for review");
+    } catch (error) {
+      setActionMessage(error?.message || "Draft reopen failed");
+      throw error;
     }
   }
 
@@ -258,9 +358,9 @@ export default function App() {
         eyebrow: "Research Intelligence",
         subtitle: "Ask compliance questions grounded in the knowledge base",
       },
-      pipeline: {
-        eyebrow: "Execution Control",
-        subtitle: "Operate monitoring runs and inspect pipeline state",
+      operations: {
+        eyebrow: "Monitoring Control",
+        subtitle: "Operate monitoring runs and inspect execution state",
       },
       dashboard: {
         eyebrow: "Compliance Operations",
@@ -316,7 +416,7 @@ export default function App() {
         page !== "calendar" &&
         page !== "clients" &&
         page !== "analyst" &&
-        page !== "pipeline" &&
+        page !== "operations" &&
         page !== "audit" ? (
           <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-canvas/90 px-5 py-3 backdrop-blur md:px-8">
             <div className="flex items-center justify-between gap-4">
@@ -356,7 +456,7 @@ export default function App() {
               loading={loading}
               pipeline={data.pipeline}
               onRunDemo={() =>
-                handleRunPipeline({ simulateMode: true, reset: true, label: "Demo pipeline" })
+                handleRunPipeline({ simulateMode: true, reset: true, label: "Demo monitoring run" })
               }
               onRunReal={() =>
                 handleRunPipeline({
@@ -371,8 +471,10 @@ export default function App() {
               actionMessage={actionMessage}
               allDrafts={allDrafts}
               loading={loading}
-              onApproveDraft={(id) => handleDraftDecision(id, true)}
-              onRejectDraft={(id) => handleDraftDecision(id, false)}
+              onSaveDraft={handleDraftSave}
+              onRejectDraft={handleDraftReject}
+              onSendDraft={handleDraftSend}
+              onReopenDraft={handleDraftReopen}
             />
           ) : page === "deadlines" ? (
             <DeadlineWatchView
@@ -387,29 +489,25 @@ export default function App() {
           ) : page === "calendar" ? (
             <ComplianceCalendarView calendarData={calendarData} loading={loading} />
           ) : page === "clients" ? (
-            <ClientProfilesView clients={clients} loading={loading} />
+            <ClientProfilesView clients={clients} loading={loading} onClientsChanged={reloadDashboard} />
           ) : page === "audit" ? (
             <AuditTrailView events={auditEvents} loading={loading} />
           ) : page === "analyst" ? (
-            <AnalystQueryView />
-          ) : page === "pipeline" ? (
+            <AnalystQueryView
+              actionMessage={actionMessage}
+              onUploadDocument={handleDocumentUpload}
+              onRunUploadedDocumentPipeline={handleRunDocumentPipeline}
+              uploadHistory={auditEvents}
+              openIntakeSignal={openIntakeSignal}
+            />
+          ) : page === "operations" ? (
             <PipelineControlView
               actionMessage={actionMessage}
               loading={loading}
               pipeline={data.pipeline}
               scheduler={scheduler}
-              onRunDemo={() =>
-                handleRunPipeline({ simulateMode: true, reset: true, label: "Demo pipeline" })
-              }
-              onRunReal={() =>
-                handleRunPipeline({
-                  simulateMode: false,
-                  reset: false,
-                  label: "Real monitoring",
-                })
-              }
               onResetPipeline={() =>
-                refresh(resetPipelineState, "Pipeline reset", "Pipeline reset")
+                refresh(resetPipelineState, "Monitoring state reset", "Monitoring state reset")
               }
               onTriggerScheduler={() =>
                 refresh(
@@ -418,6 +516,7 @@ export default function App() {
                   "Scheduler triggered",
                 )
               }
+              onOpenDocumentIntake={openDocumentIntakeWorkspace}
             />
           ) : (
             <div className="flex h-full min-h-0 flex-col gap-3">
@@ -436,11 +535,11 @@ export default function App() {
                 <div className="flex flex-wrap gap-3 xl:justify-end xl:pt-4">
                     <button
                       onClick={() =>
-                        handleRunPipeline({ simulateMode: true, reset: true, label: "Demo pipeline" })
+                        handleRunPipeline({ simulateMode: true, reset: true, label: "Demo monitoring run" })
                       }
                       className="rounded-xl bg-shell px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-shellSoft"
                     >
-                      Run Demo Pipeline
+                      Run Demo Monitoring
                     </button>
                     <button
                       onClick={() =>

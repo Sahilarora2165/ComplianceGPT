@@ -21,11 +21,79 @@ function getDraftSummary(draft) {
   );
 }
 
+function reviewStatus(draft) {
+  const review = (draft?.review_status || "").toLowerCase();
+  if (["pending", "approved", "rejected"].includes(review)) return review;
+
+  const status = (draft?.status || "").toLowerCase();
+  if (status === "rejected") return "rejected";
+  if (["approved", "approved_not_sent", "send_failed", "sent"].includes(status)) {
+    return "approved";
+  }
+  return "pending";
+}
+
+function deliveryStatus(draft) {
+  const delivery = (draft?.delivery_status || "").toLowerCase();
+  if (["not_sent", "sent", "failed"].includes(delivery)) return delivery;
+
+  const status = (draft?.status || "").toLowerCase();
+  if (status === "send_failed") return "failed";
+  if (status === "approved_not_sent") return "not_sent";
+  if (status === "approved" || status === "sent") return "sent";
+  if (draft?.email_sent) return "sent";
+  return "not_sent";
+}
+
+function canonicalStatus(draft) {
+  const review = reviewStatus(draft);
+  const delivery = deliveryStatus(draft);
+
+  if (review === "rejected") return "rejected";
+  if (review === "approved") {
+    if (delivery === "sent") return "approved";
+    if (delivery === "failed") return "send_failed";
+    return "approved_not_sent";
+  }
+  return "pending_review";
+}
+
+function statusLabel(draft) {
+  const status = canonicalStatus(draft);
+  if (status === "pending_review") return "Pending review";
+  if (status === "approved") return "Sent";
+  if (status === "approved_not_sent") return "Approved - not sent";
+  if (status === "send_failed") return "Send failed";
+  if (status === "rejected") return "Rejected";
+  return status.replace(/_/g, " ");
+}
+
+function queueRank(draft) {
+  const review = reviewStatus(draft);
+  const delivery = deliveryStatus(draft);
+  if (review === "pending") return 0;
+  if (review === "approved" && delivery !== "sent") return 1;
+  return 2;
+}
+
+function actionSummaryText(draft) {
+  const review = reviewStatus(draft);
+  const delivery = deliveryStatus(draft);
+
+  if (review === "pending") return "Review, edit if needed, then approve and send.";
+  if (review === "approved" && delivery === "failed") return "Email delivery failed. Retry send.";
+  if (review === "approved" && delivery === "not_sent") return "Draft approved but not sent yet.";
+  if (review === "approved" && delivery === "sent") return "Email already sent to client.";
+  return "Draft is rejected. Reopen to review again.";
+}
+
 export default function DraftReviewView({
   allDrafts,
   loading,
-  onApproveDraft,
+  onSaveDraft,
   onRejectDraft,
+  onSendDraft,
+  onReopenDraft,
 }) {
   const [selectedId, setSelectedId] = useState(null);
   const [busy, setBusy] = useState(null);
@@ -35,9 +103,8 @@ export default function DraftReviewView({
 
   const queue = useMemo(() => {
     return [...allDrafts].sort((a, b) => {
-      const aPending = a.status === "pending_review" ? 0 : 1;
-      const bPending = b.status === "pending_review" ? 0 : 1;
-      if (aPending !== bPending) return aPending - bPending;
+      const rankDiff = queueRank(a) - queueRank(b);
+      if (rankDiff !== 0) return rankDiff;
       return new Date(b.generated_at || 0).getTime() - new Date(a.generated_at || 0).getTime();
     });
   }, [allDrafts]);
@@ -65,18 +132,86 @@ export default function DraftReviewView({
     setEmailBody(extractEmailBody(selected.email_body) || "");
   }, [selected]);
 
-  async function handleApprove() {
+  async function handleSave() {
     if (!selected || busy) return;
-    setBusy("approve");
-    await onApproveDraft(selected.draft_id);
-    setBusy(null);
+    setBusy("save");
+    try {
+      await onSaveDraft(selected.draft_id, {
+        subject: emailSubject,
+        body: emailBody,
+      });
+    } catch (error) {
+      alert(error?.message || "Could not save draft");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleSend(mode = "send") {
+    if (!selected || busy) return;
+    setBusy(mode);
+    try {
+      await onSendDraft(selected.draft_id, {
+        subject: emailSubject,
+        body: emailBody,
+      });
+    } catch (error) {
+      alert(error?.message || "Could not send email");
+    } finally {
+      setBusy(null);
+    }
   }
 
   async function handleReject() {
     if (!selected || busy) return;
     setBusy("reject");
-    await onRejectDraft(selected.draft_id);
-    setBusy(null);
+    try {
+      await onRejectDraft(selected.draft_id);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleReopen() {
+    if (!selected || busy) return;
+    setBusy("reopen");
+    try {
+      await onReopenDraft(selected.draft_id);
+    } catch (error) {
+      alert(error?.message || "Could not reopen draft");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  const selectedReview = reviewStatus(selected);
+  const selectedDelivery = deliveryStatus(selected);
+  const selectedStatus = canonicalStatus(selected);
+
+  const showSave = !!selected && selectedDelivery !== "sent";
+  const showReject = !!selected && selectedReview === "pending";
+
+  let primaryAction = null;
+  if (selected) {
+    if (selectedReview === "pending") {
+      primaryAction = {
+        key: "send",
+        label: busy === "send" ? "Sending..." : "Approve & Send",
+        onClick: () => handleSend("send"),
+      };
+    } else if (selectedReview === "approved" && selectedDelivery !== "sent") {
+      primaryAction = {
+        key: "retry",
+        label: busy === "retry" ? "Retrying..." : "Retry Send",
+        onClick: () => handleSend("retry"),
+      };
+    } else {
+      primaryAction = {
+        key: "reopen",
+        label: busy === "reopen" ? "Reopening..." : "Reopen",
+        onClick: handleReopen,
+      };
+    }
   }
 
   return (
@@ -107,6 +242,7 @@ export default function DraftReviewView({
               {queue.length ? (
                 queue.map((draft) => {
                   const active = selected?.draft_id === draft.draft_id;
+                  const queueStatus = canonicalStatus(draft);
                   return (
                     <button
                       key={draft.draft_id}
@@ -123,10 +259,10 @@ export default function DraftReviewView({
                       <div className="flex items-start justify-between gap-2">
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${statusTone(
-                            draft.status,
+                            queueStatus,
                           )}`}
                         >
-                          {draft.status.replace("_", " ")}
+                          {statusLabel(draft)}
                         </span>
                         <span className="text-[11px] text-muted">{timeAgo(draft.generated_at)}</span>
                       </div>
@@ -177,10 +313,10 @@ export default function DraftReviewView({
                   <div className="text-right shrink-0">
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${statusTone(
-                        selected.status,
+                        selectedStatus,
                       )}`}
                     >
-                      {selected.status.replace("_", " ")}
+                      {statusLabel(selected)}
                     </span>
                     <p className="mt-1 font-mono text-[11px] text-muted">{selected.draft_id}</p>
                   </div>
@@ -221,6 +357,12 @@ export default function DraftReviewView({
               <div className="min-h-0 flex-1 overflow-y-auto p-6">
                 {tab === "email" ? (
                   <div className="space-y-4">
+                    {selectedStatus === "send_failed" && selected.send_error ? (
+                      <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-800">
+                        Last send error: {selected.send_error}
+                      </div>
+                    ) : null}
+
                     <div className="overflow-hidden rounded-xl border border-slate-200">
                       <div className="border-b border-slate-200 bg-slate-100 px-4 py-3">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
@@ -247,7 +389,7 @@ export default function DraftReviewView({
                       </div>
                     </div>
                     <p className="text-xs text-muted">
-                      This email will be sent to <strong>{selected.client_email}</strong> when you approve.
+                      This email will be sent to <strong>{selected.client_email}</strong>.
                     </p>
                   </div>
                 ) : null}
@@ -307,6 +449,8 @@ export default function DraftReviewView({
                         label="Applicable sections"
                         value={(selected.applicable_sections || []).join(", ") || "None"}
                       />
+                      <DetailRow label="Review status" value={reviewStatus(selected)} />
+                      <DetailRow label="Delivery status" value={deliveryStatus(selected)} />
                       <DetailRow label="Model used" value={selected.model_used} />
                       <DetailRow label="Generated" value={formatDate(selected.generated_at)} />
                       <DetailRow label="Version" value={selected.version} />
@@ -327,26 +471,37 @@ export default function DraftReviewView({
               </div>
 
               <div className="flex items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4">
-                <p className="text-xs text-muted">
-                  {selected.status !== "pending_review"
-                    ? `This draft has been ${selected.status}.`
-                    : "Review the draft and confirm before sending."}
-                </p>
+                <p className="text-xs text-muted">{actionSummaryText(selected)}</p>
                 <div className="flex gap-3">
-                  <button
-                    onClick={handleReject}
-                    disabled={selected.status !== "pending_review" || !!busy}
-                    className="rounded-xl border border-rose-200 px-5 py-2.5 text-sm font-bold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {busy === "reject" ? "Rejecting..." : "Reject"}
-                  </button>
-                  <button
-                    onClick={handleApprove}
-                    disabled={selected.status !== "pending_review" || !!busy}
-                    className="rounded-xl bg-slate-950 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {busy === "approve" ? "Approving..." : "Approve & Send"}
-                  </button>
+                  {showSave ? (
+                    <button
+                      onClick={handleSave}
+                      disabled={!!busy}
+                      className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {busy === "save" ? "Saving..." : "Save Draft"}
+                    </button>
+                  ) : null}
+
+                  {showReject ? (
+                    <button
+                      onClick={handleReject}
+                      disabled={!!busy}
+                      className="rounded-xl border border-rose-200 px-5 py-2.5 text-sm font-bold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {busy === "reject" ? "Rejecting..." : "Reject"}
+                    </button>
+                  ) : null}
+
+                  {primaryAction ? (
+                    <button
+                      onClick={primaryAction.onClick}
+                      disabled={!!busy}
+                      className="rounded-xl bg-slate-950 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {primaryAction.label}
+                    </button>
+                  ) : null}
                 </div>
               </div>
             </div>

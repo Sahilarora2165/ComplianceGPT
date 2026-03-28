@@ -2,16 +2,29 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:8000";
 
 async function request(path, options = {}) {
+  const isFormData = options.body instanceof FormData;
+  const headers = {
+    ...(options.headers || {}),
+  };
+  if (!isFormData && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
+    headers,
     ...options,
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed: ${response.status} ${response.statusText}`);
+    let detail = "";
+    try {
+      const payload = await response.json();
+      detail = payload?.detail || payload?.message || "";
+    } catch {
+      // no-op
+    }
+    const suffix = detail ? ` - ${detail}` : "";
+    throw new Error(`Request failed: ${response.status} ${response.statusText}${suffix}`);
   }
 
   return response.json();
@@ -65,6 +78,32 @@ export function approveDraft(draftId, approved, caName = "CA") {
   });
 }
 
+export function saveDraft(draftId, { subject, body, caName = "CA" }) {
+  return request(`/drafts/${draftId}/save`, {
+    method: "POST",
+    body: JSON.stringify({ subject, body, ca_name: caName }),
+  });
+}
+
+export function sendDraftEmail(draftId, { subject, body, caName = "CA", idempotencyKey }) {
+  return request(`/drafts/${draftId}/send`, {
+    method: "POST",
+    body: JSON.stringify({
+      subject,
+      body,
+      ca_name: caName,
+      idempotency_key: idempotencyKey,
+    }),
+  });
+}
+
+export function reopenDraft(draftId, caName = "CA") {
+  return request(`/drafts/${draftId}/reopen`, {
+    method: "POST",
+    body: JSON.stringify({ ca_name: caName }),
+  });
+}
+
 export function resetPipelineState() {
   return request("/pipeline/reset", {
     method: "POST",
@@ -86,4 +125,42 @@ export function queryAnalyst({ question, filters = {}, activeDocument = null }) 
 
 export function getComplianceCalendar() {
   return request("/compliance-calendar");
+}
+
+export function uploadDocument({ file, regulator, title, uploadedBy = "CA" }) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("regulator", regulator);
+  formData.append("title", title);
+  formData.append("uploaded_by", uploadedBy);
+
+  return request("/documents/upload", {
+    method: "POST",
+    body: formData,
+  });
+}
+
+export function runUploadedDocumentPipeline(documentId, caName = "CA") {
+  return request(`/documents/${encodeURIComponent(documentId)}/run-pipeline`, {
+    method: "POST",
+    body: JSON.stringify({ ca_name: caName }),
+  });
+}
+
+export function createClient(client) {
+  return request("/clients", {
+    method: "POST",
+    body: JSON.stringify(client),
+  });
+}
+
+export function updateClient(clientId, client) {
+  return request(`/clients/${clientId}`, {
+    method: "PUT",
+    body: JSON.stringify(client),
+  });
+}
+
+export function deleteClient(clientId) {
+  return request(`/clients/${clientId}`, { method: "DELETE" });
 }
