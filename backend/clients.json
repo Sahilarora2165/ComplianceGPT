@@ -1,243 +1,856 @@
 [
-{
-"id": "C1",
-"name": "Arvind Textiles Pvt. Ltd.",
-"constitution": "Private Limited Company",
-
-"industry": "Manufacturing & Export",
-"tags": ["GST", "RBI", "FEMA", "IncomeTax"],
-
-"identifiers": {
-  "pan": "AABCA1234F",
-  "gstin": "27AABCA1234F1Z5",
-  "cin": "U17111MH2015PTC123456",
-  "iec": "0315012345"
-},
-
-"contact": {
-  "name": "Arvind Shah",
-  "email": "arvind.shah@arvindtextiles.com"
-},
-
-"regulatory_profile": {
-  "gst": ["GSTR1", "GSTR3B"],
-  "fema": ["Export Realisation", "LUT"],
-  "income_tax": ["Advance Tax", "ITR"]
-},
-
-"active_obligations": [
   {
-    "id": "GST_GSTR1_MAR_2026",
-    "type": "GSTR-1",
-    "due_date": "2026-04-11",
-    "status": "PENDING",
-    "risk_level": "MEDIUM",
-    "penalty_if_missed": "₹50/day"
+    "id": "CLT-001",
+    "client_type": "business",
+    "profile": {
+      "name": "Arvind Textiles Pvt. Ltd.",
+      "constitution": "Private Limited Company",
+      "industry": "Manufacturing & Export",
+      "priority": "HIGH",
+      "email": "arvind.shah@arvindtextiles.com",
+      "phone": "+91-9820012345",
+      "address": "Plot 42, MIDC Industrial Area, Bhiwandi, Maharashtra - 421302"
+    },
+    "registrations": {
+      "pan": "AABCA1234F",
+      "tan": "MUMA12345B",
+      "gstin": "27AABCA1234F1Z5",
+      "cin": "U17111MH2015PTC123456",
+      "iec_code": "0315012345"
+    },
+    "financials": {
+      "turnover": 45000000,
+      "advance_tax_paid": 320000,
+      "unrealised_forex_amount": 3200000,
+      "oldest_invoice_age_days": 145
+    },
+    "compliance_state": {
+      "lut_expiry_date": "2026-03-31",
+      "last_aoc4_filed": "FY2022-23",
+      "last_mgt7_filed": "FY2022-23",
+      "tax_audit_required": true,
+      "transfer_pricing_applicable": true,
+      "employee_count": 62,
+      "ad_bank": "HDFC Bank, Fort Branch, Mumbai",
+      "scrutiny": {
+        "status": "none",
+        "section": null,
+        "assessment_year": null,
+        "reply_due_date": null
+      }
+    },
+    "obligations": [
+      {
+        "code": "GST_GSTR3B",
+        "status": "pending",
+        "periods": ["2026-01", "2026-02"],
+        "frequency": "monthly",
+        "regulator": "GST",
+        "due_date": "2026-04-20",
+        "penalty": "₹50/day per month"
+      },
+      {
+        "code": "GST_GSTR1",
+        "status": "pending",
+        "periods": ["2026-02", "2026-03"],
+        "frequency": "monthly",
+        "regulator": "GST",
+        "due_date": "2026-04-11",
+        "penalty": "₹50/day"
+      },
+      {
+        "code": "FEMA_SOFTEX",
+        "status": "pending",
+        "periods": ["INV-2025-089", "INV-2025-102", "INV-2026-011"],
+        "frequency": "per_invoice",
+        "regulator": "RBI",
+        "due_date": "2026-04-10",
+        "penalty": "FEMA violation — compounding penalty"
+      },
+      {
+        "code": "LUT_RENEWAL",
+        "status": "critical",
+        "periods": ["FY2026-27"],
+        "frequency": "yearly",
+        "regulator": "GST",
+        "due_date": "2026-03-31",
+        "penalty": "Exports blocked without LUT — 18% IGST on all exports"
+      },
+      {
+        "code": "MCA_AOC4",
+        "status": "overdue",
+        "periods": ["FY2023-24"],
+        "frequency": "yearly",
+        "regulator": "MCA",
+        "due_date": "2025-10-29",
+        "penalty": "₹100/day — currently ₹15,000+ accrued"
+      },
+      {
+        "code": "MCA_MGT7",
+        "status": "overdue",
+        "periods": ["FY2023-24"],
+        "frequency": "yearly",
+        "regulator": "MCA",
+        "due_date": "2025-11-29",
+        "penalty": "₹100/day — currently ₹12,000+ accrued"
+      },
+      {
+        "code": "IT_TP_REPORT",
+        "status": "pending",
+        "periods": ["AY2025-26"],
+        "frequency": "yearly",
+        "regulator": "IncomeTax",
+        "due_date": "2025-10-31",
+        "penalty": "2% of international transaction value"
+      }
+    ],
+    "risk": {
+      "compliance_score": 58,
+      "high_risk_areas": ["FEMA", "MCA", "GST"],
+      "recent_misses": 3
+    },
+    "tags": ["GST", "FEMA", "IncomeTax", "MCA", "Transfer Pricing", "Export"],
+    "notes": "Textile exporter to UAE and UK. Exports via HDFC Bank Fort Branch. LUT holder since FY2022. Related party transactions with Arvind Global FZE (UAE) — TP applicable. AOC-4 and MGT-7 for FY24 unfiled — director attention needed."
   },
+
   {
-    "id": "FEMA_EXPORT_REALISATION",
-    "type": "Export Realisation",
-    "due_date": "2026-04-05",
-    "status": "PENDING",
-    "risk_level": "HIGH",
-    "penalty_if_missed": "FEMA violation + penalties"
-  }
-],
-
-"risk_profile": {
-  "compliance_score": 68,
-  "high_risk_areas": ["FEMA"],
-  "recent_misses": 1
-},
-
-"priority": "HIGH"
-
-},
-
-{
-"id": "C2",
-"name": "Spice Garden Restaurant",
-"constitution": "Proprietorship",
-
-"industry": "Food & Beverage",
-"tags": ["GST", "IncomeTax"],
-
-"identifiers": {
-  "pan": "BKRPS5678G",
-  "gstin": "27BKRPS5678G1Z3"
-},
-
-"contact": {
-  "name": "Suresh Pillai",
-  "email": "suresh@spicegarden.in"
-},
-
-"regulatory_profile": {
-  "gst": ["GSTR1", "GSTR3B"],
-  "income_tax": ["ITR"]
-},
-
-"active_obligations": [
-  {
-    "id": "GST_GSTR3B_Q4",
-    "type": "GSTR-3B",
-    "due_date": "2026-04-22",
-    "status": "PENDING",
-    "risk_level": "LOW",
-    "penalty_if_missed": "₹50/day"
-  }
-],
-
-"risk_profile": {
-  "compliance_score": 85,
-  "high_risk_areas": [],
-  "recent_misses": 0
-},
-
-"priority": "LOW"
-
-},
-
-{
-"id": "C3",
-"name": "Kapoor Tech Solutions Pvt. Ltd.",
-"constitution": "Private Limited Company",
-
-"industry": "IT & Software Export",
-"tags": ["GST", "IncomeTax", "RBI"],
-
-"identifiers": {
-  "pan": "AAHCK2345L",
-  "gstin": "07AAHCK2345L1Z8",
-  "cin": "U72200DL2020PTC112233"
-},
-
-"contact": {
-  "name": "Neha Kapoor",
-  "email": "neha@kapoortech.io"
-},
-
-"regulatory_profile": {
-  "gst": ["GSTR1", "GSTR3B"],
-  "rbi": ["SOFTEX"],
-  "income_tax": ["Advance Tax", "Transfer Pricing"]
-},
-
-"active_obligations": [
-  {
-    "id": "RBI_SOFTEX",
-    "type": "SOFTEX Filing",
-    "due_date": "2026-03-30",
-    "status": "PENDING",
-    "risk_level": "HIGH",
-    "penalty_if_missed": "RBI penalty + export blockage"
+    "id": "CLT-002",
+    "client_type": "business",
+    "profile": {
+      "name": "Spice Garden Restaurant",
+      "constitution": "Proprietorship",
+      "industry": "Food & Beverage",
+      "priority": "LOW",
+      "email": "suresh@spicegarden.in",
+      "phone": "+91-9823456789",
+      "address": "Shop 7, Linking Road, Bandra West, Mumbai - 400050"
+    },
+    "registrations": {
+      "pan": "BKRPS5678G",
+      "tan": null,
+      "gstin": "27BKRPS5678G1Z3",
+      "cin": null,
+      "iec_code": null
+    },
+    "financials": {
+      "turnover": 8500000,
+      "advance_tax_paid": 45000,
+      "unrealised_forex_amount": 0,
+      "oldest_invoice_age_days": 0
+    },
+    "compliance_state": {
+      "lut_expiry_date": null,
+      "last_aoc4_filed": null,
+      "last_mgt7_filed": null,
+      "tax_audit_required": false,
+      "transfer_pricing_applicable": false,
+      "employee_count": 18,
+      "ad_bank": null,
+      "scrutiny": {
+        "status": "none",
+        "section": null,
+        "assessment_year": null,
+        "reply_due_date": null
+      }
+    },
+    "obligations": [
+      {
+        "code": "GST_GSTR3B",
+        "status": "pending",
+        "periods": ["2026-Q4"],
+        "frequency": "quarterly",
+        "regulator": "GST",
+        "due_date": "2026-04-22",
+        "penalty": "₹50/day"
+      },
+      {
+        "code": "PF_ECR",
+        "status": "pending",
+        "periods": ["2026-01", "2026-02"],
+        "frequency": "monthly",
+        "regulator": "EPFO",
+        "due_date": "2026-03-15",
+        "penalty": "₹5,000/month + 12% p.a. interest"
+      },
+      {
+        "code": "ESIC_RETURN",
+        "status": "pending",
+        "periods": ["H2-FY2025-26"],
+        "frequency": "half_yearly",
+        "regulator": "ESIC",
+        "due_date": "2026-05-11",
+        "penalty": "₹5,000 fine"
+      }
+    ],
+    "risk": {
+      "compliance_score": 82,
+      "high_risk_areas": [],
+      "recent_misses": 0
+    },
+    "tags": ["GST", "IncomeTax", "EPFO", "ESIC"],
+    "notes": "Quarterly GST filer. 18 employees — PF and ESIC both applicable. No exports, no FEMA. Proprietor files ITR-3. PF ECR for Jan and Feb pending submission."
   },
+
   {
-    "id": "TRANSFER_PRICING",
-    "type": "TP Report",
-    "due_date": "2026-10-31",
-    "status": "PENDING",
-    "risk_level": "HIGH",
-    "penalty_if_missed": "₹1L+ penalty"
-  }
-],
+    "id": "CLT-003",
+    "client_type": "business",
+    "profile": {
+      "name": "Kapoor Tech Solutions Pvt. Ltd.",
+      "constitution": "Private Limited Company",
+      "industry": "IT & Software Export",
+      "priority": "HIGH",
+      "email": "neha@kapoortech.io",
+      "phone": "+91-9811223344",
+      "address": "Unit 501, Vatika Business Park, Sector 49, Gurugram, Haryana - 122018"
+    },
+    "registrations": {
+      "pan": "AAHCK2345L",
+      "tan": "DELA23456C",
+      "gstin": "07AAHCK2345L1Z8",
+      "cin": "U72200DL2020PTC112233",
+      "iec_code": "0520034567"
+    },
+    "financials": {
+      "turnover": 32000000,
+      "advance_tax_paid": 280000,
+      "unrealised_forex_amount": 5800000,
+      "oldest_invoice_age_days": 112
+    },
+    "compliance_state": {
+      "lut_expiry_date": "2026-03-31",
+      "last_aoc4_filed": "FY2023-24",
+      "last_mgt7_filed": "FY2023-24",
+      "tax_audit_required": true,
+      "transfer_pricing_applicable": true,
+      "employee_count": 34,
+      "ad_bank": "ICICI Bank, Connaught Place, Delhi",
+      "scrutiny": {
+        "status": "reply_pending",
+        "section": "143(2)",
+        "assessment_year": "2023-24",
+        "reply_due_date": "2026-04-15"
+      }
+    },
+    "obligations": [
+      {
+        "code": "FEMA_SOFTEX",
+        "status": "pending",
+        "periods": ["INV-KT-2025-045", "INV-KT-2025-067", "INV-KT-2026-003"],
+        "frequency": "per_invoice",
+        "regulator": "RBI",
+        "due_date": "2026-04-02",
+        "penalty": "RBI compounding penalty + export proceeds blockage"
+      },
+      {
+        "code": "LUT_RENEWAL",
+        "status": "critical",
+        "periods": ["FY2026-27"],
+        "frequency": "yearly",
+        "regulator": "GST",
+        "due_date": "2026-03-31",
+        "penalty": "18% IGST on all software exports"
+      },
+      {
+        "code": "IT_SCRUTINY_REPLY",
+        "status": "pending",
+        "periods": ["AY2023-24"],
+        "frequency": "one_time",
+        "regulator": "IncomeTax",
+        "due_date": "2026-04-15",
+        "penalty": "Ex-parte assessment if reply missed"
+      },
+      {
+        "code": "IT_TP_REPORT",
+        "status": "pending",
+        "periods": ["AY2025-26"],
+        "frequency": "yearly",
+        "regulator": "IncomeTax",
+        "due_date": "2025-10-31",
+        "penalty": "2% of international transaction value"
+      },
+      {
+        "code": "TDS_26Q",
+        "status": "pending",
+        "periods": ["2025-Q3"],
+        "frequency": "quarterly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-01-31",
+        "penalty": "₹200/day + 1.5%/month interest"
+      }
+    ],
+    "risk": {
+      "compliance_score": 55,
+      "high_risk_areas": ["FEMA", "IncomeTax", "Transfer Pricing"],
+      "recent_misses": 3
+    },
+    "tags": ["GST", "FEMA", "IncomeTax", "Transfer Pricing", "SOFTEX", "Export"],
+    "notes": "Software exporter to US clients (Accenture US, Deloitte US). Exports via ICICI Bank Connaught Place branch. Related party transactions with Kapoor Tech Inc., Delaware USA — TP applicable. Scrutiny notice for AY2023-24 under Section 143(2) — reply due April 15. LUT expiring March 31."
+  },
 
-"risk_profile": {
-  "compliance_score": 60,
-  "high_risk_areas": ["RBI", "Transfer Pricing"],
-  "recent_misses": 2
-},
-
-"priority": "HIGH"
-
-},
-
-{
-"id": "C4",
-"name": "Sunrise Finserv NBFC Ltd.",
-"constitution": "Public Limited Company",
-
-"industry": "NBFC",
-"tags": ["RBI", "IncomeTax"],
-
-"identifiers": {
-  "pan": "AACCS3456M",
-  "cin": "U65910MH2016PLC289012"
-},
-
-"contact": {
-  "name": "Sunita Rao",
-  "email": "sunita.rao@sunrisefinserv.com"
-},
-
-"regulatory_profile": {
-  "rbi": ["Monthly Return", "Annual Return"],
-  "income_tax": ["ITR", "Advance Tax"]
-},
-
-"active_obligations": [
   {
-    "id": "RBI_MONTHLY_RETURN",
-    "type": "RBI Monthly Return",
-    "due_date": "2026-04-07",
-    "status": "PENDING",
-    "risk_level": "HIGH",
-    "penalty_if_missed": "RBI compliance action"
-  }
-],
+    "id": "CLT-004",
+    "client_type": "business",
+    "profile": {
+      "name": "Sunrise Finserv NBFC Ltd.",
+      "constitution": "Public Limited Company",
+      "industry": "NBFC",
+      "priority": "HIGH",
+      "email": "sunita.rao@sunrisefinserv.com",
+      "phone": "+91-9920056789",
+      "address": "12th Floor, One BKC, Bandra Kurla Complex, Mumbai - 400051"
+    },
+    "registrations": {
+      "pan": "AACCS3456M",
+      "tan": "MUMF34567D",
+      "gstin": "27AACCS3456M1Z1",
+      "cin": "U65910MH2016PLC289012",
+      "iec_code": null
+    },
+    "financials": {
+      "turnover": 125000000,
+      "advance_tax_paid": 1800000,
+      "unrealised_forex_amount": 0,
+      "oldest_invoice_age_days": 0
+    },
+    "compliance_state": {
+      "lut_expiry_date": null,
+      "last_aoc4_filed": "FY2023-24",
+      "last_mgt7_filed": "FY2023-24",
+      "tax_audit_required": true,
+      "transfer_pricing_applicable": false,
+      "employee_count": 89,
+      "ad_bank": null,
+      "scrutiny": {
+        "status": "demand_raised",
+        "section": "271(1)(c)",
+        "assessment_year": "2022-23",
+        "reply_due_date": "2026-05-10"
+      }
+    },
+    "obligations": [
+      {
+        "code": "RBI_MONTHLY_RETURN",
+        "status": "pending",
+        "periods": ["2026-03"],
+        "frequency": "monthly",
+        "regulator": "RBI",
+        "due_date": "2026-04-07",
+        "penalty": "RBI compliance action — license risk"
+      },
+      {
+        "code": "IT_SCRUTINY_REPLY",
+        "status": "pending",
+        "periods": ["AY2022-23"],
+        "frequency": "one_time",
+        "regulator": "IncomeTax",
+        "due_date": "2026-05-10",
+        "penalty": "₹42,00,000 demand becomes final — recovery proceedings"
+      },
+      {
+        "code": "TDS_24Q",
+        "status": "pending",
+        "periods": ["2025-Q3"],
+        "frequency": "quarterly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-01-31",
+        "penalty": "₹200/day + 1.5%/month interest on TDS amount"
+      },
+      {
+        "code": "IT_ADVANCE_TAX",
+        "status": "pending",
+        "periods": ["FY2025-26-Q4"],
+        "frequency": "quarterly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-03-15",
+        "penalty": "1% per month interest under Section 234C"
+      }
+    ],
+    "risk": {
+      "compliance_score": 62,
+      "high_risk_areas": ["RBI", "IncomeTax"],
+      "recent_misses": 2
+    },
+    "tags": ["RBI", "IncomeTax", "GST", "NBFC", "TDS"],
+    "notes": "Registered NBFC — RBI certificate of registration held. Pending demand of ₹42L under Section 271(1)(c) for AY2022-23 — penalty for concealment. Q3 TDS return overdue. RBI monthly return (NBS-9) due by 7th of each month."
+  },
 
-"risk_profile": {
-  "compliance_score": 72,
-  "high_risk_areas": ["RBI"],
-  "recent_misses": 0
-},
-
-"priority": "HIGH"
-
-},
-
-{
-"id": "C5",
-"name": "Galaxy Securities Pvt. Ltd.",
-"constitution": "Private Limited Company",
-
-"industry": "Stock Broker",
-"tags": ["SEBI", "GST", "IncomeTax"],
-
-"identifiers": {
-  "pan": "AABCG5678R",
-  "gstin": "07AABCG5678R1Z1",
-  "cin": "U67120DL2012PTC234567"
-},
-
-"contact": {
-  "name": "Amit Verma",
-  "email": "amit@galaxysecurities.in"
-},
-
-"regulatory_profile": {
-  "sebi": ["Audit", "Investor Report"],
-  "gst": ["GSTR1", "GSTR3B"]
-},
-
-"active_obligations": [
   {
-    "id": "SEBI_AUDIT",
-    "type": "SEBI Half-Yearly Audit",
-    "due_date": "2026-04-30",
-    "status": "PENDING",
-    "risk_level": "HIGH",
-    "penalty_if_missed": "License risk"
+    "id": "CLT-005",
+    "client_type": "business",
+    "profile": {
+      "name": "Galaxy Securities Pvt. Ltd.",
+      "constitution": "Private Limited Company",
+      "industry": "Stock Broking",
+      "priority": "MEDIUM",
+      "email": "amit@galaxysecurities.in",
+      "phone": "+91-9833445566",
+      "address": "Office 304, Maker Chamber V, Nariman Point, Mumbai - 400021"
+    },
+    "registrations": {
+      "pan": "AABCG5678R",
+      "tan": "MUMG45678E",
+      "gstin": "27AABCG5678R1Z1",
+      "cin": "U67120MH2012PTC234567",
+      "iec_code": null
+    },
+    "financials": {
+      "turnover": 28000000,
+      "advance_tax_paid": 350000,
+      "unrealised_forex_amount": 0,
+      "oldest_invoice_age_days": 0
+    },
+    "compliance_state": {
+      "lut_expiry_date": null,
+      "last_aoc4_filed": "FY2023-24",
+      "last_mgt7_filed": "FY2023-24",
+      "tax_audit_required": true,
+      "transfer_pricing_applicable": false,
+      "employee_count": 23,
+      "ad_bank": null,
+      "scrutiny": {
+        "status": "none",
+        "section": null,
+        "assessment_year": null,
+        "reply_due_date": null
+      }
+    },
+    "obligations": [
+      {
+        "code": "SEBI_HALF_YEARLY_AUDIT",
+        "status": "pending",
+        "periods": ["H2-FY2025-26"],
+        "frequency": "half_yearly",
+        "regulator": "SEBI",
+        "due_date": "2026-04-30",
+        "penalty": "SEBI enforcement action — broker license at risk"
+      },
+      {
+        "code": "GST_GSTR3B",
+        "status": "pending",
+        "periods": ["2026-02", "2026-03"],
+        "frequency": "monthly",
+        "regulator": "GST",
+        "due_date": "2026-04-20",
+        "penalty": "₹50/day per month"
+      },
+      {
+        "code": "TDS_26Q",
+        "status": "filed",
+        "periods": ["2025-Q3"],
+        "frequency": "quarterly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-01-31",
+        "penalty": null
+      }
+    ],
+    "risk": {
+      "compliance_score": 74,
+      "high_risk_areas": ["SEBI"],
+      "recent_misses": 0
+    },
+    "tags": ["SEBI", "GST", "IncomeTax", "TDS"],
+    "notes": "NSE/BSE registered broker. SEBI half-yearly internal audit report due April 30 — auditor engagement not yet confirmed. Client fund segregation report included in SEBI audit scope."
+  },
+
+  {
+    "id": "CLT-006",
+    "client_type": "business",
+    "profile": {
+      "name": "Mehta & Associates LLP",
+      "constitution": "Limited Liability Partnership",
+      "industry": "Professional Services",
+      "priority": "MEDIUM",
+      "email": "partners@mehtaassociates.co.in",
+      "phone": "+91-9867001122",
+      "address": "201, Mittal Court, Nariman Point, Mumbai - 400021"
+    },
+    "registrations": {
+      "pan": "AAFFM6789K",
+      "tan": "MUMH56789F",
+      "gstin": "27AAFFM6789K1Z4",
+      "cin": null,
+      "iec_code": null,
+      "llpin": "AAB-1234"
+    },
+    "financials": {
+      "turnover": 12000000,
+      "advance_tax_paid": 95000,
+      "unrealised_forex_amount": 0,
+      "oldest_invoice_age_days": 0
+    },
+    "compliance_state": {
+      "lut_expiry_date": null,
+      "last_aoc4_filed": null,
+      "last_mgt7_filed": null,
+      "last_llp8_filed": "FY2022-23",
+      "last_llp11_filed": "FY2022-23",
+      "tax_audit_required": false,
+      "transfer_pricing_applicable": false,
+      "employee_count": 12,
+      "ad_bank": null,
+      "scrutiny": {
+        "status": "none",
+        "section": null,
+        "assessment_year": null,
+        "reply_due_date": null
+      }
+    },
+    "obligations": [
+      {
+        "code": "MCA_LLP11",
+        "status": "overdue",
+        "periods": ["FY2023-24"],
+        "frequency": "yearly",
+        "regulator": "MCA",
+        "due_date": "2024-05-30",
+        "penalty": "₹100/day — currently ₹30,000+ accrued"
+      },
+      {
+        "code": "MCA_LLP8",
+        "status": "overdue",
+        "periods": ["FY2023-24"],
+        "frequency": "yearly",
+        "regulator": "MCA",
+        "due_date": "2024-10-30",
+        "penalty": "₹100/day — currently ₹15,000+ accrued"
+      },
+      {
+        "code": "GST_GSTR3B",
+        "status": "pending",
+        "periods": ["2026-02", "2026-03"],
+        "frequency": "monthly",
+        "regulator": "GST",
+        "due_date": "2026-04-20",
+        "penalty": "₹50/day per month"
+      },
+      {
+        "code": "TDS_26Q",
+        "status": "pending",
+        "periods": ["2025-Q3", "2025-Q4"],
+        "frequency": "quarterly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-04-30",
+        "penalty": "₹200/day + 1.5%/month interest"
+      }
+    ],
+    "risk": {
+      "compliance_score": 65,
+      "high_risk_areas": ["MCA"],
+      "recent_misses": 2
+    },
+    "tags": ["GST", "IncomeTax", "MCA", "LLP", "TDS"],
+    "notes": "LLP constitution — Form 11 (Annual Return) and Form 8 (Statement of Account & Solvency) apply instead of AOC-4/MGT-7. Both overdue for FY2023-24. No export activity. 3 designated partners. Turnover ₹1.2Cr — below statutory audit threshold but partners file ITR-3."
+  },
+
+  {
+    "id": "CLT-007",
+    "client_type": "business",
+    "profile": {
+      "name": "NovaPharma Distributors Pvt. Ltd.",
+      "constitution": "Private Limited Company",
+      "industry": "Pharmaceutical Distribution",
+      "priority": "HIGH",
+      "email": "accounts@novapharma.co.in",
+      "phone": "+91-9845678901",
+      "address": "Survey No. 112, KIADB Industrial Area, Peenya, Bengaluru - 560058"
+    },
+    "registrations": {
+      "pan": "AACNP7890Q",
+      "tan": "BLRN67890G",
+      "gstin": "29AACNP7890Q1Z2",
+      "cin": "U51909KA2018PTC345678",
+      "iec_code": null
+    },
+    "financials": {
+      "turnover": 145000000,
+      "advance_tax_paid": 1200000,
+      "unrealised_forex_amount": 0,
+      "oldest_invoice_age_days": 0
+    },
+    "compliance_state": {
+      "lut_expiry_date": null,
+      "last_aoc4_filed": "FY2023-24",
+      "last_mgt7_filed": "FY2022-23",
+      "tax_audit_required": true,
+      "transfer_pricing_applicable": false,
+      "employee_count": 56,
+      "ad_bank": null,
+      "scrutiny": {
+        "status": "none",
+        "section": null,
+        "assessment_year": null,
+        "reply_due_date": null
+      }
+    },
+    "obligations": [
+      {
+        "code": "MCA_MGT7",
+        "status": "overdue",
+        "periods": ["FY2023-24"],
+        "frequency": "yearly",
+        "regulator": "MCA",
+        "due_date": "2025-11-29",
+        "penalty": "₹100/day — currently ₹11,800+ accrued"
+      },
+      {
+        "code": "GST_GSTR3B",
+        "status": "pending",
+        "periods": ["2026-02", "2026-03"],
+        "frequency": "monthly",
+        "regulator": "GST",
+        "due_date": "2026-04-20",
+        "penalty": "₹50/day per month"
+      },
+      {
+        "code": "TDS_26Q",
+        "status": "pending",
+        "periods": ["2025-Q3", "2025-Q4"],
+        "frequency": "quarterly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-04-30",
+        "penalty": "₹200/day + 1.5%/month interest"
+      },
+      {
+        "code": "PF_ECR",
+        "status": "pending",
+        "periods": ["2026-02", "2026-03"],
+        "frequency": "monthly",
+        "regulator": "EPFO",
+        "due_date": "2026-04-15",
+        "penalty": "₹5,000/month + 12% p.a. interest"
+      },
+      {
+        "code": "IT_ADVANCE_TAX",
+        "status": "pending",
+        "periods": ["FY2025-26-Q4"],
+        "frequency": "quarterly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-03-15",
+        "penalty": "1% per month interest under Section 234C"
+      }
+    ],
+    "risk": {
+      "compliance_score": 66,
+      "high_risk_areas": ["MCA", "IncomeTax"],
+      "recent_misses": 2
+    },
+    "tags": ["GST", "IncomeTax", "MCA", "TDS", "EPFO"],
+    "notes": "Pharma distributor — high volume, e-invoicing mandatory (turnover > ₹5Cr). MGT-7 for FY24 overdue. Drug license held under Karnataka State FDA. No export activity. Turnover ₹14.5Cr — tax audit mandatory. Q4 advance tax and Q3/Q4 TDS both pending."
+  },
+
+  {
+    "id": "CLT-008",
+    "client_type": "individual",
+    "profile": {
+      "name": "Rajesh Kumar",
+      "pan": "ABCPK1234D",
+      "email": "rajesh.kumar@gmail.com",
+      "phone": "+91-9812345678",
+      "address": "Flat 4B, Oberoi Springs, Andheri West, Mumbai - 400053",
+      "nri_status": false
+    },
+    "tax_context": {
+      "financial_year": "2025-26",
+      "assessment_year": "2026-27",
+      "salary_income": 1800000,
+      "rental_income": 0,
+      "business_income": 0,
+      "foreign_income": 0,
+      "capital_gains_stcg": 85000,
+      "capital_gains_ltcg": 210000
+    },
+    "compliance_state": {
+      "filing_status": "not_filed",
+      "itr_form": "ITR-2",
+      "advance_tax_paid": 45000,
+      "pending_refund": 12000,
+      "form16_received": false,
+      "dtaa_applicable": false,
+      "employer_name": "Infosys Limited",
+      "employer_tan": "BNGI12345C"
+    },
+    "deductions": {
+      "investments_80c": 145000,
+      "premium_80d": 22000
+    },
+    "obligations": [
+      {
+        "code": "IT_FORM16",
+        "status": "pending",
+        "periods": ["FY2025-26"],
+        "frequency": "yearly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-06-15",
+        "penalty": null
+      },
+      {
+        "code": "IT_ITR_FILING",
+        "status": "pending",
+        "periods": ["AY2026-27"],
+        "frequency": "yearly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-07-31",
+        "penalty": "₹5,000 late fee under Section 234F"
+      },
+      {
+        "code": "IT_80C_TOPUP",
+        "status": "action_needed",
+        "periods": ["FY2025-26"],
+        "frequency": "yearly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-03-31",
+        "penalty": "₹1,500 additional tax if ₹5,000 gap not invested"
+      }
+    ],
+    "risk": {
+      "compliance_score": 88,
+      "high_risk_areas": [],
+      "recent_misses": 0
+    },
+    "tags": ["IncomeTax", "TDS", "Capital Gains"],
+    "notes": "Salaried employee at Infosys. LTCG ₹2.1L from equity mutual fund redemptions — ₹1.1L taxable at 10% above ₹1L exemption. STCG ₹85K at 15%. Form 16 not yet issued by employer. 80C gap of ₹5,000 to reach ₹1.5L limit — invest before March 31. Pending TDS refund of ₹12K from AY2025-26."
+  },
+
+  {
+    "id": "CLT-009",
+    "client_type": "individual",
+    "profile": {
+      "name": "Priya Nair",
+      "pan": "BNPPR5678K",
+      "email": "priya.nair.dubai@gmail.com",
+      "phone": "+971-501234567",
+      "address": "C/o 18, Sea Face Park, Worli, Mumbai - 400018",
+      "nri_status": true
+    },
+    "tax_context": {
+      "financial_year": "2025-26",
+      "assessment_year": "2026-27",
+      "salary_income": 0,
+      "rental_income": 240000,
+      "business_income": 0,
+      "foreign_income": 850000,
+      "capital_gains_stcg": 0,
+      "capital_gains_ltcg": 0
+    },
+    "compliance_state": {
+      "filing_status": "not_filed",
+      "itr_form": "ITR-2",
+      "advance_tax_paid": 0,
+      "pending_refund": 18000,
+      "form16_received": false,
+      "dtaa_applicable": true,
+      "dtaa_country": "UAE",
+      "dtaa_article": "Article 15 — Income from employment",
+      "employer_name": null,
+      "employer_tan": null,
+      "nre_account": "NRE SB - HDFC Bank, Worli Branch",
+      "nro_account": "NRO SB - HDFC Bank, Worli Branch"
+    },
+    "deductions": {
+      "investments_80c": 0,
+      "premium_80d": 0
+    },
+    "obligations": [
+      {
+        "code": "IT_ITR_FILING",
+        "status": "pending",
+        "periods": ["AY2026-27"],
+        "frequency": "yearly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-07-31",
+        "penalty": "₹5,000 late fee under Section 234F"
+      },
+      {
+        "code": "IT_TDS_RENTAL_REFUND",
+        "status": "action_needed",
+        "periods": ["FY2025-26"],
+        "frequency": "yearly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-07-31",
+        "penalty": "Excess TDS deducted at 30% by tenant — refund of ₹18,000 claimable via ITR"
+      },
+      {
+        "code": "FEMA_NRI_PROPERTY",
+        "status": "compliant",
+        "periods": ["FY2025-26"],
+        "frequency": "yearly",
+        "regulator": "FEMA",
+        "due_date": null,
+        "penalty": null
+      }
+    ],
+    "risk": {
+      "compliance_score": 80,
+      "high_risk_areas": ["NRI Filing", "DTAA"],
+      "recent_misses": 0
+    },
+    "tags": ["IncomeTax", "NRI", "DTAA", "FEMA", "Rental Income"],
+    "notes": "NRI resident in Dubai since 2019. Salary income in UAE — exempt under India-UAE DTAA Article 15. Rental income ₹2.4L from Worli flat — 30% standard deduction applies. Tenant deducts TDS at 30% on NRI rent (excess — actual liability ~15%) — refund claim ₹18K needed. NRE interest fully exempt. Schedule FA mandatory in ITR for foreign assets."
+  },
+
+  {
+    "id": "CLT-010",
+    "client_type": "individual",
+    "profile": {
+      "name": "Vikram Desai",
+      "pan": "CVPVD9012M",
+      "email": "vikram.desai.ca@gmail.com",
+      "phone": "+91-9867890123",
+      "address": "301, Raheja Residency, Koramangala, Bengaluru - 560034",
+      "nri_status": false
+    },
+    "tax_context": {
+      "financial_year": "2025-26",
+      "assessment_year": "2026-27",
+      "salary_income": 0,
+      "rental_income": 0,
+      "business_income": 2800000,
+      "foreign_income": 0,
+      "capital_gains_stcg": 0,
+      "capital_gains_ltcg": 0
+    },
+    "compliance_state": {
+      "filing_status": "not_filed",
+      "itr_form": "ITR-4",
+      "presumptive_scheme": "44ADA",
+      "advance_tax_paid": 180000,
+      "pending_refund": 0,
+      "form16_received": false,
+      "dtaa_applicable": false,
+      "tds_deducted_by_clients": 95000,
+      "employer_name": null,
+      "employer_tan": null
+    },
+    "deductions": {
+      "investments_80c": 150000,
+      "premium_80d": 18000
+    },
+    "obligations": [
+      {
+        "code": "IT_ADVANCE_TAX_Q4",
+        "status": "pending",
+        "periods": ["FY2025-26-Q4"],
+        "frequency": "quarterly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-03-15",
+        "penalty": "1% per month interest under Section 234C"
+      },
+      {
+        "code": "IT_ITR_FILING",
+        "status": "pending",
+        "periods": ["AY2026-27"],
+        "frequency": "yearly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-07-31",
+        "penalty": "₹5,000 late fee under Section 234F"
+      }
+    ],
+    "risk": {
+      "compliance_score": 85,
+      "high_risk_areas": [],
+      "recent_misses": 0
+    },
+    "tags": ["IncomeTax", "TDS", "Presumptive Tax", "Freelancer"],
+    "notes": "IT consultant billing Wipro and HCL. Under Section 44ADA — 50% of ₹28L = ₹14L deemed profit. TDS deducted by clients ₹95K (verify via Form 26AS). Advance tax paid ₹1.8L across Q1–Q3. Q4 installment ~₹80K due March 15. 80C fully utilized at ₹1.5L. ITR-4 applicable."
   }
-],
-
-"risk_profile": {
-  "compliance_score": 75,
-  "high_risk_areas": ["SEBI"],
-  "recent_misses": 0
-},
-
-"priority": "MEDIUM"
-
-}
 ]

@@ -112,3 +112,21 @@ export function runUploadedDocumentPipeline(documentId, caName = "CA") {
     body: JSON.stringify({ ca_name: caName }),
   });
 }
+
+export function createClient(client) {
+  return request("/clients", {
+    method: "POST",
+    body: JSON.stringify(client),
+  });
+}
+
+export function updateClient(clientId, client) {
+  return request(`/clients/${clientId}`, {
+    method: "PUT",
+    body: JSON.stringify(client),
+  });
+}
+
+export function deleteClient(clientId) {
+  return request(`/clients/${clientId}`, { method: "DELETE" });
+}

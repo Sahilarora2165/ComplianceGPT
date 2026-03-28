@@ -422,7 +422,7 @@ export default function App() {
           ) : page === "calendar" ? (
             <ComplianceCalendarView calendarData={calendarData} loading={loading} />
           ) : page === "clients" ? (
-            <ClientProfilesView clients={clients} loading={loading} />
+            <ClientProfilesView clients={clients} loading={loading} onClientsChanged={reloadDashboard} />
           ) : page === "audit" ? (
             <AuditTrailView events={auditEvents} loading={loading} />
           ) : page === "analyst" ? (
