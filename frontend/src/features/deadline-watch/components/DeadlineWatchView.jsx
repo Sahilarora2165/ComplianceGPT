@@ -125,84 +125,11 @@ export default function DeadlineWatchView({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-        <div className="space-y-1">
-          <p className="text-[11px] font-bold uppercase tracking-[0.26em] text-muted">
-            Deadline Intelligence
-          </p>
-          <h1 className="font-headline text-[2.15rem] font-extrabold leading-tight tracking-tight text-slate-950">
-            Deadline Watch
-          </h1>
-          <p className="text-sm text-slate-600">
-            Track active filing risk and review each alert before escalating to the client.
-          </p>
-        </div>
-        <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
-          <StatCard title="Total" value={stats.total} tone="border-slate-400" />
-          <StatCard title="Missed" value={stats.missed} tone="border-rose-500" />
-          <StatCard title="Critical" value={stats.critical} tone="border-orange-500" />
-          <StatCard title="Warning" value={stats.warning} tone="border-amber-400" />
-          <StatCard
-            title="Exposure"
-            value={formatCurrency(stats.exposure)}
-            tone="border-accent"
-          />
-        </div>
-      </div>
-
-      <ActionBanner message={actionMessage} />
-
-      <div className="rounded-2xl bg-white px-4 pb-4 pt-6 shadow-panel">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-          <div className="relative min-w-0 flex-[1.35]">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">
-              search
-            </span>
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              className="w-full rounded-xl border border-line bg-slate-50 py-2.5 pl-9 pr-4 text-sm outline-none focus:border-accent focus:bg-white"
-              placeholder="Search client or obligation..."
-            />
-          </div>
-
-          <div ref={clientMenuRef} className="xl:w-[240px] xl:self-center">
-            <FilterSelect
-              label="Client"
-              value={clientFilter}
-              options={clientOptions}
-              isOpen={clientMenuOpen}
-              onToggle={() => {
-                setClientMenuOpen((current) => !current);
-                setLevelMenuOpen(false);
-              }}
-              onChange={setClientFilter}
-              onClose={() => setClientMenuOpen(false)}
-            />
-          </div>
-
-          <div ref={levelMenuRef} className="xl:w-[190px] xl:self-center">
-            <FilterSelect
-              label="Level"
-              value={levelFilter}
-              options={LEVEL_OPTIONS}
-              isOpen={levelMenuOpen}
-              onToggle={() => {
-                setLevelMenuOpen((current) => !current);
-                setClientMenuOpen(false);
-              }}
-              onChange={setLevelFilter}
-              onClose={() => setLevelMenuOpen(false)}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <div className="xl:col-span-4">
-          <div className="overflow-hidden rounded-2xl bg-white shadow-panel">
-            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 xl:grid-cols-12">
+        <div className="flex min-h-0 flex-col xl:col-span-4">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-panel">
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3">
               <span className="text-xs font-bold uppercase tracking-widest text-muted">
                 Active Alerts
               </span>
@@ -211,7 +138,7 @@ export default function DeadlineWatchView({
               </span>
             </div>
 
-            <div className="max-h-[620px] divide-y divide-slate-100 overflow-y-auto">
+            <div className="min-h-0 flex-1 divide-y divide-slate-100 overflow-y-auto">
               {filtered.length ? (
                 filtered.map((alert) => {
                   const active = selected?.alert_id === alert.alert_id;
@@ -270,9 +197,9 @@ export default function DeadlineWatchView({
           </div>
         </div>
 
-        <div className="xl:col-span-8">
+        <div className="flex min-h-0 flex-col xl:col-span-8">
           {selected ? (
-            <div className="overflow-hidden rounded-2xl bg-white shadow-panel">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-panel">
               <div className="border-b border-slate-200 bg-slate-50 p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -310,7 +237,7 @@ export default function DeadlineWatchView({
                 </div>
               </div>
 
-              <div className="space-y-6 p-6">
+              <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-6">
                 <div>
                   <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted">
                     Risk reasoning

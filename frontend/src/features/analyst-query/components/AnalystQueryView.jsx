@@ -449,20 +449,13 @@ export default function AnalystQueryView({
   const activeFilterCount = [filters.regulator !== "All", filters.title_contains.trim() !== ""].filter(Boolean).length;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden gap-0">
+    <div className="flex min-h-0 flex-1 gap-0 overflow-hidden">
 
       {/* ── Left: Chat pane ──────────────────────────────────────────────── */}
       <div className={`flex flex-col flex-1 min-w-0 transition-all duration-300 ${showUpload ? "xl:mr-[360px]" : ""}`}>
 
-        {/* Page header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white shrink-0">
-          <div>
-            <h1 className="font-headline text-xl font-extrabold text-slate-950">Analyst Query</h1>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Grounded answers from ingested documents · abstains when evidence is missing
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+        {/* Toolbar */}
+        <div className="flex items-center justify-end gap-2 border-b border-slate-100 bg-white px-6 py-2.5 shrink-0">
             {/* Filter toggle */}
             <button
               onClick={() => setShowFilters(c => !c)}
@@ -506,7 +499,6 @@ export default function AnalystQueryView({
                 Clear
               </button>
             )}
-          </div>
         </div>
 
         {/* Filter bar — collapsible */}

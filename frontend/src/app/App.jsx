@@ -408,8 +408,8 @@ export default function App() {
     }[page] || { eyebrow: "ComplianceGPT", subtitle: "" };
 
   return (
-    <div className="min-h-screen bg-canvas text-ink">
-      <aside className="fixed left-0 top-0 hidden h-screen w-64 flex-col border-r border-white/10 bg-hero px-4 py-7 text-white lg:flex">
+    <div className="flex h-screen overflow-hidden bg-canvas text-ink">
+      <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-white/10 bg-hero px-4 py-7 text-white lg:flex">
         <div className="mb-7 px-2">
           <p className="font-headline text-lg font-extrabold tracking-widest">ComplianceGPT</p>
           <p className="mt-1 text-[10px] uppercase tracking-[0.35em] text-teal-100/50">
@@ -443,50 +443,8 @@ export default function App() {
         </div>
       </aside>
 
-      <main
-        className={`lg:ml-64 flex flex-col ${
-          page === "dashboard" ? "h-screen overflow-hidden" : "min-h-screen"
-        }`}
-      >
-        {page !== "dashboard" &&
-        page !== "circulars" &&
-        page !== "drafts" &&
-        page !== "deadlines" &&
-        page !== "calendar" &&
-        page !== "clients" &&
-        page !== "analyst" &&
-        page !== "operations" &&
-        page !== "audit" ? (
-          <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-canvas/90 px-5 py-3 backdrop-blur md:px-8">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-muted">
-                  {pageMeta.eyebrow}
-                </p>
-                <p className="mt-0.5 text-xs text-slate-600">{pageMeta.subtitle}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <span className="material-symbols-outlined cursor-pointer text-muted transition hover:text-ink">
-                    notifications
-                  </span>
-                  {displayMetrics.deadlineAlerts > 0 ? (
-                    <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-danger" />
-                  ) : null}
-                </div>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-shell text-xs font-bold text-white">
-                  CA
-                </div>
-              </div>
-            </div>
-          </header>
-        ) : null}
-
-        <div
-          className={`px-5 pb-3 pt-3 md:px-8 ${
-            page === "dashboard" ? "flex-1 overflow-hidden" : "flex-1"
-          }`}
-        >
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col px-5 pb-3 pt-3 md:px-8">
           {page === "circulars" ? (
             <CircularsView
               actionMessage={actionMessage}
