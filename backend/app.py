@@ -30,6 +30,7 @@ from core.audit     import read_audit_log, log_event
 from agents.monitoring_agent import run_monitoring_agent, HASH_DB_PATH, SIMULATED_DOCUMENTS
 from agents.client_matcher   import match_clients
 from agents.drafter_agent    import draft_single, DRAFTS_DIR
+from metrics import update_metrics as update_metrics_store
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -482,6 +483,10 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             "updated_at":      _now(),
         }
         _save_pipeline_status(_latest_result)
+        
+        # Update metrics store
+        update_metrics_store(_latest_result)
+        
         logger.info(f"✅ Pipeline complete — {len(new_docs)} circulars, {total_matches} matches, {len(drafts)} drafts")
     except Exception as e:
         _update_pipeline_result(
@@ -645,11 +650,26 @@ def pipeline_status():
     return _latest_result
 
 
+@app.get("/metrics")
+def get_metrics():
+    """
+    Get current dashboard metrics.
+    
+    Always returns data - seeded with demo metrics on first run.
+    Metrics are automatically updated after each pipeline execution.
+    """
+    from metrics import get_metrics as _get_metrics
+    return _get_metrics()
+
+
 @app.post("/pipeline/reset")
 def reset_pipeline():
     """Clear seen_documents.json so monitoring agent finds fresh circulars."""
     if HASH_DB_PATH.exists():
         HASH_DB_PATH.unlink()
+        # Also reset metrics to reseed on next fetch
+        from metrics import reset_metrics as _reset_metrics
+        _reset_metrics()
         return {"message": "Reset complete — monitoring agent will detect all circulars as new"}
     return {"message": "Nothing to reset"}
 
