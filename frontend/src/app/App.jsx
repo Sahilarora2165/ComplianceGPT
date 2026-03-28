@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   approveDraft,
   getDashboardData,
@@ -113,22 +113,45 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState("");
   const [openIntakeSignal, setOpenIntakeSignal] = useState(0);
+  const [isAutoSeeding, setIsAutoSeeding] = useState(false);
+  const backgroundRefreshTimerRef = useRef(null);
 
   useEffect(() => {
     let ignore = false;
+    let stopBackgroundRefresh = null;
 
     async function load() {
       setLoading(true);
       const next = await getDashboardData();
-      if (!ignore) {
-        setData(next);
-        setLoading(false);
+      if (ignore) return;
+
+      setData(next);
+      setLoading(false);
+
+      const hasEverRun = next.pipeline?.last_run != null;
+
+      if (!hasEverRun) {
+        setIsAutoSeeding(true);
+        setActionMessage("Setting up your dashboard for the first time...");
+        try {
+          await runPipeline({ simulateMode: true, reset: true });
+          pollCompletion("Initial setup");
+        } catch {
+          setActionMessage("Auto-setup failed — click 'Run Demo Monitoring' to load data.");
+          setIsAutoSeeding(false);
+        }
+      } else {
+        stopBackgroundRefresh = startBackgroundRefresh();
       }
     }
 
     load();
     return () => {
       ignore = true;
+      if (typeof stopBackgroundRefresh === "function") {
+        stopBackgroundRefresh();
+      }
+      clearBackgroundRefresh();
     };
   }, []);
 
@@ -137,6 +160,29 @@ export default function App() {
     setData(next);
     setLoading(false);
     return next;
+  }
+
+  function clearBackgroundRefresh() {
+    if (backgroundRefreshTimerRef.current) {
+      clearInterval(backgroundRefreshTimerRef.current);
+      backgroundRefreshTimerRef.current = null;
+    }
+  }
+
+  function startBackgroundRefresh() {
+    const THIRTY_MINUTES = 30 * 60 * 1000;
+
+    if (!backgroundRefreshTimerRef.current) {
+      backgroundRefreshTimerRef.current = setInterval(async () => {
+        try {
+          await reloadDashboard();
+        } catch {
+          // Silent fail - do not show any error to user
+        }
+      }, THIRTY_MINUTES);
+    }
+
+    return () => clearBackgroundRefresh();
   }
 
   const allDrafts = useMemo(() => data.drafts?.drafts || [], [data.drafts]);
@@ -246,11 +292,14 @@ export default function App() {
         }
         if (status === "completed") {
           clearInterval(timer);
+          setIsAutoSeeding(false);
+          startBackgroundRefresh();
           setActionMessage(
             `${label} finished - ${next.pipeline?.total_circulars || 0} circulars, ${next.pipeline?.total_matches || 0} matches`,
           );
         } else if (status === "failed") {
           clearInterval(timer);
+          setIsAutoSeeding(false);
           setActionMessage(`${label} failed`);
         }
       } catch {
@@ -259,6 +308,7 @@ export default function App() {
 
       if (attempts >= 180) {
         clearInterval(timer);
+        setIsAutoSeeding(false);
         setActionMessage("Processing is still running - check back shortly.");
       }
     }, 2000);
@@ -397,10 +447,16 @@ export default function App() {
 
         <div className="rounded-xl border border-white/10 bg-white/5 p-4">
           <p className="text-[10px] uppercase tracking-widest text-teal-100/50">Last Sync</p>
-          <p className="mt-2 text-sm font-semibold">
-            {data.pipeline?.last_run ? "Synced" : "Not run yet"}
-          </p>
-          <p className="mt-0.5 text-xs text-slate-300/60">{formatDate(data.pipeline?.last_run)}</p>
+          {isAutoSeeding ? (
+            <p className="mt-2 text-xs text-teal-200/70">Setting up dashboard...</p>
+          ) : data.pipeline?.last_run ? (
+            <>
+              <p className="mt-2 text-sm font-semibold text-white">Synced</p>
+              <p className="mt-0.5 text-xs text-slate-300/60">{formatDate(data.pipeline?.last_run)}</p>
+            </>
+          ) : (
+            <p className="mt-2 text-xs text-slate-300/60">Not run yet</p>
+          )}
         </div>
       </aside>
 
@@ -614,7 +670,7 @@ export default function App() {
                       </span>
                     </div>
                     <p className="text-[1.75rem] font-extrabold leading-none text-slate-950">
-                      {metric.value}
+                      {isAutoSeeding ? "—" : metric.value}
                     </p>
                   </div>
                 ))}
