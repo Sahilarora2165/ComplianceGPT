@@ -1857,21 +1857,56 @@ def _run_scraper_safe(
         return []
 
 
+def _document_identity_key(doc: dict) -> str:
+    regulator = str(doc.get("regulator") or "").strip().lower()
+    circular_no = str(doc.get("circular_no") or "").strip().lower()
+    if circular_no:
+        return f"{regulator}|no:{circular_no}"
+    url = str(doc.get("url") or "").strip().lower().rstrip("/")
+    if url:
+        return f"{regulator}|url:{url}"
+    title = re.sub(r"\s+", " ", str(doc.get("title") or "").strip().lower())
+    return f"{regulator}|title:{title}"
+
+
+def _document_quality_score(doc: dict) -> tuple:
+    source = str(doc.get("source") or "").strip()
+    source_rank = 2 if source == "real_scrape" else 1 if source == "simulated" else 0
+    return (
+        source_rank,
+        1 if doc.get("filename") else 0,
+        1 if doc.get("url") else 0,
+        str(doc.get("published_date") or ""),
+    )
+
+
+def _dedupe_documents(docs: list[dict]) -> list[dict]:
+    deduped: dict[str, dict] = {}
+    for doc in docs:
+        key = _document_identity_key(doc)
+        existing = deduped.get(key)
+        if not existing or _document_quality_score(doc) > _document_quality_score(existing):
+            deduped[key] = doc
+    return list(deduped.values())
+
+
 def run_monitoring_agent(
     simulate_mode: bool = False,
     regulators: list = None,
     auto_ingest: bool = True,
+    include_simulated: bool = False,
     progress_callback: Optional[Callable[[str], None]] = None,
 ) -> list[dict]:
     print("\n" + "=" * 60)
     print("ComplianceGPT - Monitoring Agent")
-    print(f"   Mode      : {'SIMULATE' if simulate_mode else 'REAL SCRAPE'}")
+    mode_label = "SIMULATE" if simulate_mode else ("HYBRID" if include_simulated else "REAL SCRAPE")
+    print(f"   Mode      : {mode_label}")
     print(f"   Regulators: {regulators or 'ALL'}")
     print(f"   Time      : {datetime.now(timezone.utc).isoformat()}")
     print("=" * 60)
     _emit_progress(
         progress_callback,
-        f"Monitoring started ({'simulate' if simulate_mode else 'live'}) — regulators: {', '.join(regulators) if regulators else 'ALL'}",
+        f"Monitoring started ({'simulate' if simulate_mode else ('hybrid' if include_simulated else 'live')}) — regulators: {', '.join(regulators) if regulators else 'ALL'}",
     )
 
     _clean_bad_downloads()
@@ -1953,6 +1988,15 @@ def run_monitoring_agent(
             print(f"\nLive scrape failed: {failure_summary}")
             raise RuntimeError(f"Live scrape failed: {failure_summary}")
 
+        if include_simulated:
+            _emit_progress(progress_callback, "Adding simulated fallback documents...")
+            simulated_docs = _simulate_new_documents(hash_db, regulators)
+            if simulated_docs:
+                print(f"  Simulated fallback added: {len(simulated_docs)} document(s)")
+            new_docs.extend(simulated_docs)
+
+    new_docs = _dedupe_documents(new_docs)
+
     if not new_docs:
         print("\nNo new documents found.")
         _emit_progress(progress_callback, "Monitoring complete: no new documents found")
@@ -1976,7 +2020,7 @@ def run_monitoring_agent(
         agent="MonitoringAgent",
         action="monitor_complete",
         details={
-            "mode":     "simulate" if simulate_mode else "real",
+            "mode":     "simulate" if simulate_mode else ("hybrid" if include_simulated else "real"),
             "new_docs": len(new_docs),
             "docs":     [{"title": d["title"], "regulator": d["regulator"], "priority": d["priority"]} for d in new_docs],
         }

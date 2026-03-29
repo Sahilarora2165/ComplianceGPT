@@ -993,7 +993,7 @@ def _is_urgent(priority: str) -> bool:
 # CORE MATCHER
 # ─────────────────────────────────────────────
 
-def match_clients(documents: list[dict]) -> list[dict]:
+def match_clients(documents: list[dict], emit_audit: bool = True) -> list[dict]:
     """
     Main entry point.
     Takes a list of circular dicts from the Monitoring Agent.
@@ -1084,20 +1084,21 @@ def match_clients(documents: list[dict]) -> list[dict]:
         }
         results.append(result)
 
-        # Audit log every match event
-        log_event(
-            agent="ClientMatcher",
-            action="clients_matched" if not abstained else "circular_abstained",
-            details={
-                "circular":      title,
-                "regulator":     regulator,
-                "priority":      priority,
-                "match_count":   match_count,
-                "abstained":     abstained,
-                "abstain_reason": abstain_reason,
-                "client_ids":    [c["client_id"] for c in affected]
-            }
-        )
+        if emit_audit:
+            # Audit log every match event
+            log_event(
+                agent="ClientMatcher",
+                action="clients_matched" if not abstained else "circular_abstained",
+                details={
+                    "circular":      title,
+                    "regulator":     regulator,
+                    "priority":      priority,
+                    "match_count":   match_count,
+                    "abstained":     abstained,
+                    "abstain_reason": abstain_reason,
+                    "client_ids":    [c["client_id"] for c in affected]
+                }
+            )
 
     return results
 

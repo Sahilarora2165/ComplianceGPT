@@ -1,0 +1,2477 @@
+{
+  "incometax|title:cbdt circular: revised tds rates and thresholds fy 2026-27": {
+    "circular_title": "CBDT Circular: Revised TDS Rates and Thresholds FY 2026-27",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:manual flow smoke test": {
+    "circular_title": "Manual Flow Smoke Test",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "sebi|url:https://www.sebi.gov.in/sample/esg_disclosure_2026.pdf": {
+    "circular_title": "SEBI Circular: ESG Disclosure Norms for Listed Companies",
+    "regulator": "SEBI",
+    "circular_no": "",
+    "url": "https://www.sebi.gov.in/sample/esg_disclosure_2026.pdf",
+    "match_count": 0,
+    "affected_clients": [],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "mca|url:https://www.mca.gov.in/sample/llp_filing_2025_26.pdf": {
+    "circular_title": "MCA Notification: LLP Annual Filing Deadline - FY 2025-26",
+    "regulator": "MCA",
+    "circular_no": "",
+    "url": "https://www.mca.gov.in/sample/llp_filing_2025_26.pdf",
+    "match_count": 0,
+    "affected_clients": [],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "incometax|url:https://incometaxindia.gov.in/sample/tds_revision_2026.pdf": {
+    "circular_title": "CBDT Circular: TDS Rate Revision - FY 2026-27",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "https://incometaxindia.gov.in/sample/tds_revision_2026.pdf",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|url:https://www.gst.gov.in/sample/ims_advisory_april2026.pdf": {
+    "circular_title": "GST Advisory: New Invoice Management System (IMS) - April 2026",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "https://www.gst.gov.in/sample/ims_advisory_april2026.pdf",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "rbi|url:https://www.rbi.org.in/sample/fema_circular_march2026.pdf": {
+    "circular_title": "RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "https://www.rbi.org.in/sample/fema_circular_march2026.pdf",
+    "match_count": 4,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst order authorisation under clause rule 96": {
+    "circular_title": "Gst Order Authorisation Under Clause Rule 96",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst circular 188": {
+    "circular_title": "Gst Circular 188",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst circular 187": {
+    "circular_title": "Gst Circular 187",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst circular 186": {
+    "circular_title": "Gst Circular 186",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst circular 185": {
+    "circular_title": "Gst Circular 185",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst circular 184": {
+    "circular_title": "Gst Circular 184",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst circular 183": {
+    "circular_title": "Gst Circular 183",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst circular 182 14 2022 gst 10th november 2022": {
+    "circular_title": "Gst Circular 182 14 2022 Gst 10Th November 2022",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst circular 181 13 2022 gst clarification refund related issues": {
+    "circular_title": "Gst Circular 181 13 2022 Gst Clarification Refund Related Issues",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst circular 180 12 2022 gst": {
+    "circular_title": "Gst Circular 180 12 2022 Gst",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst circular 176 08 2022 gst": {
+    "circular_title": "Gst Circular 176 08 2022 Gst",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst circular 175 07 2022 gst": {
+    "circular_title": "Gst Circular 175 07 2022 Gst",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst cir 179 08 2022 cgst": {
+    "circular_title": "Gst Cir 179 08 2022 Cgst",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst cir 178 08 2022 cgst": {
+    "circular_title": "Gst Cir 178 08 2022 Cgst",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "gst|title:gst cir 177 08 2022 cgst": {
+    "circular_title": "Gst Cir 177 08 2022 Cgst",
+    "regulator": "GST",
+    "circular_no": "",
+    "url": "",
+    "match_count": 6,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "GST registered entity",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-006",
+        "name": "Mehta & Associates LLP",
+        "business_type": "Professional Services",
+        "contact_email": "partners@mehtaassociates.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Has GST_GSTR3B obligation (pending) under GST",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:33:31.063605+00:00"
+  },
+  "incometax|title:cbt001": {
+    "circular_title": "cbt001",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "incometax|title:doc d5c3131e5e00 cbdt circular tds rate revision fy2026 27": {
+    "circular_title": "Doc D5C3131E5E00 Cbdt Circular Tds Rate Revision Fy2026 27",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "incometax|title:doc b5191a5ca9b3 cbdt circular tds rate revision fy2026 27": {
+    "circular_title": "Doc B5191A5Ca9B3 Cbdt Circular Tds Rate Revision Fy2026 27",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "incometax|title:doc 967532154420 cbdt circular tds rate revision fy2026 27": {
+    "circular_title": "Doc 967532154420 Cbdt Circular Tds Rate Revision Fy2026 27",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "incometax|title:doc 54cfbf316cc9 cbdt circular tds rate revision fy2026 27": {
+    "circular_title": "Doc 54Cfbf316Cc9 Cbdt Circular Tds Rate Revision Fy2026 27",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "incometax|title:doc 35515a682376 cbdt circular tds rate revision fy2026 27": {
+    "circular_title": "Doc 35515A682376 Cbdt Circular Tds Rate Revision Fy2026 27",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "incometax|title:doc 0523e9dc2af5 cbdt circular tds rate revision fy2026 27": {
+    "circular_title": "Doc 0523E9Dc2Af5 Cbdt Circular Tds Rate Revision Fy2026 27",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "incometax|title:cbdt circular": {
+    "circular_title": "CBDT Circular",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "epfo|url:https://www.epfindia.gov.in/sample/ecr_wage_ceiling_2026.pdf": {
+    "circular_title": "EPFO Circular: ECR Filing Mandate and Wage Ceiling Update - 2026",
+    "regulator": "EPFO",
+    "circular_no": "",
+    "url": "https://www.epfindia.gov.in/sample/ecr_wage_ceiling_2026.pdf",
+    "match_count": 2,
+    "affected_clients": [
+      {
+        "client_id": "CLT-002",
+        "name": "Spice Garden Restaurant",
+        "business_type": "Food & Beverage",
+        "contact_email": "suresh@spicegarden.in",
+        "reason": "EPFO/PF circular — applicable to EPFO-registered employers",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "EPFO/PF circular — applicable to EPFO-registered employers",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "incometax|url:https://incometaxindia.gov.in/sample/capital_gains_mf_2026.pdf": {
+    "circular_title": "CBDT Circular: Capital Gains on Debt Mutual Fund Redemptions - AY 2026-27",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "https://incometaxindia.gov.in/sample/capital_gains_mf_2026.pdf",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "incometax|url:https://incometaxindia.gov.in/sample/nri_dtaa_rental_2026.pdf": {
+    "circular_title": "CBDT Circular: DTAA Relief for NRI Rental Income and TDS Refund Claims - FY 2026-27",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "https://incometaxindia.gov.in/sample/nri_dtaa_rental_2026.pdf",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "incometax|url:https://incometaxindia.gov.in/sample/presumptive_44ada_2026.pdf": {
+    "circular_title": "CBDT Circular: Presumptive Taxation under Section 44ADA for Professionals - FY 2026-27",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "https://incometaxindia.gov.in/sample/presumptive_44ada_2026.pdf",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|url:https://www.rbi.org.in/sample/nbfc_governance_2026.pdf": {
+    "circular_title": "RBI Directions: NBFC Governance and KYC Compliance - 2026",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "https://www.rbi.org.in/sample/nbfc_governance_2026.pdf",
+    "match_count": 1,
+    "affected_clients": [
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "NBFC/microfinance circular — applicable to NBFC-type clients",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:rbi pr23394679f82680db42a8928d7ea5ba3fd14b": {
+    "circular_title": "Rbi Pr23394679F82680Db42A8928D7Ea5Ba3Fd14B",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 4,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:rbi pr2338129089c31edf4712af5ab69437f5be64": {
+    "circular_title": "Rbi Pr2338129089C31Edf4712Af5Ab69437F5Be64",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "RBI monetary penalty — applicable to RBI-regulated banking entities only",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "RBI monetary penalty — applicable to RBI-regulated banking entities only",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "RBI monetary penalty — applicable to RBI-regulated banking entities only",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:rbi pr2337e8fac42db6494a4d9c4f090e195252cf": {
+    "circular_title": "Rbi Pr2337E8Fac42Db6494A4D9C4F090E195252Cf",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "RBI monetary penalty — applicable to RBI-regulated banking entities only",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "RBI monetary penalty — applicable to RBI-regulated banking entities only",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "RBI monetary penalty — applicable to RBI-regulated banking entities only",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:rbi pr23369981c252827845159985fd87ab81285a": {
+    "circular_title": "Rbi Pr23369981C252827845159985Fd87Ab81285A",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "RBI monetary penalty — applicable to RBI-regulated banking entities only",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "RBI monetary penalty — applicable to RBI-regulated banking entities only",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "RBI monetary penalty — applicable to RBI-regulated banking entities only",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:rbi pr23359ea2697b25d341c0b9832f32339c2fc4": {
+    "circular_title": "Rbi Pr23359Ea2697B25D341C0B9832F32339C2Fc4",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "RBI monetary penalty — applicable to RBI-regulated banking entities only",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "RBI monetary penalty — applicable to RBI-regulated banking entities only",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "RBI monetary penalty — applicable to RBI-regulated banking entities only",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:rbi pr2334c6df04b76f9c4c9a8acd37595d481d53": {
+    "circular_title": "Rbi Pr2334C6Df04B76F9C4C9A8Acd37595D481D53",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "Has RBI_MONTHLY_RETURN obligation (pending) under RBI",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:rbi pr23261a624ca31ad34683a455ad7ec042fde4": {
+    "circular_title": "Rbi Pr23261A624Ca31Ad34683A455Ad7Ec042Fde4",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 0,
+    "affected_clients": [],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:rbi pr230645e88b9147f84bf8abad12bc716ca440": {
+    "circular_title": "Rbi Pr230645E88B9147F84Bf8Abad12Bc716Ca440",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "Has RBI_MONTHLY_RETURN obligation (pending) under RBI",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:rbi pr230531441f92e87a49f6b7c74e2dd7ef9d63": {
+    "circular_title": "Rbi Pr230531441F92E87A49F6B7C74E2Dd7Ef9D63",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "Has RBI_MONTHLY_RETURN obligation (pending) under RBI",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:doc a317c87d8260 06mc010425f12568b380b14d9cbfec5270ea9f5ff3": {
+    "circular_title": "Doc A317C87D8260 06Mc010425F12568B380B14D9Cbfec5270Ea9F5Ff3",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "Has RBI_MONTHLY_RETURN obligation (pending) under RBI",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:doc 859fd6011df2 06mc010425f12568b380b14d9cbfec5270ea9f5ff3": {
+    "circular_title": "Doc 859Fd6011Df2 06Mc010425F12568B380B14D9Cbfec5270Ea9F5Ff3",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "Has RBI_MONTHLY_RETURN obligation (pending) under RBI",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:doc 6d11b7402958 06mc010425f12568b380b14d9cbfec5270ea9f5ff3": {
+    "circular_title": "Doc 6D11B7402958 06Mc010425F12568B380B14D9Cbfec5270Ea9F5Ff3",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "Has RBI_MONTHLY_RETURN obligation (pending) under RBI",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:doc 624f97e39591 06mc010425f12568b380b14d9cbfec5270ea9f5ff3": {
+    "circular_title": "Doc 624F97E39591 06Mc010425F12568B380B14D9Cbfec5270Ea9F5Ff3",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "Has RBI_MONTHLY_RETURN obligation (pending) under RBI",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:doc 60f07ff1f634 06mc010425f12568b380b14d9cbfec5270ea9f5ff3": {
+    "circular_title": "Doc 60F07Ff1F634 06Mc010425F12568B380B14D9Cbfec5270Ea9F5Ff3",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "Has RBI_MONTHLY_RETURN obligation (pending) under RBI",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:doc 282525da6b9d 06mc010425f12568b380b14d9cbfec5270ea9f5ff3": {
+    "circular_title": "Doc 282525Da6B9D 06Mc010425F12568B380B14D9Cbfec5270Ea9F5Ff3",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "Has RBI_MONTHLY_RETURN obligation (pending) under RBI",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:281md4079ef84173847849a50f7a00fb229f5": {
+    "circular_title": "281Md4079Ef84173847849A50F7A00Fb229F5",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "Has RBI_MONTHLY_RETURN obligation (pending) under RBI",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  }
+}

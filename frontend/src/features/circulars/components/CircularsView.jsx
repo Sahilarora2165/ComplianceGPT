@@ -42,10 +42,10 @@ export default function CircularsView({
   allDrafts,
   loading,
   pipeline,
-  onRunDemo,
-  onRunReal,
+  onRunMonitoring,
 }) {
-  const [selectedTitle, setSelectedTitle] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
 
   const sourceMap = useMemo(() => {
     const docs = pipeline?.new_documents || [];
@@ -64,17 +64,25 @@ export default function CircularsView({
 
   const circulars = useMemo(
     () =>
-      allCirculars.map((item) => {
+      allCirculars.map((item, index) => {
         const sourceMeta = sourceMap.get(item.circular_title) || {};
         const draftCount = allDrafts.filter(
           (d) => d.circular_title === item.circular_title,
         ).length;
+        const fileName = item.filename || item.source_file || sourceMeta.filename || "";
+        const uniqueId =
+          item.document_id ||
+          fileName ||
+          item.url ||
+          item.source_url ||
+          `${item.circular_title || "circular"}::${item.published_date || "na"}::${index}`;
         return {
           ...item,
+          id: uniqueId,
           draftCount,
           source: item.source || sourceMeta.source || "unknown",
-          url: item.url || sourceMeta.url || "",
-          filename: item.filename || sourceMeta.filename || "",
+          url: item.url || item.source_url || sourceMeta.url || "",
+          filename: fileName,
           document_id: item.document_id || sourceMeta.document_id || "",
           status: statusFromItem(item, draftCount),
         };
@@ -84,19 +92,29 @@ export default function CircularsView({
 
   useEffect(() => {
     if (!circulars.length) {
-      setSelectedTitle(null);
+      setSelectedId(null);
       return;
     }
-    if (!selectedTitle || !circulars.some((i) => i.circular_title === selectedTitle)) {
-      setSelectedTitle(circulars[0].circular_title);
+    if (!selectedId || !circulars.some((i) => i.id === selectedId)) {
+      setSelectedId(circulars[0].id);
     }
-  }, [circulars, selectedTitle]);
+  }, [circulars, selectedId]);
 
-  const selected =
-    circulars.find((i) => i.circular_title === selectedTitle) || circulars[0] || null;
+  useEffect(() => {
+    setSummaryExpanded(false);
+  }, [selectedId]);
+
+  const selected = circulars.find((i) => i.id === selectedId) || circulars[0] || null;
   const selectedLocalUrl = selected ? localDocumentUrl(selected.filename) : "";
   const selectedExternalUrl = normalizeText(selected?.url);
   const hasSourceLink = Boolean(selectedLocalUrl || selectedExternalUrl);
+  const selectedSummary = normalizeText(selected?.summary).replace(/\s+/g, " ");
+  const SUMMARY_COLLAPSE_LIMIT = 420;
+  const isSummaryLong = selectedSummary.length > SUMMARY_COLLAPSE_LIMIT;
+  const visibleSummary =
+    summaryExpanded || !isSummaryLong
+      ? selectedSummary
+      : `${selectedSummary.slice(0, SUMMARY_COLLAPSE_LIMIT).trimEnd()}...`;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
@@ -108,16 +126,10 @@ export default function CircularsView({
             </span>
             <div className="flex items-center gap-2">
               <button
-                onClick={onRunReal}
+                onClick={onRunMonitoring}
                 className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
               >
-                Run Live Monitoring
-              </button>
-              <button
-                onClick={onRunDemo}
-                className="rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-900"
-              >
-                Run Demo Monitoring
+                Run Monitoring
               </button>
             </div>
           </div>
@@ -125,11 +137,11 @@ export default function CircularsView({
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
             {circulars.length ? (
               circulars.map((item) => {
-                const active = selected?.circular_title === item.circular_title;
+                const active = selected?.id === item.id;
                 return (
                   <button
-                    key={item.circular_title}
-                    onClick={() => setSelectedTitle(item.circular_title)}
+                    key={item.id}
+                    onClick={() => setSelectedId(item.id)}
                     className={`w-full rounded-2xl border-l-4 bg-white p-5 text-left shadow-panel transition ${
                       active
                         ? "border-accent ring-1 ring-teal-100"
@@ -149,7 +161,7 @@ export default function CircularsView({
                           <p className="text-sm font-bold leading-snug text-slate-900">
                             {item.circular_title}
                           </p>
-                          <p className="mt-1 line-clamp-2 text-xs text-muted">
+                          <p className="mt-1 line-clamp-2 break-words text-xs text-muted">
                             {item.summary}
                           </p>
                         </div>
@@ -228,9 +240,18 @@ export default function CircularsView({
                   <p className="text-[10px] font-bold uppercase tracking-widest text-muted">
                     Summary
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">
-                    {selected.summary || "No summary available."}
+                  <p className="mt-2 break-words text-sm leading-6 text-slate-700">
+                    {visibleSummary || "No summary available."}
                   </p>
+                  {isSummaryLong ? (
+                    <button
+                      type="button"
+                      onClick={() => setSummaryExpanded((prev) => !prev)}
+                      className="mt-2 text-xs font-semibold text-slate-700 underline underline-offset-2 transition hover:text-slate-900"
+                    >
+                      {summaryExpanded ? "Show less" : "Show more"}
+                    </button>
+                  ) : null}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">

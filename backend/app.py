@@ -7,6 +7,7 @@ import os
 import json
 import hashlib
 import logging
+import mimetypes
 import re
 import shutil
 import sys
@@ -18,6 +19,7 @@ from datetime import datetime, timezone, date
 from agents.deadline_agent import scan_deadlines, get_latest_alerts, deadline_summary
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 sys.path.append(str(Path(__file__).parent))
@@ -56,6 +58,7 @@ logging.getLogger("uvicorn.access").addFilter(_SilentPollingFilter())
 
 PIPELINE_STATUS_PATH = Path(__file__).parent / "data" / "latest_pipeline_status.json"
 UPLOADED_DOCS_PATH = Path(__file__).parent / "data" / "uploaded_documents.json"
+CIRCULAR_MATCH_INDEX_PATH = Path(__file__).parent / "data" / "circular_match_index.json"
 SUPPORTED_REGULATORS = {"RBI", "GST", "IncomeTax", "MCA", "SEBI"}
 SUPPORTED_UPLOAD_EXTENSIONS = {".pdf", ".txt"}
 
@@ -151,6 +154,81 @@ def _save_uploaded_documents(documents: dict) -> None:
     )
 
 
+def _normalize_match_token(value: str) -> str:
+    return re.sub(r"\s+", " ", str(value or "").strip().lower())
+
+
+def _circular_match_key(
+    *,
+    regulator: str,
+    title: str,
+    circular_no: str = "",
+    url: str = "",
+) -> str:
+    regulator_token = _normalize_match_token(regulator)
+    circular_no_token = _normalize_match_token(circular_no)
+    if circular_no_token:
+        return f"{regulator_token}|no:{circular_no_token}"
+    url_token = _normalize_match_token(url).rstrip("/")
+    if url_token:
+        return f"{regulator_token}|url:{url_token}"
+    title_token = _normalize_match_token(title)
+    return f"{regulator_token}|title:{title_token}"
+
+
+def _circular_match_key_from_doc(doc: dict) -> str:
+    return _circular_match_key(
+        regulator=str(doc.get("regulator") or ""),
+        title=str(doc.get("circular_title") or doc.get("title") or ""),
+        circular_no=str(doc.get("circular_no") or ""),
+        url=str(doc.get("source_url") or doc.get("url") or ""),
+    )
+
+
+def _load_circular_match_index() -> dict:
+    if not CIRCULAR_MATCH_INDEX_PATH.exists():
+        return {}
+    try:
+        data = json.loads(CIRCULAR_MATCH_INDEX_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _save_circular_match_index(index: dict) -> None:
+    CIRCULAR_MATCH_INDEX_PATH.parent.mkdir(parents=True, exist_ok=True)
+    CIRCULAR_MATCH_INDEX_PATH.write_text(
+        json.dumps(index, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def _update_circular_match_index(match_results: list[dict]) -> None:
+    if not match_results:
+        return
+    index = _load_circular_match_index()
+    updated_at = _now()
+    for item in match_results:
+        if not isinstance(item, dict):
+            continue
+        key = _circular_match_key(
+            regulator=str(item.get("regulator") or ""),
+            title=str(item.get("circular_title") or item.get("title") or ""),
+            circular_no=str(item.get("circular_no") or ""),
+            url=str(item.get("url") or ""),
+        )
+        index[key] = {
+            "circular_title": str(item.get("circular_title") or item.get("title") or ""),
+            "regulator": str(item.get("regulator") or ""),
+            "circular_no": str(item.get("circular_no") or ""),
+            "url": str(item.get("url") or ""),
+            "match_count": int(item.get("match_count") or len(item.get("affected_clients") or [])),
+            "affected_clients": item.get("affected_clients", []),
+            "updated_at": updated_at,
+        }
+    _save_circular_match_index(index)
+
+
 def _build_persisted_document_catalog() -> list[dict]:
     """
     Build a durable document list from the persistent knowledge base.
@@ -166,11 +244,23 @@ def _build_persisted_document_catalog() -> list[dict]:
         for doc in uploaded_docs.values()
         if isinstance(doc, dict) and doc.get("stored_filename")
     }
-    match_results = {
-        item.get("circular_title"): item
-        for item in _latest_result.get("match_results", [])
-        if isinstance(item, dict) and item.get("circular_title")
+    uploaded_by_original_filename = {
+        Path(str(doc.get("original_filename") or "")).name: doc
+        for doc in uploaded_docs.values()
+        if isinstance(doc, dict) and doc.get("original_filename")
     }
+    latest_match_by_key: dict[str, dict] = {}
+    for item in _latest_result.get("match_results", []):
+        if not isinstance(item, dict):
+            continue
+        key = _circular_match_key(
+            regulator=str(item.get("regulator") or ""),
+            title=str(item.get("circular_title") or item.get("title") or ""),
+            circular_no=str(item.get("circular_no") or ""),
+            url=str(item.get("url") or ""),
+        )
+        latest_match_by_key[key] = item
+    cached_match_index = _load_circular_match_index()
 
     try:
         from core.chroma_client import get_persistent_client
@@ -209,19 +299,39 @@ def _build_persisted_document_catalog() -> list[dict]:
 
         documents = []
         for source_name, meta in source_rows.items():
-            uploaded = uploaded_by_filename.get(source_name, {})
+            source_basename = Path(source_name).name
+            uploaded = (
+                uploaded_by_filename.get(source_name)
+                or uploaded_by_filename.get(source_basename)
+                or uploaded_by_original_filename.get(source_basename)
+                or {}
+            )
             title = (
                 str(meta.get("title") or "").strip()
                 or str(uploaded.get("title") or "").strip()
                 or Path(source_name).stem.replace("_", " ").strip()
             )
-            matched = match_results.get(title, {})
+            circular_no = str(meta.get("circular_no") or uploaded.get("circular_no") or "").strip()
             preview_text = first_doc_by_source.get(source_name, "")
             published_date = (
                 str(meta.get("document_date") or "").strip()
                 or str(uploaded.get("uploaded_at") or "").strip()
             )
             source_type = "manual_upload" if uploaded else ("scraped" if meta.get("url") else "knowledge_base")
+            source_url = str(meta.get("url") or "").strip() or None
+            circular_match_key = _circular_match_key(
+                regulator=str(meta.get("regulator") or uploaded.get("regulator") or "Unknown"),
+                title=title,
+                circular_no=circular_no,
+                url=source_url or "",
+            )
+            matched = latest_match_by_key.get(circular_match_key) or cached_match_index.get(circular_match_key) or {}
+            stored_filename = Path(str(uploaded.get("stored_filename") or "")).name
+            candidate_filenames = [name for name in (stored_filename, source_basename) if name]
+            resolved_filename = next(
+                (name for name in dict.fromkeys(candidate_filenames) if (PDF_DIR / name).is_file()),
+                None,
+            )
             documents.append(
                 {
                     "document_id": uploaded.get("document_id"),
@@ -230,10 +340,14 @@ def _build_persisted_document_catalog() -> list[dict]:
                     "regulator": str(meta.get("regulator") or uploaded.get("regulator") or "Unknown").strip(),
                     "priority": str(uploaded.get("priority") or _infer_priority_from_title(title)).strip(),
                     "summary": str(uploaded.get("summary") or _summary_from_preview(preview_text)).strip(),
+                    "circular_no": circular_no or None,
                     "published_date": published_date or None,
                     "source": source_type,
                     "source_file": source_name,
-                    "source_url": str(meta.get("url") or "").strip() or None,
+                    "source_url": source_url,
+                    # Backward-compatible aliases used by the circulars UI.
+                    "filename": resolved_filename,
+                    "url": source_url,
                     "uploaded_by": uploaded.get("uploaded_by"),
                     "uploaded_at": uploaded.get("uploaded_at"),
                     "match_count": int(matched.get("match_count") or len(matched.get("affected_clients") or [])),
@@ -249,7 +363,58 @@ def _build_persisted_document_catalog() -> list[dict]:
             ),
             reverse=True,
         )
-        return documents
+
+        def _normalize_token(value: str) -> str:
+            return re.sub(r"\s+", " ", str(value or "").strip().lower())
+
+        def _identity_key(doc: dict) -> str:
+            regulator = _normalize_token(doc.get("regulator"))
+            circular_no = _normalize_token(doc.get("circular_no"))
+            if circular_no:
+                return f"{regulator}|no:{circular_no}"
+            source_url = _normalize_token(doc.get("source_url") or doc.get("url"))
+            if source_url:
+                return f"{regulator}|url:{source_url.rstrip('/')}"
+            title = _normalize_token(doc.get("circular_title") or doc.get("title"))
+            return f"{regulator}|title:{title}"
+
+        def _quality_score(doc: dict) -> tuple:
+            return (
+                1 if doc.get("filename") else 0,
+                1 if doc.get("source_url") else 0,
+                int(doc.get("match_count") or 0),
+                str(doc.get("published_date") or doc.get("uploaded_at") or ""),
+                len(str(doc.get("summary") or "")),
+            )
+
+        deduped_docs: dict[str, dict] = {}
+        for item in documents:
+            key = _identity_key(item)
+            existing = deduped_docs.get(key)
+            if not existing:
+                deduped_docs[key] = item
+                continue
+
+            merged_clients: dict[str, dict] = {}
+            for client in (existing.get("affected_clients") or []) + (item.get("affected_clients") or []):
+                if not isinstance(client, dict):
+                    continue
+                client_key = str(client.get("client_id") or client.get("name") or "").strip()
+                if not client_key or client_key in merged_clients:
+                    continue
+                merged_clients[client_key] = client
+
+            better = item if _quality_score(item) > _quality_score(existing) else existing
+            if merged_clients:
+                better = dict(better)
+                better["affected_clients"] = list(merged_clients.values())
+                better["match_count"] = max(
+                    int(better.get("match_count") or 0),
+                    len(merged_clients),
+                )
+            deduped_docs[key] = better
+
+        return list(deduped_docs.values())
     except Exception as exc:
         logger.warning(f"Failed to build persisted document catalog: {exc}")
         return []
@@ -305,12 +470,37 @@ def _extract_keyword_summary(ingest_result: dict) -> str:
         return ""
 
 
+def _resolve_safe_document_path(filename: str) -> Path:
+    """
+    Resolve a document path under PDF_DIR and guard against path traversal.
+    """
+    requested = Path(filename)
+    if requested.name != filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+
+    candidate = (PDF_DIR / requested.name).resolve()
+    base = PDF_DIR.resolve()
+    try:
+        candidate.relative_to(base)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid file path")
+
+    if not candidate.exists() or not candidate.is_file():
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    return candidate
+
+
 # ── Scheduler ─────────────────────────────────────────────────────────────────
 
 def _run_monitoring_job():
     try:
         logger.info("⏰ Scheduler — running Monitoring Agent...")
-        new_docs = run_monitoring_agent(simulate_mode=False, auto_ingest=True)
+        new_docs = run_monitoring_agent(
+            simulate_mode=False,
+            include_simulated=True,
+            auto_ingest=True,
+        )
         logger.info(f"✅ Monitoring job complete — {len(new_docs)} new document(s)")
     except Exception as e:
         logger.error(f"❌ Monitoring job failed: {e}")
@@ -419,13 +609,22 @@ class ReopenDraftRequest(BaseModel):
     ca_name: str = "CA"
 
 class PipelineRequest(BaseModel):
-    simulate_mode: bool = True
+    simulate_mode: bool = False
+    include_simulated: bool = True
     regulators:    Optional[list[str]] = None
     reset:         bool = False
 
 
 class DocumentPipelineRequest(BaseModel):
     ca_name: str = "CA"
+
+
+class SchedulerTriggerRequest(BaseModel):
+    simulate_mode: bool = False
+    include_simulated: bool = True
+    regulators: Optional[list[str]] = None
+    auto_ingest: bool = True
+    reset: bool = False
 
 
 # ─────────────────────────────────────────────
@@ -451,16 +650,28 @@ def run_full_pipeline(req: PipelineRequest, background_tasks: BackgroundTasks):
     background_tasks.add_task(
         _execute_pipeline,
         simulate_mode=req.simulate_mode,
+        include_simulated=req.include_simulated,
         regulators=req.regulators,
         reset=req.reset,
     )
-    return {"message": "Pipeline started", "simulate_mode": req.simulate_mode}
+    return {
+        "message": "Pipeline started",
+        "simulate_mode": req.simulate_mode,
+        "include_simulated": req.include_simulated,
+    }
 
 
-def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
+def _pipeline_run_mode(simulate_mode: bool, include_simulated: bool) -> str:
+    if simulate_mode:
+        return "simulate"
+    return "hybrid" if include_simulated else "real"
+
+
+def _execute_pipeline(simulate_mode: bool, include_simulated: bool, regulators, reset: bool):
     global _latest_result
     try:
         started_at = _now()
+        run_mode = _pipeline_run_mode(simulate_mode, include_simulated)
         _update_pipeline_result(
             new_documents=[],
             match_results=[],
@@ -469,7 +680,7 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             total_matches=0,
             total_drafts=0,
             last_run=None,
-            run_mode="simulate" if simulate_mode else "real",
+            run_mode=run_mode,
             status="running",
             stage="monitoring",
             status_message="Monitoring stage started",
@@ -484,6 +695,7 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
         # Stage 1 — scrape + save PDFs + ingest into ChromaDB
         new_docs = run_monitoring_agent(
             simulate_mode=simulate_mode,
+            include_simulated=include_simulated,
             regulators=regulators,
             auto_ingest=True
         )
@@ -509,6 +721,7 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
         # Stage 2
         _update_pipeline_result(stage="matching", status_message="Client matching in progress")
         match_results = match_clients(new_docs)
+        _update_circular_match_index(match_results)
         total_matches = sum(r["match_count"] for r in match_results)
         _update_pipeline_result(
             match_results=match_results,
@@ -517,7 +730,7 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             status_message=f"Matching complete: {total_matches} client match(es) found",
         )
         # Live metric update after matching
-        update_metrics_store({"total_circulars": len(new_docs), "total_matches": total_matches, "total_drafts": 0, "run_mode": "simulate" if simulate_mode else "real"})
+        update_metrics_store({"total_circulars": len(new_docs), "total_matches": total_matches, "total_drafts": 0, "run_mode": run_mode})
 
         # Stage 3
         # Deduplicate match_results: same circular can appear twice when scraped from
@@ -598,7 +811,7 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
                         ),
                     )
                     # Live metric update after each draft
-                    update_metrics_store({"total_circulars": len(new_docs), "total_matches": total_matches, "total_drafts": len(drafts), "run_mode": "simulate" if simulate_mode else "real"})
+                    update_metrics_store({"total_circulars": len(new_docs), "total_matches": total_matches, "total_drafts": len(drafts), "run_mode": run_mode})
                     # Pace LLM calls to stay under Groq free-tier rate limit (~30 req/min).
                     # 2s gap = max 30 drafts/min; reduces 429 retries from hammering the API.
                     if processed_targets < total_targets:
@@ -612,7 +825,7 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             "total_matches":   total_matches,
             "total_drafts":    len(drafts),
             "last_run":        _now(),
-            "run_mode":        "simulate" if simulate_mode else "real",
+            "run_mode":        run_mode,
             "status":          "completed",
             "stage":           "completed",
             "status_message":  f"Pipeline completed: {len(new_docs)} circular(s), {total_matches} match(es), {len(drafts)} draft(s)",
@@ -673,6 +886,7 @@ def _execute_uploaded_document_pipeline(document_id: str, ca_name: str):
         )
 
         match_results = match_clients([pipeline_doc])
+        _update_circular_match_index(match_results)
         total_matches = sum(item["match_count"] for item in match_results)
         _update_pipeline_result(
             match_results=match_results,
@@ -832,10 +1046,51 @@ def reset_pipeline():
 # CIRCULARS
 # ─────────────────────────────────────────────
 
+def _backfill_missing_circular_matches(circulars: list[dict]) -> bool:
+    """
+    Build match counts for catalog documents that are missing in the
+    persistent match index. This runs only when needed.
+    """
+    if not circulars:
+        return False
+
+    match_index = _load_circular_match_index()
+    docs_to_match: list[dict] = []
+    for item in circulars:
+        key = _circular_match_key_from_doc(item)
+        if key in match_index:
+            continue
+        docs_to_match.append(
+            {
+                "title": item.get("circular_title") or item.get("title") or "",
+                "regulator": item.get("regulator") or "",
+                "priority": item.get("priority") or "MEDIUM",
+                "summary": item.get("summary") or "",
+                "url": item.get("source_url") or item.get("url") or "",
+                "circular_no": item.get("circular_no") or "",
+                "published_date": item.get("published_date") or "",
+            }
+        )
+
+    if not docs_to_match:
+        return False
+
+    logger.info(f"Backfilling client matches for {len(docs_to_match)} catalog circular(s)")
+    try:
+        results = match_clients(docs_to_match, emit_audit=False)
+    except TypeError:
+        # Backward-safe fallback if matcher signature differs.
+        results = match_clients(docs_to_match)
+    _update_circular_match_index(results)
+    return True
+
+
 @app.get("/circulars")
 def get_circulars():
     """Return all persisted knowledge-base documents, not just the latest run."""
     circulars = _build_persisted_document_catalog()
+    if _backfill_missing_circular_matches(circulars):
+        circulars = _build_persisted_document_catalog()
     return {"circulars": circulars, "total": len(circulars)}
 
 
@@ -1813,6 +2068,20 @@ def run_uploaded_document_pipeline(
     }
 
 
+@app.get("/documents/file/{filename}")
+def open_document_file(filename: str):
+    """
+    Serve ingested files from backend/data/pdfs for browser preview/download.
+    """
+    file_path = _resolve_safe_document_path(filename)
+    media_type, _ = mimetypes.guess_type(file_path.name)
+    return FileResponse(
+        str(file_path),
+        media_type=media_type or "application/octet-stream",
+        headers={"Content-Disposition": f'inline; filename="{file_path.name}"'},
+    )
+
+
 @app.post("/ingest")
 def ingest(file: UploadFile = File(...)):
     """Legacy ingest endpoint (supports PDF and TXT)."""
@@ -1861,13 +2130,33 @@ def scheduler_status():
     return {"scheduler_running": scheduler.running, "jobs": jobs}
 
 @app.post("/scheduler/trigger")
-def trigger_now():
-    """Manually trigger monitoring agent (simulate mode, no ingest)."""
+def trigger_now(req: SchedulerTriggerRequest = SchedulerTriggerRequest()):
+    """Manually trigger monitoring agent in live/simulate/hybrid mode."""
     try:
-        new_docs = run_monitoring_agent(simulate_mode=True, auto_ingest=False)
+        if req.reset and HASH_DB_PATH.exists():
+            HASH_DB_PATH.unlink()
+            logger.info("🔄 Hash DB reset via /scheduler/trigger")
+
+        new_docs = run_monitoring_agent(
+            simulate_mode=req.simulate_mode,
+            include_simulated=req.include_simulated,
+            regulators=req.regulators,
+            auto_ingest=req.auto_ingest,
+        )
+        mode = _pipeline_run_mode(req.simulate_mode, req.include_simulated)
         return {
-            "message":   f"Triggered — {len(new_docs)} new document(s) found",
-            "documents": [{"title":d["title"],"regulator":d["regulator"],"priority":d["priority"]} for d in new_docs]
+            "message":   f"Triggered ({mode}) — {len(new_docs)} new document(s) found",
+            "simulate_mode": req.simulate_mode,
+            "include_simulated": req.include_simulated,
+            "documents": [
+                {
+                    "title": d["title"],
+                    "regulator": d["regulator"],
+                    "priority": d["priority"],
+                    "source": d.get("source", "unknown"),
+                }
+                for d in new_docs
+            ],
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

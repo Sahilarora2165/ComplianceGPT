@@ -3,7 +3,7 @@ Regulator : IncomeTax
 Title     : CBDT Circular: Presumptive Taxation under Section 44ADA for Professionals - FY 2026-27
 Summary   : CBDT clarifies applicability of presumptive taxation scheme under Section 44ADA for freelancers and professionals.
 URL       : https://incometaxindia.gov.in/sample/presumptive_44ada_2026.pdf
-Generated : 2026-03-29T09:29:34.113207+00:00
+Generated : 2026-03-29T11:16:50.314290+00:00
 
 Central Board of Direct Taxes circular clarifying the applicability and computation methodology under the presumptive taxation scheme for professionals and freelancers under Section 44ADA of the Income-tax Act. Eligible professionals — including doctors, lawyers, engineers, architects, accountants, technical consultants, interior decorators, and film artists — with gross receipts not exceeding the prescribed threshold may opt for presumptive income computation at 50 percent of gross receipts.
 

@@ -3,7 +3,7 @@ Regulator : RBI
 Title     : RBI Directions: NBFC Governance and KYC Compliance - 2026
 Summary   : RBI issues updated directions on NBFC internal governance, KYC norms, and monthly return filing.
 URL       : https://www.rbi.org.in/sample/nbfc_governance_2026.pdf
-Generated : 2026-03-29T09:29:32.222993+00:00
+Generated : 2026-03-29T11:16:48.712214+00:00
 
 Reserve Bank of India directions issued to Non-Banking Financial Companies on strengthening internal governance frameworks, Know Your Customer compliance, and periodic regulatory return filing. NBFCs classified under the applicable tier must ensure that the monthly NBS-9 return is filed by the 7th of each succeeding month, and any delays should be reported with explanation to the concerned Regional Office. Board-level oversight of compliance monitoring, internal audit findings, and RBI inspection observations should be documented in board minutes.
 

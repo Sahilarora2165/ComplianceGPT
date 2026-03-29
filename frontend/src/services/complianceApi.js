@@ -56,11 +56,17 @@ export function getMetrics() {
   return request("/metrics");
 }
 
-export function runPipeline({ simulateMode = false, reset = false, regulators } = {}) {
+export function runPipeline({
+  simulateMode = false,
+  includeSimulated = true,
+  reset = false,
+  regulators,
+} = {}) {
   return request("/pipeline/run", {
     method: "POST",
     body: JSON.stringify({
       simulate_mode: simulateMode,
+      include_simulated: includeSimulated,
       reset,
       ...(Array.isArray(regulators) ? { regulators } : {}),
     }),
@@ -120,6 +126,7 @@ export function resetPipelineState() {
 
 export function triggerSchedulerMonitoring({
   simulateMode = false,
+  includeSimulated = true,
   reset = false,
   autoIngest = true,
   regulators,
@@ -128,6 +135,7 @@ export function triggerSchedulerMonitoring({
     method: "POST",
     body: JSON.stringify({
       simulate_mode: simulateMode,
+      include_simulated: includeSimulated,
       reset,
       auto_ingest: autoIngest,
       ...(Array.isArray(regulators) ? { regulators } : {}),
