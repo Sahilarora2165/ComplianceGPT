@@ -1,16 +1,22 @@
-# ComplianceGPT — System Documentation
+# ComplianceGPT - System Documentation
 
 ## What is ComplianceGPT?
 
-ComplianceGPT is an AI-powered compliance monitoring and advisory system built for Indian CA (Chartered Accountant) firms. It automatically monitors regulatory websites (RBI, GST Council), detects new circulars, matches them to relevant clients, and generates client-specific compliance advisory drafts using a Retrieval-Augmented Generation (RAG) pipeline powered by Groq LLM.
+ComplianceGPT is an AI-powered compliance monitoring and advisory system for Indian CA (Chartered Accountant) firms. It monitors regulator websites, detects new circulars, ingests them into a persistent knowledge base, matches them to affected clients, generates advisory drafts, and tracks approaching or missed compliance deadlines.
 
-The system eliminates the manual work of reading every new circular from every regulator and figuring out which clients it applies to — it does that automatically and produces ready-to-review draft advisories.
+The project is built as a four-stage agent pipeline:
+- Stage 1: Monitoring Agent
+- Stage 2: Client Matcher
+- Stage 3: Drafter Agent
+- Stage 4: Deadline Agent
+
+The system also exposes a FastAPI backend, a React dashboard, an analyst-query interface over the stored knowledge base, and scheduled background jobs for monitoring, deadline scans, and reminders.
 
 ---
 
 ## Local Setup
 
-Use the project virtual environment for backend work. This avoids future breakage from global Python package conflicts.
+Use the project virtual environment for backend work.
 
 ```bash
 ./backend/bootstrap_venv.sh
@@ -19,44 +25,60 @@ cd backend
 python -m uvicorn app:app --reload --port 8000
 ```
 
-Or run the backend directly through the helper script:
+Or run the backend through the helper script:
 
 ```bash
 ./backend/run_local.sh
 ```
 
 Notes:
-- The backend now expects `.venv` at the repo root.
+- The backend expects `.venv` at the repo root.
 - Keep using `backend/requirements.txt` for backend dependency changes.
-- If embeddings or reranker models are not cached locally, the first retrieval run may download them once.
+- The first retrieval run may download embedding and reranker models if they are not cached locally.
 
 ---
 
 ## Architecture Overview
 
-```
-Internet (RBI / GST Council websites)
-            │
-            ▼
-    ┌─────────────────┐
-    │ MonitoringAgent │  — scrapes new circulars, downloads PDFs, ingests to vectorstore
-    └────────┬────────┘
-             │  new_docs[]
-             ▼
-    ┌─────────────────┐
-    │  ClientMatcher  │  — matches each circular to relevant clients
-    └────────┬────────┘
-             │  match_results[]
-             ▼
-    ┌─────────────────┐
-    │  DrafterAgent   │  — generates compliance advisory drafts using RAG + LLM
-    └────────┬────────┘
-             │
-             ▼
-    data/drafts/*.json   — saved for CA review and frontend display
+```text
+Regulator Websites / Manual Uploads
+              |
+              v
+      +------------------+
+      | Monitoring Agent |
+      | scrape + ingest  |
+      +--------+---------+
+               |
+               | new_docs[]
+               v
+      +------------------+
+      | Client Matcher   |
+      | rules + filters  |
+      +--------+---------+
+               |
+               | match_results[]
+               v
+      +------------------+
+      | Drafter Agent    |
+      | RAG + Groq LLM   |
+      +--------+---------+
+               |
+               | draft files
+               v
+      +------------------+
+      | Deadline Agent   |
+      | alerts + follow- |
+      | up drafts        |
+      +------------------+
+
+Shared services:
+- FastAPI app + APScheduler
+- ChromaDB persistent vector store
+- JSON/file persistence for drafts, uploads, pipeline status, alerts
+- append-only audit trail in logs/audit.jsonl
 ```
 
-All three stages are coordinated by `backend/orchestrator.py`.
+The FastAPI app in `backend/app.py` drives the frontend, exposes the API, stores pipeline state, and runs scheduled jobs for monitoring, deadline scans, and reminders.
 
 ---
 
@@ -64,470 +86,368 @@ All three stages are coordinated by `backend/orchestrator.py`.
 
 | Layer | Technology |
 |---|---|
-| Web scraping | Playwright (headless Chromium) |
-| PDF parsing | pdfplumber + Tesseract OCR (fallback) |
+| Web scraping | Playwright, `requests`, BeautifulSoup |
+| PDF / text ingestion | PyMuPDF (`fitz`) with `pdf2image` + Tesseract OCR fallback |
 | Embeddings | `all-MiniLM-L6-v2` (sentence-transformers) |
 | Vector store | ChromaDB (persistent, local) |
-| Keyword search | BM25 (rank-bm25) |
+| Keyword retrieval | BM25 (`rank-bm25`) |
 | Reranking | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
-| LLM | Groq API — `llama-3.3-70b-versatile` |
-| Scheduling | APScheduler (runs every 6 hours) |
+| LLMs | Groq API - draft models: `llama-3.1-8b-instant`, `gemma2-9b-it`; query/config model: `llama-3.3-70b-versatile` |
 | Backend API | FastAPI + Uvicorn |
-| Frontend | React (Vite) |
+| Scheduling | APScheduler |
+| Frontend | React + Vite |
+| Persistence | ChromaDB + JSON/file-based storage |
 | Containerization | Docker + Docker Compose |
 
 ---
 
 ## Directory Structure
 
-```
+```text
 ComplianceGPT/
-├── backend/
-│   ├── agents/
-│   │   ├── monitoring_agent.py     # Stage 1: scrape + ingest
-│   │   ├── client_matcher.py       # Stage 2: match circulars to clients
-│   │   └── drafter_agent.py        # Stage 3: generate advisory drafts
-│   ├── core/
-│   │   ├── ingest.py               # PDF → chunks → ChromaDB
-│   │   ├── audit.py                # Audit trail logger
-│   │   └── rag.py                  # RAG query interface (used by frontend)
-│   ├── data/
-│   │   ├── pdfs/                   # Downloaded circular PDFs
-│   │   ├── drafts/                 # Generated advisory JSONs
-│   │   └── seen_documents.json     # Hash DB for deduplication
-│   ├── vectorstore/                # ChromaDB embeddings (gitignored)
-│   ├── logs/
-│   │   └── audit.jsonl             # Full audit trail (gitignored)
-│   ├── clients.json                # Client profiles (10 clients)
-│   ├── config.py                   # Paths, model names, API keys
-│   ├── orchestrator.py             # Pipeline controller
-│   ├── app.py                      # FastAPI app
-│   ├── requirements.txt
-│   └── Dockerfile
-├── frontend/
-│   └── ...                         # React frontend
-├── docker-compose.yml
-└── README.md
+|-- backend/
+|   |-- agents/
+|   |   |-- monitoring_agent.py   # Stage 1: scrape, dedupe, ingest
+|   |   |-- client_matcher.py     # Stage 2: client matching
+|   |   |-- drafter_agent.py      # Stage 3: advisory drafting
+|   |   `-- deadline_agent.py     # Stage 4: deadline scans and alert drafts
+|   |-- core/
+|   |   |-- ingest.py             # PDF/TXT -> chunks -> ChromaDB
+|   |   |-- retriever.py          # analyst query / hybrid RAG
+|   |   |-- chroma_client.py      # persistent ChromaDB wrapper
+|   |   `-- audit.py              # audit log helpers
+|   |-- data/
+|   |   |-- pdfs/                 # scraped and uploaded source files
+|   |   |-- drafts/               # advisory draft JSON files
+|   |   |-- deadline_alerts/      # alert snapshots
+|   |   |-- latest_pipeline_status.json
+|   |   `-- uploaded_documents.json
+|   |-- logs/
+|   |   |-- audit.jsonl
+|   |   `-- seen_documents.json
+|   |-- vectorstore/              # persistent ChromaDB files
+|   |-- app.py                    # FastAPI app + scheduler + endpoints
+|   |-- orchestrator.py           # standalone pipeline runner
+|   |-- config.py                 # paths, models, constants
+|   |-- metrics.py
+|   `-- clients.json              # demo client dataset
+|-- frontend/
+|   `-- src/                      # React frontend
+|-- docs/
+|   |-- architecture.md
+|   `-- ARCHITECTURE_SUBMISSION.md
+|-- docker-compose.yml
+`-- README.md
 ```
 
 ---
 
-## Stage 1 — Monitoring Agent
+## Stage 1 - Monitoring Agent
 
-**File:** `backend/agents/monitoring_agent.py`
+**File:** `backend/agents/monitoring_agent.py`  
 **Entry point:** `run_monitoring_agent(simulate_mode, regulators, auto_ingest)`
 
-This agent is responsible for detecting new regulatory circulars, downloading them, and ingesting them into the knowledge base.
+This agent detects new regulatory documents, validates them, and ingests them into the knowledge base.
 
-### Scrapers
+### Active live scrapers
 
-#### RBI Press Releases — `_scrape_rbi_playwright(hash_db)`
+- RBI press releases via Playwright
+- RBI circular index via Playwright
+- GST / CBIC-GST circulars via Playwright, with HTTP fallback if needed
+- Income Tax circulars via Playwright, with HTTP fallback logic in the scraper
 
-- **URL:** `https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx`
-- Uses Playwright to open the page in a headless Chromium browser
-- Waits for the table to load (`wait_for_selector("tr")`)
-- Extracts all `.PDF` links using JavaScript `eval_on_selector_all`
-- Takes the top 20 links (most recent)
-- For each link: checks the hash DB — skips if already seen, otherwise downloads
-- PDF bytes validated (must start with `%PDF`, must not be an HTML bot-challenge page)
-- Saved to `backend/data/pdfs/rbi_{stem}.pdf`
+### Current non-active scraper code
 
-#### RBI Circulars & Notifications — `_scrape_rbi_circulars_playwright(hash_db)`
+- MCA scraper code exists but is currently disabled in the main live monitoring flow
+- EPFO scraper code exists but is currently disabled in the main live monitoring flow
 
-- **URL:** `https://www.rbi.org.in/Scripts/BS_CircularIndexDisplay.aspx`
-- Clicks the current year tab to load recent circulars
-- Extracts notification links (filters out navigation links via `_is_valid_circular_title`)
-- Downloads each new circular PDF
+### Core monitoring flow
 
-#### GST Council Circulars — `_scrape_gst_playwright(hash_db)`
+1. Scrape candidate regulator links
+2. Filter to recent and relevant documents
+3. Deduplicate using SHA-256 and `logs/seen_documents.json`
+4. Validate downloaded files
+5. Save files to `backend/data/pdfs/`
+6. Ingest valid PDF or TXT content into ChromaDB
 
-- **URL:** `https://gstcouncil.gov.in/cgst-circulars`
-- Table structure: Sr. No | Circular No | PDF Link | Date | Subject
-- Page 1 shows most recent circulars first — no sorting required
-- Uses `wait_until="domcontentloaded"` (more reliable than `networkidle` on govt sites)
-- Extracts circular number (td[1]), PDF href (td[2]), date (td[3]), subject (td[4])
-- Downloads and saves as `gst_{stem}.pdf`
+### Validation and deduplication
 
-### Deduplication — `_is_new_document(key, content, hash_db)`
+- URLs / content samples are hashed before processing
+- already-seen documents are skipped
+- non-PDF downloads and HTML challenge pages are rejected
+- failures in one scraper do not stop the others
 
-Every document URL is SHA-256 hashed before processing:
+### Ingestion pipeline
 
-```python
-h = hashlib.sha256(content).hexdigest()
-if h in hash_db.values() or key in hash_db:
-    return False       # already seen — skip
-hash_db[key] = h       # mark as seen
-return True            # new document — proceed
-```
+`backend/core/ingest.py` performs:
 
-The hash DB is loaded from `data/seen_documents.json` at the start of each run and saved back at the end. This ensures no circular is processed twice across runs.
+1. PyMuPDF text extraction
+2. OCR fallback with `pdf2image` + Tesseract when extracted text is too sparse
+3. regulator tagging from filename and content
+4. structure-aware chunking
+5. embedding with `all-MiniLM-L6-v2`
+6. persistence into ChromaDB collection `compliance_docs`
 
-### Ingestion — `_ingest_new_docs(new_docs)`
+### Simulate mode
 
-Each new PDF is passed to `core/ingest.py`:
+When `simulate_mode=True`, the agent uses hardcoded simulated documents instead of live scraping. This is useful for testing the full pipeline without hitting regulator websites.
 
-1. **Text extraction** — `pdfplumber` extracts text page by page
-2. **OCR fallback** — if a page has fewer than 50 characters (scanned PDF), Tesseract OCR is used
-3. **Regulator tagging** — regulator is inferred from filename prefix or content keywords (defined in `config.py → REGULATOR_KEYWORDS`)
-4. **Chunking** — text split into chunks of 1500 characters with 150 character overlap using `RecursiveCharacterTextSplitter`
-5. **Embedding** — each chunk embedded using `all-MiniLM-L6-v2` (384-dimensional vectors)
-6. **Storage** — embeddings + metadata stored in ChromaDB collection `compliance_docs`
-   - Metadata per chunk: `{source, page, regulator, chunk_index}`
-
-### Simulate Mode
-
-When `simulate_mode=True`, the agent skips all scraping and instead uses a hardcoded list of `SIMULATED_DOCUMENTS` — useful for testing the pipeline without hitting live websites.
-
-If real scraping finds nothing new, the agent automatically falls back to simulate mode.
+Note: simulate mode is explicit. Real scraping does not automatically switch to simulate mode unless you request it.
 
 ---
 
-## Stage 2 — Client Matcher
+## Stage 2 - Client Matcher
 
-**File:** `backend/agents/client_matcher.py`
+**File:** `backend/agents/client_matcher.py`  
 **Entry point:** `match_clients(new_docs)`
 
 This agent decides which clients are affected by each new circular.
 
-### Client Profiles — `clients.json`
+### Data source
 
-Each client has:
+The matcher reads structured client records from `backend/clients.json`. The dataset includes 10 demo clients with obligations, tags, registrations, profile details, and compliance context.
 
-```json
-{
-  "id": "C1",
-  "name": "Arvind Textiles Pvt. Ltd.",
-  "business_type": "Textile Exporter",
-  "constitution": "Private Limited",
-  "industry": "Textiles",
-  "tags": ["RBI", "GST", "IncomeTax", "FEMA"],
-  "compliance": {
-    "gst_filing_frequency": "monthly",
-    "tds_applicable": true,
-    "transfer_pricing_applicable": true,
-    "audit_required": true
-  },
-  "contact": {
-    "primary_person": "Arvind Shah",
-    "designation": "Director",
-    "email": "arvind.shah@arvindtextiles.com"
-  },
-  "notes": "Exports to UAE and UK — FEMA applicable"
-}
-```
+### Matching approach
 
-There are 10 clients covering diverse business types: textile exporter, restaurant, pharma distributor, IT services, NBFC, co-operative bank, importer, stockbroker, real estate, and e-commerce.
+The current matcher is better described as a 4-stage flow:
 
-### 3-Stage Matching Logic
+1. Market-ops / noise filter  
+   Non-compliance releases are filtered out before matching.
 
-**Stage 1 — Market-ops skip**
-Clients whose business is purely market-operations related skip certain banking circulars that don't apply to them.
+2. Obligation-driven match  
+   The strongest path checks whether a client already has obligations relevant to the circular's regulator.
 
-**Stage 2 — Regulator tag match**
-The circular's regulator (`RBI`, `GST`, `IncomeTax`, `MCA`, `SEBI`) must appear in the client's `tags` list. A GST circular will never be sent to a client tagged only for RBI.
+3. Tag / registration fallback  
+   When obligation matching is not enough, the matcher falls back to tags and registrations such as GST, MCA, EPFO-related indicators, company type, GSTIN, CIN, and similar structured fields.
 
-**Stage 3 — Content keyword rules**
-Each client type has industry-specific keywords. The circular's title and summary are scanned:
+4. Content filter  
+   Title and summary text are checked against domain-specific rules so generic circulars are not matched too broadly.
 
-| Client | Matching Keywords |
-|---|---|
-| NBFC | nbfc, non-banking, microfinance, fair practices |
-| Co-op Bank | co-operative bank, urban bank, section 35a, amalgamation |
-| Importer | import, fema, foreign exchange, remittance |
-| Stockbroker | securities, demat, nse, bse, listed company |
-| E-Commerce | e-commerce, tcs, marketplace, online seller |
-| Real Estate | real estate, construction, works contract |
+### Output shape
 
-### Priority Assignment
-
-Each match is assigned a priority based on keywords found in the circular:
-
-- **HIGH** — "penalty", "mandatory", "license", "cancellation", "section 35a", "suo motu"
-- **MEDIUM** — "deadline", "filing", "return", "compliance", "circular", "notification"
-- **LOW** — "advisory", "clarification", "information", "guidelines"
-
-### Output
+The matcher returns one result per circular, for example:
 
 ```python
 [
   {
-    "circular_title": "RBI Directions under Section 35A...",
+    "circular_title": "RBI Circular: FEMA Compliance Update",
     "regulator": "RBI",
     "priority": "HIGH",
-    "circular_summary": "...",
+    "summary": "...",
     "affected_clients": [
-      {"client_id": "C5", "name": "Sunrise Finserv NBFC Ltd.", "reason": "NBFC — Section 35A applicable"},
-      {"client_id": "C6", "name": "Nashik Merchant Urban Co-operative Bank Ltd.", "reason": "Co-op bank — Section 35A applicable"}
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "reason": "Exporting entity with FEMA obligations"
+      }
     ],
-    "match_count": 2
-  },
-  ...
+    "match_count": 1
+  }
 ]
 ```
 
+### Priority assignment
+
+Circular priority is inferred from title and summary signals such as:
+- HIGH: penalty, mandatory, FEMA, urgent, deadline extension with strong impact
+- MEDIUM: filing, return, compliance update, notification
+- LOW: advisory, clarification, informational guidance
+
 ---
 
-## Stage 3 — Drafter Agent
+## Stage 3 - Drafter Agent
 
-**File:** `backend/agents/drafter_agent.py`
+**File:** `backend/agents/drafter_agent.py`  
 **Entry point:** `draft_advisories(match_results)`
 
-This is the most complex stage. For each (client × circular) pair, it generates a full compliance advisory using a 3-step RAG + LLM pipeline.
+This stage generates client-specific advisory drafts for matched circular-client pairs.
 
-### Step 1 — Hybrid RAG Retrieval — `_retrieve_context(query)`
+### Drafting flow
 
-The query is: `"{regulator} {circular_title} {summary}"`
+1. Build an obligation-driven RAG query  
+   The query is not just the circular title. It combines regulator, circular metadata, and obligation-specific search terms mapped from the client's obligations.
 
-Three retrieval methods are combined:
+2. Retrieve relevant context  
+   The drafter uses:
+   - ChromaDB vector search
+   - BM25 keyword retrieval
+   - Reciprocal Rank Fusion (RRF)
+   - cross-encoder reranking
 
-**Vector Search (semantic)**
-- Query is embedded using `all-MiniLM-L6-v2`
-- ChromaDB returns top 50 chunks by cosine distance
-- Finds semantically similar content even if exact words differ
+3. LLM call for obligation extraction  
+   The LLM extracts client-specific actions, deadline, risk level, penalty notes, and internal review notes.
 
-**BM25 Search (keyword)**
-- All chunks in ChromaDB loaded
-- BM25 (Best Match 25) algorithm scores each chunk by keyword frequency
-- Top 50 chunks by BM25 score
-- Finds exact keyword matches that vector search might miss
+4. Deadline normalization  
+   Raw deadline text is normalized into structured formats such as ISO, RELATIVE, PERIODIC, or lookup-driven recurring dates.
 
-**RRF Merge (Reciprocal Rank Fusion)**
-- Both result lists combined using RRF formula: `score += 1 / (60 + rank)`
-- Rewards chunks that appear high in BOTH lists
-- Produces a unified ranked list of best candidates
+5. LLM call for email drafting  
+   A client-facing advisory email is generated using the extracted obligations and retrieved context.
 
-**Cross-Encoder Rerank**
-- `cross-encoder/ms-marco-MiniLM-L-6-v2` scores every (query, chunk) pair together
-- More accurate than bi-encoder but slower — used only on the merged candidates
-- Top 5 chunks selected as final context
+6. Save draft JSON  
+   Drafts are written to `backend/data/drafts/` for frontend review.
 
-This hybrid approach (vector + BM25 + rerank) is significantly more accurate than plain vector search alone.
+### Model usage
 
-### Step 2 — Obligation Extraction — `_extract_obligations(circular, client, context)`
+Draft generation uses priority-based Groq models:
+- HIGH -> `llama-3.1-8b-instant`
+- MEDIUM -> `llama-3.1-8b-instant`
+- LOW -> `gemma2-9b-it`
 
-**Groq API call** with `llama-3.3-70b-versatile`.
+### Draft review workflow
 
-The prompt contains:
-- Circular details (regulator, title, summary, priority)
-- Full client profile (business type, constitution, industry, GST filing frequency, TDS applicability, transfer pricing, audit requirement, tags, notes)
-- Top 5 RAG chunks from the actual circular PDF
+Drafts are stored with review state and are intended for CA review before sending. The backend and frontend support approve, save, reopen, delete, and send flows.
 
-The LLM is instructed to return **specific, executable obligations** — not vague generic advice:
+### Error handling
 
-```
-Bad:  "Comply with RBI guidelines"
-Good: "Submit updated KYC documents to bank before June 30, 2026"
-```
-
-**Output JSON:**
-```json
-{
-  "actions": [
-    "Ensure all branches are open for public on March 31, 2026 for government transactions",
-    "Verify and update KYC records of customers onto CKYCR to avoid penalty",
-    "Monitor and maintain cash reserve requirements as per RBI guidelines"
-  ],
-  "deadline": "March 31, 2026",
-  "risk_level": "MEDIUM",
-  "penalty_if_missed": "Penalty under Banking Regulation Act, 1949",
-  "applicable_sections": ["Section 42", "Section 56"],
-  "internal_notes": "Branch must confirm govt transaction readiness by March 28"
-}
-```
-
-### Step 3 — Email Drafting — `_draft_email(circular, client, obligations)`
-
-Second **Groq API call**.
-
-Generates a formal advisory email:
-- Addressed to the specific contact person (not "Dear Client")
-- Explains WHY this circular applies to this specific client
-- Lists actions clearly and numbered
-- States deadline prominently
-- Mentions penalty if HIGH risk
-- Under 300 words
-- Signed as "Compliance Advisory Team"
-
-### Step 4 — Save Draft
-
-Full draft assembled and saved as JSON:
-
-```
-backend/data/drafts/{client_id}_{circular_id}.json
-e.g. C5_RBI_DIRECTIONS_UNDER_SECTION_35A_READ.json
-```
-
-Draft status is set to `pending_review` — a CA must approve it before it is sent to the client.
-
-### Step 5 — Audit Log
-
-Every draft generation is logged to `backend/logs/audit.jsonl`:
-```json
-{
-  "timestamp": "2026-03-26T06:38:45Z",
-  "agent": "DrafterAgent",
-  "action": "draft_generated",
-  "details": {
-    "draft_id": "C5_RBI_DIRECTIONS_UNDER_SECTION_35A_READ",
-    "client_name": "Sunrise Finserv NBFC Ltd.",
-    "regulator": "RBI",
-    "risk_level": "MEDIUM",
-    "actions": 3,
-    "rag_chunks": 5,
-    "status": "pending_review"
-  }
-}
-```
+- malformed LLM JSON falls back to safe structured defaults
+- rate limit errors are retried with backoff
+- one failed client draft does not stop the rest of the run
 
 ---
 
-## Orchestrator — Pipeline Controller
+## Stage 4 - Deadline Agent
 
-**File:** `backend/orchestrator.py`
-**Entry point:** `run_pipeline(simulate_mode)`
+**File:** `backend/agents/deadline_agent.py`  
+**Entry point:** `scan_deadlines(clients=None)`
 
-Controls the full end-to-end flow:
+This stage scans both client obligations and generated drafts for approaching or missed deadlines.
 
+### Supported deadline forms
+
+- ISO dates
+- relative deadlines such as `RELATIVE:N`
+- periodic deadlines such as monthly or quarterly patterns
+- lookup-driven recurring compliance deadlines
+
+### Alert levels
+
+- `MISSED`: past due
+- `CRITICAL`: due in 3 days or less
+- `WARNING`: due in 14 days or less
+- `OK`: no active alert generated
+
+### Output
+
+Alerts include fields such as:
+- level
+- client
+- due date
+- risk level
+- penalty
+- financial exposure
+- recommended action
+
+### Extra behavior
+
+- urgent alerts can trigger deterministic follow-up deadline drafts
+- unparseable dates are skipped instead of crashing the scan
+
+---
+
+## Orchestrator - Pipeline Controller
+
+**File:** `backend/orchestrator.py`  
+**Entry point:** `run_pipeline(simulate_mode=False)`
+
+The orchestrator runs the full agent sequence:
+
+```text
+[1/4] Monitoring Agent
+  -> if no new docs, stop early
+
+[2/4] Client Matcher
+  -> if no actionable matches, stop early
+  -> skip LOW priority circulars in the standalone run
+  -> sort actionable items by priority
+
+[3/4] Drafter Agent
+  -> generate advisory drafts
+
+[4/4] Deadline Agent
+  -> scan deadlines
+  -> summarize alerts
+  -> auto-generate urgent deadline drafts for MISSED / CRITICAL alerts
 ```
-run_pipeline()
-    │
-    ├─ [1/3] MonitoringAgent
-    │         → if 0 new docs → stop (no point running matcher/drafter)
-    │
-    ├─ [2/3] ClientMatcher
-    │         → if 0 matches → stop (no advisories needed)
-    │         → sort matches: HIGH → MEDIUM → LOW
-    │         → cap at MAX_DRAFTS_PER_RUN = 20  (avoids Groq rate limit)
-    │
-    ├─ [3/3] DrafterAgent
-    │         → generates one draft per (client × circular) pair
-    │         → summary["drafts"] captured in finally block (always accurate)
-    │
-    └─ Log pipeline summary to audit trail
-```
 
-### Running Options
+### Running options
 
 ```bash
 # Run once immediately
 python orchestrator.py --run-now
 
-# Run on a schedule (every 6 hours)
+# Run on a schedule
 python orchestrator.py --schedule
 
-# Run with simulated data (no real scraping)
+# Run with simulated data
 python orchestrator.py --run-now --simulate
 
 # Custom schedule interval
 python orchestrator.py --schedule --interval 12
 ```
 
-### Draft Cap
+### Throughput controls
 
-To avoid hitting Groq's free tier rate limit (100k tokens/day), drafts are capped at 20 per run. Matches are sorted by priority (HIGH first) so the most critical advisories are always generated first. Lower-priority items are skipped with a warning.
+The standalone orchestrator caps total drafts per run and prioritizes higher-impact items first to reduce token pressure and keep the run useful under limited Groq capacity.
 
 ---
 
 ## Supporting Infrastructure
 
-### ChromaDB Vectorstore
+### ChromaDB vector store
 
-- Stored at `backend/vectorstore/` (gitignored — large binary files)
-- Single collection: `compliance_docs`
-- Each chunk stored with metadata: `{source, page, regulator, chunk_index}`
-- Persists across runs — only new documents are ingested each time
+- stored in `backend/vectorstore/`
+- collection name: `compliance_docs`
+- holds embedded chunks plus metadata such as source, page, regulator, title, URL, and document date
+- reused by the drafter, analyst query, and persisted circular catalog
 
-### Hash Database — `seen_documents.json`
+### Persistent JSON / file storage
 
-```json
-{
-  "https://rbi.org.in/...PR2327.PDF": "sha256hash...",
-  "https://gstcouncil.gov.in/...circular-250.pdf": "sha256hash..."
-}
-```
+- `backend/data/pdfs/` - scraped and uploaded source documents
+- `backend/data/drafts/` - advisory and deadline draft files
+- `backend/data/deadline_alerts/` - saved alert snapshots
+- `backend/data/latest_pipeline_status.json` - last pipeline status for the UI
+- `backend/data/uploaded_documents.json` - upload registry for manually added documents
+- `backend/logs/seen_documents.json` - deduplication hash database
+- `backend/logs/audit.jsonl` - append-only audit log
 
-Prevents the same circular from being downloaded, ingested, and drafted twice.
+### Analyst query layer
 
-### Audit Trail — `audit.jsonl`
+`backend/core/retriever.py` provides the query path used by the frontend:
+- hybrid retrieval over the persistent knowledge base
+- regulator and document filtering
+- reranking and citation-aware answering
+- guardrail behavior when evidence is weak
 
-Every significant action across all agents is logged:
-- `MonitoringAgent` → `scrape_complete`, `ingest_complete`, `scrape_fallback`
-- `ClientMatcher` → `match_complete`
-- `DrafterAgent` → `draft_generated`, `draft_approved`, `draft_rejected`
-- `Orchestrator` → `pipeline_complete`
+### Configuration
 
-### Configuration — `config.py`
+Core configuration is defined in `backend/config.py`, including:
 
 ```python
-EMBEDDING_MODEL     = "all-MiniLM-L6-v2"
-CHROMA_COLLECTION   = "compliance_docs"
-GROQ_MODEL          = "llama-3.3-70b-versatile"
-CHUNK_SIZE          = 1500
-CHUNK_OVERLAP       = 150
-TOP_K               = 5
-MIN_RELEVANCE_SCORE = 0.35
-OCR_CHAR_THRESHOLD  = 50    # pages with fewer chars trigger OCR
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+CHROMA_COLLECTION = "compliance_docs"
+CHUNK_SIZE = 1500
+CHUNK_OVERLAP = 150
+TOP_K = 10
+MIN_RELEVANCE_SCORE = 0.20
+OCR_CHAR_THRESHOLD = 50
 ```
 
 ---
 
 ## Full Data Flow (End to End)
 
-```
-1. RBI / GST websites
-       │
-       ▼
-2. Playwright scraper (headless Chromium)
-   - Waits for page elements
-   - Extracts PDF links via JavaScript
-       │
-       ▼
-3. Deduplication check (SHA-256 hash vs seen_documents.json)
-   - Already seen? → skip
-   - New? → download PDF to data/pdfs/
-       │
-       ▼
-4. PDF ingestion (core/ingest.py)
-   - pdfplumber extracts text
-   - Tesseract OCR for scanned pages
-   - Split into 1500-char chunks
-   - Embedded → stored in ChromaDB
-       │
-       ▼
-5. ClientMatcher (client_matcher.py)
-   - Regulator tag filter
-   - Content keyword rules
-   - Priority scoring
-   → Produces: circular × [affected clients] pairs
-       │
-       ▼
-6. Draft cap + priority sort (orchestrator.py)
-   - Sort HIGH → MEDIUM → LOW
-   - Take top 20 match pairs
-       │
-       ▼
-7. For each (client × circular) pair:
-   │
-   ├─ Hybrid RAG retrieval
-   │   - Vector search (ChromaDB)
-   │   - BM25 keyword search
-   │   - RRF merge
-   │   - Cross-encoder rerank
-   │   → Top 5 relevant PDF chunks
-   │
-   ├─ Groq LLM Call 1 — Obligation extraction
-   │   → Specific actions + deadline + risk level
-   │
-   ├─ Groq LLM Call 2 — Email drafting
-   │   → Formal advisory email to client contact
-   │
-   └─ Save to data/drafts/{client_id}_{circular_id}.json
-      Status: pending_review
-       │
-       ▼
-8. CA reviews drafts in frontend
-   - Approve → status: approved → ready to send
-   - Reject  → status: rejected → discarded
+```text
+1. Regulator websites or manual upload provide new source documents
+2. Monitoring Agent scrapes / validates / deduplicates documents
+3. Valid files are stored in backend/data/pdfs/
+4. core/ingest.py extracts text, runs OCR when needed, chunks content, embeds it, and stores it in ChromaDB
+5. Client Matcher receives new_docs[] and determines affected clients
+6. Drafter Agent receives match_results[] and runs obligation-driven hybrid RAG
+7. Groq generates structured obligations and client-facing advisory drafts
+8. Draft JSON files are saved for CA review in the frontend
+9. Deadline Agent scans obligations and saved drafts for due or missed compliance tasks
+10. Deadline alerts and urgent follow-up drafts are persisted for dashboard review
+11. Analyst Query can answer questions directly from the previously stored knowledge base
 ```
 
 ---
@@ -537,22 +457,69 @@ OCR_CHAR_THRESHOLD  = 50    # pages with fewer chars trigger OCR
 | Regulator | Source | Status |
 |---|---|---|
 | RBI | Press Releases page | Working |
-| RBI | Circulars & Notifications index | Working |
-| GST | GST Council CGST Circulars | Working |
-| IncomeTax | incometaxindia.gov.in | Not yet (0 links — JS-heavy page) |
-| MCA | mca.gov.in | Not yet (0 links — JS-heavy page) |
+| RBI | Circular Index / Notifications | Working |
+| GST | CBIC-GST circulars | Working |
+| IncomeTax | incometaxindia.gov.in circulars | Working with fallback logic |
+| MCA | mca.gov.in scraper code present | Currently disabled in main live flow |
+| EPFO | epfindia scraper code present | Currently disabled in main live flow |
+
+---
+
+## Screenshots
+
+### Dashboard
+
+![Dashboard](docs/screenshots/Dashboard.png)
+
+### Circular Intelligence
+
+![Circular Intelligence](docs/screenshots/Circulars.png)
+
+### Draft Review
+
+![Draft Review](docs/screenshots/DraftReview.png)
+
+### Draft Review Actions
+
+![Draft Review Actions](docs/screenshots/DraftReviewActions.png)
+
+### Deadline Watch
+
+![Deadline Watch](docs/screenshots/DeadlineWatch.png)
+
+### Compliance Calendar
+
+![Compliance Calendar](docs/screenshots/ComplianceCalander.png)
+
+### Client Management
+
+![Client Management](docs/screenshots/Clients.png)
+
+### Analyst Query
+
+![Analyst Query](docs/screenshots/AnalystQuery.png)
+
+### Audit Trail
+
+![Audit Trail](docs/screenshots/AuditTrail.png)
 
 ---
 
 ## Environment Variables
 
-Create a `.env` file in `backend/`:
+Create a `.env` file in the project root:
 
-```
+```env
 GROQ_API_KEY=your_groq_api_key_here
+SMTP_USER=your_email_if_using_send_features
+SMTP_PASS=your_app_password_if_using_send_features
 ```
 
-Get a free Groq API key at `console.groq.com`. The free tier allows 100k tokens/day, which is sufficient for ~20 drafts per pipeline run.
+Minimum requirement:
+- `GROQ_API_KEY`
+
+Optional:
+- `SMTP_USER` and `SMTP_PASS` if you want email send features to work
 
 ---
 
@@ -565,8 +532,6 @@ docker compose up --build -d
 # Run pipeline manually inside container
 docker exec compliancegpt-backend python /app/orchestrator.py --run-now
 
-# Run in simulate mode
-docker exec compliancegpt-backend python /app/orchestrator.py --run-now --simulate
 
 # View logs
 docker logs compliancegpt-backend -f
