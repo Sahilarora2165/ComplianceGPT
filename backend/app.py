@@ -662,6 +662,18 @@ def get_metrics():
     return _get_metrics()
 
 
+@app.get("/guardrail-metrics")
+def get_guardrail_metrics():
+    """
+    Aggregated guardrail effectiveness metrics.
+
+    Returns abstention rates, confidence distributions, citation stats,
+    and recent guardrail events — derived from audit log and draft files.
+    """
+    from metrics import get_guardrail_metrics as _get_guardrail_metrics
+    return _get_guardrail_metrics()
+
+
 @app.post("/pipeline/reset")
 def reset_pipeline():
     """Clear seen_documents.json so monitoring agent finds fresh circulars."""

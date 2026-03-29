@@ -13,6 +13,7 @@ import {
   triggerSchedulerMonitoring,
   uploadDocument,
   getMetrics,
+  getGuardrailMetrics,
 } from "@/services/complianceApi";
 import ComplianceCalendarView from "@/ComplianceCalendarView";
 import AuditTrailView from "@/features/audit-trail";
@@ -142,6 +143,7 @@ export default function App() {
     run_mode: null,
     message: null,
   });
+  const [guardrail, setGuardrail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState("");
   const [openIntakeSignal, setOpenIntakeSignal] = useState(0);
@@ -153,9 +155,13 @@ export default function App() {
       setLoading(true);
       // Load metrics immediately for dashboard display
       try {
-        const metricsData = await getMetrics();
+        const [metricsData, guardrailData] = await Promise.all([
+          getMetrics(),
+          getGuardrailMetrics().catch(() => null),
+        ]);
         if (!ignore) {
           setMetrics(metricsData);
+          setGuardrail(guardrailData);
         }
       } catch (error) {
         console.error("Failed to load metrics:", error);
@@ -181,8 +187,12 @@ export default function App() {
     
     // Also refresh metrics
     try {
-      const metricsData = await getMetrics();
+      const [metricsData, guardrailData] = await Promise.all([
+        getMetrics(),
+        getGuardrailMetrics().catch(() => null),
+      ]);
       setMetrics(metricsData);
+      setGuardrail(guardrailData);
     } catch (error) {
       console.error("Failed to refresh metrics:", error);
     }
@@ -793,23 +803,124 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="flex min-h-0 flex-1 flex-col rounded-2xl bg-white p-4 shadow-panel overflow-hidden">
-                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-teal-50">
-                      <span className="material-symbols-outlined text-accent">psychology</span>
+                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-panel">
+                    <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
+                      <span className="material-symbols-outlined text-base text-accent">
+                        verified_user
+                      </span>
+                      <h3 className="text-sm font-bold text-slate-950">Guardrail Health</h3>
                     </div>
-                    <h3 className="font-headline text-base font-bold text-slate-950">
-                      Ask the Analyst
-                    </h3>
-                    <p className="mt-2 flex-1 text-sm leading-6 text-muted">
-                      Get grounded answers on regulatory changes, filing obligations, and circular
-                      interpretations sourced directly from ingested documents.
-                    </p>
-                    <button
-                      onClick={() => setPage("analyst")}
-                      className="mt-3 text-left text-sm font-bold text-accent hover:underline"
-                    >
-                      Open Analyst Query
-                    </button>
+                    {guardrail ? (
+                      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+                        {/* Abstention rate */}
+                        <div>
+                          <div className="flex items-end justify-between">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
+                              Abstention Rate
+                            </span>
+                            <span className="text-lg font-extrabold text-slate-950">
+                              {guardrail.query_metrics.abstain_rate_pct}%
+                            </span>
+                          </div>
+                          <div className="mt-1.5 h-1.5 w-full rounded-full bg-slate-200">
+                            <div
+                              className={`h-1.5 rounded-full ${
+                                guardrail.query_metrics.abstain_rate_pct > 50
+                                  ? "bg-amber-500"
+                                  : "bg-accent"
+                              }`}
+                              style={{
+                                width: `${Math.min(guardrail.query_metrics.abstain_rate_pct, 100)}%`,
+                              }}
+                            />
+                          </div>
+                          <p className="mt-1 text-[11px] text-muted">
+                            {guardrail.query_metrics.total_answered} answered /{" "}
+                            {guardrail.query_metrics.total_abstained} abstained of{" "}
+                            {guardrail.query_metrics.total_queries} queries
+                          </p>
+                        </div>
+
+                        {/* Avg confidence */}
+                        {guardrail.query_metrics.avg_confidence != null && (
+                          <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
+                            <span className="text-xs font-semibold text-slate-700">
+                              Avg Confidence
+                            </span>
+                            <span className="text-sm font-extrabold text-slate-950">
+                              {(guardrail.query_metrics.avg_confidence * 100).toFixed(0)}%
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Citations verified */}
+                        <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
+                          <span className="text-xs font-semibold text-slate-700">
+                            Citations Verified
+                          </span>
+                          <span className="text-sm font-extrabold text-slate-950">
+                            {guardrail.query_metrics.citation_verified}
+                          </span>
+                        </div>
+
+                        {/* Draft confidence breakdown */}
+                        {guardrail.draft_metrics.total_drafts > 0 && (
+                          <div>
+                            <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-muted">
+                              Draft Confidence
+                            </p>
+                            <div className="flex gap-2">
+                              {[
+                                { label: "High", value: guardrail.draft_metrics.high_confidence, color: "bg-emerald-500" },
+                                { label: "Low", value: guardrail.draft_metrics.low_confidence, color: "bg-amber-500" },
+                                { label: "None", value: guardrail.draft_metrics.no_confidence, color: "bg-rose-400" },
+                              ].map((seg) => (
+                                <div key={seg.label} className="flex-1 rounded-xl bg-slate-50 p-2 text-center">
+                                  <p className="text-sm font-extrabold text-slate-950">{seg.value}</p>
+                                  <div className="mx-auto mt-1 flex items-center gap-1">
+                                    <span className={`h-1.5 w-1.5 rounded-full ${seg.color}`} />
+                                    <span className="text-[10px] text-muted">{seg.label}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Top abstention reasons */}
+                        {Object.keys(guardrail.query_metrics.abstain_reasons).length > 0 && (
+                          <div>
+                            <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-muted">
+                              Abstention Reasons
+                            </p>
+                            <div className="space-y-1">
+                              {Object.entries(guardrail.query_metrics.abstain_reasons)
+                                .sort(([, a], [, b]) => b - a)
+                                .slice(0, 4)
+                                .map(([reason, count]) => (
+                                  <div
+                                    key={reason}
+                                    className="flex items-center justify-between rounded-lg bg-slate-50 px-2.5 py-1.5"
+                                  >
+                                    <span className="truncate text-[11px] text-slate-700">
+                                      {reason.replace(/_/g, " ")}
+                                    </span>
+                                    <span className="ml-2 shrink-0 text-xs font-bold text-slate-950">
+                                      {count}
+                                    </span>
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-1 items-center justify-center p-4">
+                        <p className="text-sm text-muted">
+                          {loading ? "Loading..." : "No guardrail data yet. Run some queries first."}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
