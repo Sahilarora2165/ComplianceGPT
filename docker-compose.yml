@@ -14,10 +14,10 @@ services:
       - "8000:8000"
 
     volumes:
-      - pdf_data:/app/data/pdfs
+      - ./backend/data:/app/data
       - vectorstore_data:/app/vectorstore
       - ./backend/logs:/app/logs
-      - ~/.cache/huggingface:/root/.cache/huggingface 
+      - ~/.cache/huggingface:/root/.cache/huggingface
 
     restart: unless-stopped
 
@@ -82,7 +82,6 @@ services:
 # Volumes (persistent storage)
 # -----------------------------
 volumes:
-  pdf_data:
   vectorstore_data:
 
 # -----------------------------

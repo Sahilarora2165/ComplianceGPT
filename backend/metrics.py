@@ -68,18 +68,28 @@ def _count_pending_drafts():
     return count
 
 
+def _extract_alerts(raw) -> list:
+    """Extract alert list from a deadline file (supports both formats)."""
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, dict):
+        inner = raw.get("alerts", [])
+        if isinstance(inner, list):
+            return inner
+    return []
+
+
 def _count_deadline_alerts():
     """Count total deadline alerts across all date files."""
     alerts_dir = Path("data/deadline_alerts")
     if not alerts_dir.exists():
         return 0
-    
+
     count = 0
     for alert_file in alerts_dir.glob("*.json"):
         try:
-            alerts = json.loads(alert_file.read_text())
-            if isinstance(alerts, list):
-                count += len(alerts)
+            raw = json.loads(alert_file.read_text())
+            count += len(_extract_alerts(raw))
         except:
             pass
     return count
@@ -90,16 +100,15 @@ def _calculate_total_exposure():
     alerts_dir = Path("data/deadline_alerts")
     if not alerts_dir.exists():
         return 0
-    
+
     total = 0
     for alert_file in alerts_dir.glob("*.json"):
         try:
-            alerts = json.loads(alert_file.read_text())
-            if isinstance(alerts, list):
-                for alert in alerts:
-                    exposure = alert.get("exposure", {}).get("exposure_rupees", 0)
-                    if isinstance(exposure, (int, float)):
-                        total += exposure
+            raw = json.loads(alert_file.read_text())
+            for alert in _extract_alerts(raw):
+                exposure = alert.get("exposure", {}).get("exposure_rupees", 0)
+                if isinstance(exposure, (int, float)):
+                    total += exposure
         except:
             pass
     return total

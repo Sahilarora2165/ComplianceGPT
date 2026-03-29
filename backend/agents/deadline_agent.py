@@ -14,6 +14,7 @@ Returns list of DeadlineAlert dicts — also persisted to
 """
 
 import json
+import re
 import sys
 from datetime import datetime, timezone, date
 from pathlib import Path
@@ -93,10 +94,11 @@ def _financial_exposure(client: dict, obligation: dict, days: int) -> dict:
     overdue_days = max(0, -days) + 30  # 30-day exposure window
 
     exposure = 0
-    if "50/day" in combined:
-        exposure = 50 * overdue_days
-    elif "200/day" in combined:
-        exposure = 200 * overdue_days
+    # Match per-day penalty patterns — extract the daily rate
+    per_day_match = re.search(r"(\d[\d,]*)\s*/\s*day", combined)
+    if per_day_match:
+        daily_rate = int(per_day_match.group(1).replace(",", ""))
+        exposure = daily_rate * overdue_days
     elif "fema" in combined or "export realisation" in combined or "violation" in combined:
         exposure = 500000   # FEMA — up to 3x transaction value
     elif "rbi" in combined and ("penalty" in combined or "action" in combined or "blockage" in combined):
