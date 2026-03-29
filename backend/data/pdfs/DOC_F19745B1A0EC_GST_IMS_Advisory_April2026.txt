@@ -1,0 +1,221 @@
+GOODS AND SERVICES TAX COUNCIL SECRETARIAT
+GOVERNMENT OF INDIA
+
+GST Advisory No.: GSTN/Advisory/2026/08
+Date: March 18, 2026
+
+Subject: Mandatory Implementation of Invoice Management System (IMS) for
+         All GST Filers — Operational Guidelines, Reconciliation Requirements,
+         and Penalty Framework Effective April 1, 2026
+
+To:
+All GST Registered Taxpayers
+All Tax Deductors and Collectors under GST
+All GST Practitioners and Chartered Accountants
+All Authorised Service Providers on GSTN
+
+---
+
+1. INTRODUCTION
+
+The Goods and Services Tax Network (GSTN) has developed the Invoice Management
+System (IMS) to address the persistent problem of Input Tax Credit (ITC) mismatches
+between supplier filings (GSTR-1) and recipient claims (GSTR-3B). The IMS creates
+a real-time invoice-level reconciliation dashboard on the GST portal that enables
+recipients to accept, reject, or keep invoices in pending status before ITC is
+claimed.
+
+Effective April 1, 2026, use of IMS is mandatory for all GST-registered taxpayers
+with aggregate annual turnover exceeding Rs. 5 crore in FY 2025-26. Voluntary use
+is available for all other registered taxpayers from the same date.
+
+---
+
+2. HOW IMS WORKS
+
+2.1 Supplier Action
+When a supplier saves or files their GSTR-1 or GSTR-1A, all B2B invoices are
+automatically pushed to the IMS dashboard of the corresponding recipient. The
+recipient sees these invoices in real time before filing their GSTR-3B.
+
+2.2 Recipient Actions Available
+For each invoice appearing in IMS, the recipient can take one of three actions:
+
+   a) ACCEPT — Confirms the invoice is correct and ITC will be claimed in GSTR-3B
+   b) REJECT — Marks the invoice as incorrect; supplier must issue a credit note
+   c) PENDING — Defers the decision to a future filing period
+
+2.3 Deemed Acceptance
+If no action is taken on an invoice by the time the recipient files their GSTR-3B,
+the invoice is automatically deemed ACCEPTED and ITC is included in that return.
+This is critical — taxpayers who do not actively manage their IMS dashboard may
+inadvertently claim ITC on incorrect invoices.
+
+2.4 Impact on GSTR-3B
+From April 1, 2026, the ITC auto-populated in Table 4 of GSTR-3B will be sourced
+exclusively from IMS-accepted invoices. Manual entry of ITC amounts in GSTR-3B
+that are not backed by IMS-accepted invoices will be flagged as discrepancies
+and may trigger GST department scrutiny.
+
+---
+
+3. MANDATORY RECONCILIATION REQUIREMENTS
+
+3.1 Monthly IMS Reconciliation
+All taxpayers covered under mandatory IMS must complete invoice reconciliation
+on the IMS dashboard by the 14th of the following month. For example, all
+April 2026 invoices must be acted upon (accepted/rejected/pending) by May 14, 2026.
+
+3.2 Quarterly Reconciliation Statement (Form GSTR-IMS-Q)
+A new quarterly reconciliation statement — Form GSTR-IMS-Q — is introduced with
+effect from April 1, 2026. This must be filed within 30 days of the end of each quarter:
+
+   Quarter | Period       | Filing Deadline
+   Q1      | Apr-Jun 2026 | July 30, 2026
+   Q2      | Jul-Sep 2026 | October 30, 2026
+   Q3      | Oct-Dec 2026 | January 30, 2027
+   Q4      | Jan-Mar 2027 | April 30, 2027
+
+3.3 Reconciliation with GSTR-2B
+IMS data feeds directly into GSTR-2B (auto-drafted ITC statement). Taxpayers must
+ensure that the ITC claimed in GSTR-3B does not exceed the ITC available in
+GSTR-2B generated from IMS-accepted invoices. Excess claims will be automatically
+reversed by the GST system with interest at 24% per annum under Section 50(3).
+
+---
+
+4. ITC REVERSAL AND PENALTY PROVISIONS
+
+4.1 ITC on Rejected Invoices
+If ITC has already been claimed on an invoice that is subsequently rejected in IMS,
+the ITC must be reversed in the same month's GSTR-3B. Interest at 18% per annum
+under Section 50(1) applies from the date of original claim to the date of reversal.
+
+4.2 ITC on Non-Existent Invoices
+Where ITC is claimed on invoices that do not appear in IMS (i.e., invoices not
+uploaded by the supplier), the recipient:
+   - Must not claim ITC on such invoices from April 1, 2026
+   - For existing claims: reversal required in the April 2026 GSTR-3B
+   - Interest at 24% per annum under Section 50(3) for excess claims
+
+4.3 Late Filing of GSTR-IMS-Q
+Non-filing or late filing of the quarterly Form GSTR-IMS-Q attracts:
+   - Late fee of Rs. 50 per day (Rs. 25 CGST + Rs. 25 SGST)
+   - Maximum late fee: Rs. 5,000 per return (Rs. 2,500 CGST + Rs. 2,500 SGST)
+
+4.4 Repeat Non-Compliance
+Where a taxpayer fails to reconcile IMS and claims excess ITC for two or more
+consecutive quarters, the GST officer may:
+   - Issue a Show Cause Notice under Section 73 or 74
+   - Block Input Tax Credit under Rule 86A
+   - Suspend GST registration under Section 29(2)
+
+---
+
+5. SPECIFIC GUIDANCE BY BUSINESS TYPE
+
+5.1 Manufacturing and Export Companies
+Manufacturing companies claiming ITC on raw material purchases must ensure all
+supplier invoices are accepted in IMS before claiming ITC in GSTR-3B. For export-
+oriented units claiming refunds under the zero-rated supply mechanism, IMS
+acceptance is now a prerequisite for refund processing. Refund applications that
+do not match IMS-accepted invoices will be rejected automatically.
+
+Companies with large vendor bases (50+ suppliers) are advised to use GSTN's bulk
+action feature in IMS to accept/reject multiple invoices simultaneously.
+
+5.2 Restaurants and Food Service Businesses
+Food service businesses registered under the composition scheme are not covered
+under mandatory IMS. However, regular scheme registrants (turnover > Rs. 5 crore)
+in food service must comply. Key practical implication: purchases from unregistered
+vendors (common in the food industry) will not appear in IMS and ITC cannot be
+claimed on such purchases regardless.
+
+5.3 IT and Software Companies
+IT companies making B2B software sales must ensure their GSTR-1 is filed on time
+as delays push invoices late into the recipient's IMS dashboard, potentially causing
+the recipient to defer ITC claims. For contracts where advance payments are made,
+the tax invoice date (not advance receipt date) governs the IMS upload timing.
+
+IT exporters claiming GST refunds on zero-rated supplies must note: IMS acceptance
+by the overseas recipient is not applicable (exports are zero-rated). However,
+domestic B2B supply invoices must be managed through IMS.
+
+5.4 NBFCs and Financial Services
+NBFCs and financial services companies that are primarily exempt from GST (on
+interest income) but have some taxable supplies must carefully track IMS. The
+partial ITC reversal under Rule 42 (proportionate reversal for exempt supplies)
+must be recalculated based on IMS-accepted invoices only, not total purchases.
+
+5.5 Stock Broking Firms
+Stock broking companies receiving brokerage income (taxable at 18%) must manage
+IMS for all input services — office rent, software subscriptions, professional
+fees, exchange connectivity charges. These inputs are fully eligible for ITC
+provided they appear in IMS and are accepted. Broking firms with sub-offices
+should ensure all GST registrations are linked for consolidated IMS management.
+
+---
+
+6. TRANSITION PROVISIONS (APRIL 1 — JUNE 30, 2026)
+
+6.1 Backlog Clearance
+All outstanding unreconciled invoices from October 2024 onwards that appear in the
+legacy GSTR-2B but have not been actioned in IMS must be reviewed and accepted or
+rejected in the IMS dashboard by May 31, 2026.
+
+6.2 Training and System Readiness
+GSTN has made available a sandbox environment for testing IMS workflows at
+sandbox.gstn.gov.in. All large taxpayers (turnover > Rs. 50 crore) are required
+to complete IMS readiness testing in the sandbox and submit a readiness certificate
+to their jurisdictional GST officer by April 30, 2026.
+
+6.3 Waiver of Late Fee During Transition
+For the first quarter (April-June 2026), late fees for Form GSTR-IMS-Q will be
+waived provided the return is filed by August 15, 2026 (45-day extension). This
+waiver applies only to the first quarter.
+
+---
+
+7. ACTION REQUIRED
+
+All GST-registered taxpayers with turnover above Rs. 5 crore must:
+
+   i)   Log into the GST portal and access the IMS dashboard immediately
+   ii)  Clear all pending invoices from October 2024 to March 2026 by May 31, 2026
+   iii) Configure accounting software to pull IMS data for monthly reconciliation
+   iv)  Train accounts payable team on accept/reject/pending workflow
+   v)   Review and reverse any ITC claimed on invoices not appearing in IMS
+   vi)  Complete GSTN sandbox readiness testing by April 30, 2026 (if turnover > Rs. 50 crore)
+   vii) File Form GSTR-IMS-Q for Q1 FY 2026-27 by July 30, 2026
+
+---
+
+8. APPLICABILITY
+
+This advisory is mandatory for:
+   - All regular scheme GST taxpayers with aggregate annual turnover > Rs. 5 crore
+   - All taxpayers claiming GST refunds under zero-rated supply mechanism
+
+This advisory is voluntary (but recommended) for:
+   - GST taxpayers with turnover below Rs. 5 crore
+
+This advisory does not apply to:
+   - Composition scheme taxpayers
+   - Persons registered solely for TDS/TCS under GST
+   - Input Service Distributors (ISDs)
+
+---
+
+(Shilpa Mehta)
+Joint Commissioner (Systems)
+GSTN — Goods and Services Tax Network
+
+---
+
+ANNEXURE: FORM GSTR-IMS-Q FILING DEADLINES FY 2026-27
+
+Quarter | Due Date      | Extended Date (Q1 only)
+Q1      | July 30, 2026 | August 15, 2026 (waiver period)
+Q2      | Oct 30, 2026  | No extension
+Q3      | Jan 30, 2027  | No extension
+Q4      | Apr 30, 2027  | No extension

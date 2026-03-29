@@ -1,75 +1,27 @@
 {
   "new_documents": [
     {
+      "document_id": "DOC_F19745B1A0EC",
       "regulator": "RBI",
-      "title": "Meeting Schedule of the Monetary Policy Committee for 2026-2027",
-      "url": "https://rbidocs.rbi.org.in/rdocs/PressRelease/PDFs/PR230645E88B9147F84BF8ABAD12BC716CA440.PDF",
-      "filename": "rbi_PR230645E88B9147F84BF8ABAD12BC716CA440.pdf",
+      "title": "GST IMS",
+      "url": "",
+      "filename": "DOC_F19745B1A0EC_GST_IMS_Advisory_April2026.txt",
       "priority": "MEDIUM",
-      "summary": "",
-      "source": "real_scrape",
-      "circular_no": "",
-      "published_date": "2026-01-01"
-    },
-    {
-      "regulator": "RBI",
-      "title": "RBI Bulletin – March 2026",
-      "url": "https://rbidocs.rbi.org.in/rdocs/PressRelease/PDFs/PR230531441F92E87A49F6B7C74E2DD7EF9D63.PDF",
-      "filename": "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf",
-      "priority": "MEDIUM",
-      "summary": "",
-      "source": "real_scrape",
-      "circular_no": "",
-      "published_date": "2026-01-01"
+      "summary": "goods and services tax council secretariat government of india gst advisory no.: gstn/advisory/2026/08 date: march 18, 2026 subject: mandatory implementation of invoice management system (ims) for all gst filers — operational guidelines, reconciliation requirements, and penalty framework effective april 1, 2026 to: all gst registered taxpayers all tax deductors and collectors gst advisory no.: gstn/advisory/2026/08 date: march 18, 2026 subject: mandatory implementation of invoice management system (ims) for all gst filers — operational guidelines, reconciliation requirements, and penalty framework effective april 1, 2026 to: all gst registered taxpayers all tax deductors and collectors under gst all gst practitioners and chartered accountants all authorised service providers on gstn --- ntroduction the goods and services tax network (gstn) has developed the invoice management system (ims) to address the persistent problem of input tax credit (itc) mismatches between supplier filings (gstr-1) and recipient claims (gstr-3b). the ims creates a real-time invoice-level reconciliation dashboard on the gst portal that enables recipients to accept, reject, or keep invoices in pending status before itc is claimed. effective april 1, 2026, use of ims is mandatory for all gst-registered taxpayers with aggregate annual turnover exceeding rs. 5 crore in fy 2025-26. voluntary use is available for all other registered taxpayers from the same date. --- upplier action when a supplier saves or files their gstr-1 or gstr-1a, all b2b invoices are automatically pushed to the ims dashboard of the corresponding recipient. the recipient sees these invoices in real time before filing their gstr-3b. ecipient actions available for each invoice appearing in ims, the recipient can take one of three actions: a) accept — confirms the invoice is correct and itc will be claimed in gstr-3b b) reject — marks the invoice as incorrect; supplier must issue a credit note c) pending — defers the decision ",
+      "source": "manual_upload",
+      "uploaded_by": "CA",
+      "uploaded_at": "2026-03-29T15:42:14.060189+00:00"
     }
   ],
   "match_results": [
     {
-      "circular_title": "Meeting Schedule of the Monetary Policy Committee for 2026-2027",
+      "circular_title": "GST IMS",
       "regulator": "RBI",
       "priority": "MEDIUM",
-      "summary": "",
-      "url": "https://rbidocs.rbi.org.in/rdocs/PressRelease/PDFs/PR230645E88B9147F84BF8ABAD12BC716CA440.PDF",
+      "summary": "goods and services tax council secretariat government of india gst advisory no.: gstn/advisory/2026/08 date: march 18, 2026 subject: mandatory implementation of invoice management system (ims) for all gst filers — operational guidelines, reconciliation requirements, and penalty framework effective april 1, 2026 to: all gst registered taxpayers all tax deductors and collectors gst advisory no.: gstn/advisory/2026/08 date: march 18, 2026 subject: mandatory implementation of invoice management system (ims) for all gst filers — operational guidelines, reconciliation requirements, and penalty framework effective april 1, 2026 to: all gst registered taxpayers all tax deductors and collectors under gst all gst practitioners and chartered accountants all authorised service providers on gstn --- ntroduction the goods and services tax network (gstn) has developed the invoice management system (ims) to address the persistent problem of input tax credit (itc) mismatches between supplier filings (gstr-1) and recipient claims (gstr-3b). the ims creates a real-time invoice-level reconciliation dashboard on the gst portal that enables recipients to accept, reject, or keep invoices in pending status before itc is claimed. effective april 1, 2026, use of ims is mandatory for all gst-registered taxpayers with aggregate annual turnover exceeding rs. 5 crore in fy 2025-26. voluntary use is available for all other registered taxpayers from the same date. --- upplier action when a supplier saves or files their gstr-1 or gstr-1a, all b2b invoices are automatically pushed to the ims dashboard of the corresponding recipient. the recipient sees these invoices in real time before filing their gstr-3b. ecipient actions available for each invoice appearing in ims, the recipient can take one of three actions: a) accept — confirms the invoice is correct and itc will be claimed in gstr-3b b) reject — marks the invoice as incorrect; supplier must issue a credit note c) pending — defers the decision ",
+      "url": "",
       "circular_no": "",
-      "published_date": "2026-01-01",
-      "affected_clients": [
-        {
-          "client_id": "CLT-001",
-          "name": "Arvind Textiles Pvt. Ltd.",
-          "business_type": "Manufacturing & Export",
-          "contact_email": "arvind.shah@arvindtextiles.com",
-          "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
-          "urgent": false
-        },
-        {
-          "client_id": "CLT-003",
-          "name": "Kapoor Tech Solutions Pvt. Ltd.",
-          "business_type": "IT & Software Export",
-          "contact_email": "ishandesale2004@gmail.com",
-          "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
-          "urgent": false
-        },
-        {
-          "client_id": "CLT-004",
-          "name": "Sunrise Finserv NBFC Ltd.",
-          "business_type": "NBFC",
-          "contact_email": "sunita.rao@sunrisefinserv.com",
-          "reason": "Has RBI_MONTHLY_RETURN obligation (pending) under RBI",
-          "urgent": false
-        }
-      ],
-      "match_count": 3,
-      "abstained": false,
-      "abstain_reason": null
-    },
-    {
-      "circular_title": "RBI Bulletin – March 2026",
-      "regulator": "RBI",
-      "priority": "MEDIUM",
-      "summary": "",
-      "url": "https://rbidocs.rbi.org.in/rdocs/PressRelease/PDFs/PR230531441F92E87A49F6B7C74E2DD7EF9D63.PDF",
-      "circular_no": "",
-      "published_date": "2026-01-01",
+      "published_date": "",
       "affected_clients": [
         {
           "client_id": "CLT-001",
@@ -103,320 +55,160 @@
   ],
   "drafts": [
     {
-      "draft_id": "CLT-003_RBI_MEETING_SCHEDULE_OF_THE_MONETARY_48ed",
-      "client_id": "CLT-003",
-      "client_name": "Kapoor Tech Solutions Pvt. Ltd.",
-      "client_email": "ishandesale2004@gmail.com",
-      "client_contact": "Kapoor Tech Solutions Pvt. Ltd.",
-      "circular_id": "RBI_MEETING_SCHEDULE_OF_THE_MONETARY_48ed",
-      "circular_title": "Meeting Schedule of the Monetary Policy Committee for 2026-2027",
-      "circular_no": "",
-      "circular_url": "https://rbidocs.rbi.org.in/rdocs/PressRelease/PDFs/PR230645E88B9147F84BF8ABAD12BC716CA440.PDF",
-      "circular_published": "",
-      "regulator": "RBI",
-      "priority": "MEDIUM",
-      "circular_summary": "RBI regulatory update — Meeting Schedule of the Monetary Policy Committee for 2026-2027.",
-      "actions": [
-        "Submit SOFTEX form for each export invoice to the bank within 30 days — required as Kapoor Tech Solutions Pvt. Ltd. is a software exporter under FEMA",
-        "Reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before closure of the reporting cycle",
-        "Track pending export realisations, overdue foreign receivables, and FEMA follow-up items separately from GST or direct tax matters"
-      ],
-      "deadline": "2026-04-28",
-      "risk_level": "MEDIUM",
-      "penalty_if_missed": "Not specified in circular",
-      "applicable_sections": [
-        "Section 45ZI of Reserve Bank of India Act, 1934"
-      ],
-      "email_subject": "Compliance Advisory: Meeting Schedule of the Monetary Policy Committee for 2026-2027",
-      "email_body": "{\n  \"subject\": \"Compliance Advisory: FEMA Requirements for Software Exporters\",\n  \"body\": \"Dear Kapoor Tech Solutions Pvt. Ltd. Team,\n\nAs a software exporter under the Foreign Exchange Management Act (FEMA), Kapoor Tech Solutions Pvt. Ltd. is required to comply with specific regulations to ensure seamless export operations. This advisory is to bring to your attention the necessary actions to be taken to maintain compliance.\n\nPlease note the following actions to be completed by the deadline:\n\n1. Submit SOFTEX form for each export invoice to the bank within 30 days.\n2. Reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before closure of the reporting cycle.\n3. Track pending export realisations, overdue foreign receivables, and FEMA follow-up items separately from GST or direct tax matters.\n\nThe deadline for completion of these actions is **28th April 2026**. Although the risk level is medium, it is essential to adhere to these requirements to avoid any potential issues.\n\nIf you require any assistance or clarification on these requirements, please do not hesitate to contact us.\n\nBest regards,\nCompliance Advisory Team\n\nSource Reference:\nCircular Title : Meeting Schedule of the Monetary Policy Committee for 2026-2027\nRegulator      : RBI\nCircular No.   : Refer official portal\nPublished Date : Recent\nSource URL     : https://rbidocs.rbi.org.in/rdocs/PressRelease/PDFs/PR230645E88B9147F84BF8ABAD12BC716CA440.PDF\"",
-      "internal_notes": "CA notes — deadline was estimated, cross-checks needed for FEMA compliance",
-      "source_chunks": [
-        {
-          "source": "rbi_fema_circular_march2026_sim.txt",
-          "page": 0,
-          "score": 0.9936
-        },
-        {
-          "source": "rbi_PR230645E88B9147F84BF8ABAD12BC716CA440.pdf",
-          "page": 0,
-          "score": 0.9922
-        },
-        {
-          "source": "rbi_PR230645E88B9147F84BF8ABAD12BC716CA440.pdf",
-          "page": 0,
-          "score": 0.9881
-        },
-        {
-          "source": "rbi_fema_circular_march2026_sim.txt",
-          "page": 0,
-          "score": 0.746
-        },
-        {
-          "source": "rbi_fema_circular_march2026_sim.txt",
-          "page": 0,
-          "score": 0.1264
-        },
-        {
-          "source": "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf",
-          "page": 0,
-          "score": 0.0794
-        },
-        {
-          "source": "rbi_PR2338129089C31EDF4712AF5AB69437F5BE64.pdf",
-          "page": 0,
-          "score": 0.013
-        },
-        {
-          "source": "rbi_PR23359EA2697B25D341C0B9832F32339C2FC4.pdf",
-          "page": 0,
-          "score": 0.0111
-        },
-        {
-          "source": "rbi_PR2337E8FAC42DB6494A4D9C4F090E195252CF.pdf",
-          "page": 0,
-          "score": 0.006
-        },
-        {
-          "source": "rbi_PR23369981C252827845159985FD87AB81285A.pdf",
-          "page": 0,
-          "score": 0.0038
-        }
-      ],
-      "source_chunk_ids": [
-        "rbi_fema_circular_march2026_sim.txt_p0",
-        "rbi_PR230645E88B9147F84BF8ABAD12BC716CA440.pdf_p0",
-        "rbi_PR230645E88B9147F84BF8ABAD12BC716CA440.pdf_p0",
-        "rbi_fema_circular_march2026_sim.txt_p0",
-        "rbi_fema_circular_march2026_sim.txt_p0",
-        "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf_p0",
-        "rbi_PR2338129089C31EDF4712AF5AB69437F5BE64.pdf_p0",
-        "rbi_PR23359EA2697B25D341C0B9832F32339C2FC4.pdf_p0",
-        "rbi_PR2337E8FAC42DB6494A4D9C4F090E195252CF.pdf_p0",
-        "rbi_PR23369981C252827845159985FD87AB81285A.pdf_p0"
-      ],
-      "rag_confidence": "high",
-      "low_confidence_flag": false,
-      "rag_top_score": 5.0501,
-      "model_used": "llama-3.1-8b-instant",
-      "generated_at": "2026-03-29T11:28:58.765824+00:00",
-      "version": "v1",
-      "status": "pending_review",
-      "review_status": "pending",
-      "delivery_status": "not_sent"
-    },
-    {
-      "draft_id": "CLT-001_RBI_MEETING_SCHEDULE_OF_THE_MONETARY_48ed",
+      "draft_id": "CLT-001_RBI_GST_IMS_cb7b",
       "client_id": "CLT-001",
       "client_name": "Arvind Textiles Pvt. Ltd.",
       "client_email": "arvind.shah@arvindtextiles.com",
       "client_contact": "Arvind Textiles Pvt. Ltd.",
-      "circular_id": "RBI_MEETING_SCHEDULE_OF_THE_MONETARY_48ed",
-      "circular_title": "Meeting Schedule of the Monetary Policy Committee for 2026-2027",
+      "circular_id": "RBI_GST_IMS_cb7b",
+      "circular_title": "GST IMS",
       "circular_no": "",
-      "circular_url": "https://rbidocs.rbi.org.in/rdocs/PressRelease/PDFs/PR230645E88B9147F84BF8ABAD12BC716CA440.PDF",
+      "circular_url": "",
       "circular_published": "",
       "regulator": "RBI",
       "priority": "MEDIUM",
-      "circular_summary": "RBI regulatory update — Meeting Schedule of the Monetary Policy Committee for 2026-2027.",
+      "circular_summary": "goods and services tax council secretariat government of india gst advisory no.: gstn/advisory/2026/08 date: march 18, 2026 subject: mandatory implementation of invoice management system (ims) for all gst filers — operational guidelines, reconciliation requirements, and penalty framework effective april 1, 2026 to: all gst registered taxpayers all tax deductors and collectors gst advisory no.: gstn/advisory/2026/08 date: march 18, 2026 subject: mandatory implementation of invoice management system (ims) for all gst filers — operational guidelines, reconciliation requirements, and penalty framework effective april 1, 2026 to: all gst registered taxpayers all tax deductors and collectors under gst all gst practitioners and chartered accountants all authorised service providers on gstn --- ntroduction the goods and services tax network (gstn) has developed the invoice management system (ims) to address the persistent problem of input tax credit (itc) mismatches between supplier filings (gstr-1) and recipient claims (gstr-3b). the ims creates a real-time invoice-level reconciliation dashboard on the gst portal that enables recipients to accept, reject, or keep invoices in pending status before itc is claimed. effective april 1, 2026, use of ims is mandatory for all gst-registered taxpayers with aggregate annual turnover exceeding rs. 5 crore in fy 2025-26. voluntary use is available for all other registered taxpayers from the same date. --- upplier action when a supplier saves or files their gstr-1 or gstr-1a, all b2b invoices are automatically pushed to the ims dashboard of the corresponding recipient. the recipient sees these invoices in real time before filing their gstr-3b. ecipient actions available for each invoice appearing in ims, the recipient can take one of three actions: a) accept — confirms the invoice is correct and itc will be claimed in gstr-3b b) reject — marks the invoice as incorrect; supplier must issue a credit note c) pending — defers the decision ",
       "actions": [
-        "Submit SOFTEX form for each export invoice to HDFC Bank Fort Branch within 30 days — required as Arvind Textiles is a goods exporter under FEMA",
-        "Track pending export realisations, overdue foreign receivables, and FEMA follow-up items separately from GST or direct tax matters",
-        "Reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before closure of the reporting cycle",
-        "Obtain corrected declarations where transaction values, invoice references, or remittance details do not match prior submissions"
+        "Submit SOFTEX form for each export invoice to the bank within 30 days — required as Arvind Textiles is a goods exporter under FEMA",
+        "Renew LUT for FY 2026-27 on GST portal before March 31, 2026",
+        "Identify invoices above USD 25,000 where the revised 21-day/15-day SOFTEX timeline will apply from April 1, 2026",
+        "Engage CA firm for Annual FEMA Compliance Certificate by June 30, 2026",
+        "Verify if new USD 1 million threshold brings additional borrowings within ECB-2 reporting scope"
       ],
-      "deadline": "2026-04-28",
+      "deadline": "2026-03-31",
       "risk_level": "MEDIUM",
-      "penalty_if_missed": "Not specified in circular",
-      "applicable_sections": [
-        "Section 45ZI of Reserve Bank of India Act, 1934"
-      ],
-      "email_subject": "Compliance Advisory: Meeting Schedule of the Monetary Policy Committee for 2026-2027",
-      "email_body": "{\n  \"subject\": \"Compliance Advisory: FEMA Requirements for Export Transactions - Arvind Textiles Pvt. Ltd.\",\n  \"body\": \"Dear Arvind Textiles Pvt. Ltd. Team,\n\nAs a goods exporter under FEMA, Arvind Textiles Pvt. Ltd. is required to comply with the regulations outlined in the recent RBI circular. Specifically, this applies to your company as you engage in export transactions, which necessitate adherence to FEMA guidelines.\n\nTo ensure compliance, we recommend the following actions:\n\n1. Submit SOFTEX form for each export invoice to HDFC Bank Fort Branch within 30 days.\n2. Track pending export realisations, overdue foreign receivables, and FEMA follow-up items separately from GST or direct tax matters.\n3. Reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before closure of the reporting cycle.\n4. Obtain corrected declarations where transaction values, invoice references, or remittance details do not match prior submissions.\n\nPlease note that the deadline for completing these actions is **2026-04-28**. Although the risk level is classified as medium, we recommend prompt attention to avoid any potential issues.\n\nIf you require assistance or have any questions, please do not hesitate to contact us.\n\nBest regards,\nCompliance Advisory Team\n\nSource Reference:\nCircular Title : Meeting Schedule of the Monetary Policy Committee for 2026-2027\nRegulator      : RBI\nSource URL     : https://rbidocs.rbi.org.in/rdocs/PressRelease/PDFs/PR230645E88B9147F84BF8ABAD12BC716CA440.PDF\n\"",
-      "internal_notes": "CA notes — deadline was estimated, cross-checks needed for specific invoice count and oldest invoice date",
+      "penalty_if_missed": "Not specified in circular — verify at source",
+      "applicable_sections": [],
+      "email_subject": "Compliance Advisory: GST IMS",
+      "email_body": "{\n  \"subject\": \"Compliance Advisory: GST IMS Circular for Arvind Textiles Pvt. Ltd.\",\n  \"body\": \"Dear Arvind Textiles Pvt. Ltd.,\n\nAs a goods exporter under FEMA, Arvind Textiles Pvt. Ltd. is required to comply with the RBI's GST IMS circular to ensure timely submission of SOFTEX forms and renewal of LUT.\n\nTo ensure compliance, please take the following actions:\n\n1. Submit SOFTEX form for each export invoice to the bank within 30 days from the date of export.\n2. Renew LUT for FY 2026-27 on the GST portal before **March 31, 2026**.\n3. Identify invoices above USD 25,000 where the revised 21-day/15-day SOFTEX timeline will apply from April 1, 2026.\n4. Engage a CA firm for Annual FEMA Compliance Certificate by June 30, 2026.\n5. Verify if new USD 1 million threshold brings additional borrowings within ECB-2 reporting scope.\n\nPlease note that the deadline for LUT renewal is **March 31, 2026**. Failure to comply may result in penalties, although the exact amount is not specified in the circular.\n\nIf you require assistance with any of these actions, please do not hesitate to contact us.\n\nBest regards,\nCompliance Advisory Team\n\nSource Reference:\nCircular Title: GST IMS\nRegulator: RBI\nCircular No.: Refer official portal\nPublished Date: Recent\nSource URL: Refer official regulatory portal\"\n}",
+      "internal_notes": "CA notes — deadline was explicit, cross-checks needed for LUT renewal and SOFTEX submissions",
       "source_chunks": [
         {
-          "source": "rbi_fema_circular_march2026_sim.txt",
+          "source": "DOC_EBA6B7BE810D_RBI_FEMA_Export_Compliance_Circular_March2026.txt",
           "page": 0,
-          "score": 0.9936
+          "score": 0.1029
         },
         {
-          "source": "rbi_PR230645E88B9147F84BF8ABAD12BC716CA440.pdf",
+          "source": "DOC_EBA6B7BE810D_RBI_FEMA_Export_Compliance_Circular_March2026.txt",
           "page": 0,
-          "score": 0.9922
-        },
-        {
-          "source": "rbi_PR230645E88B9147F84BF8ABAD12BC716CA440.pdf",
-          "page": 0,
-          "score": 0.9881
-        },
-        {
-          "source": "rbi_fema_circular_march2026_sim.txt",
-          "page": 0,
-          "score": 0.746
-        },
-        {
-          "source": "rbi_fema_circular_march2026_sim.txt",
-          "page": 0,
-          "score": 0.1264
-        },
-        {
-          "source": "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf",
-          "page": 0,
-          "score": 0.0794
-        },
-        {
-          "source": "rbi_PR2338129089C31EDF4712AF5AB69437F5BE64.pdf",
-          "page": 0,
-          "score": 0.013
-        },
-        {
-          "source": "rbi_PR23359EA2697B25D341C0B9832F32339C2FC4.pdf",
-          "page": 0,
-          "score": 0.0111
-        },
-        {
-          "source": "rbi_PR2337E8FAC42DB6494A4D9C4F090E195252CF.pdf",
-          "page": 0,
-          "score": 0.006
-        },
-        {
-          "source": "rbi_PR23369981C252827845159985FD87AB81285A.pdf",
-          "page": 0,
-          "score": 0.0038
+          "score": 0.038
         }
       ],
       "source_chunk_ids": [
-        "rbi_fema_circular_march2026_sim.txt_p0",
-        "rbi_PR230645E88B9147F84BF8ABAD12BC716CA440.pdf_p0",
-        "rbi_PR230645E88B9147F84BF8ABAD12BC716CA440.pdf_p0",
-        "rbi_fema_circular_march2026_sim.txt_p0",
-        "rbi_fema_circular_march2026_sim.txt_p0",
-        "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf_p0",
-        "rbi_PR2338129089C31EDF4712AF5AB69437F5BE64.pdf_p0",
-        "rbi_PR23359EA2697B25D341C0B9832F32339C2FC4.pdf_p0",
-        "rbi_PR2337E8FAC42DB6494A4D9C4F090E195252CF.pdf_p0",
-        "rbi_PR23369981C252827845159985FD87AB81285A.pdf_p0"
+        "DOC_EBA6B7BE810D_RBI_FEMA_Export_Compliance_Circular_March2026.txt_p0",
+        "DOC_EBA6B7BE810D_RBI_FEMA_Export_Compliance_Circular_March2026.txt_p0"
       ],
       "rag_confidence": "high",
       "low_confidence_flag": false,
-      "rag_top_score": 5.0501,
+      "rag_top_score": -2.1652,
       "model_used": "llama-3.1-8b-instant",
-      "generated_at": "2026-03-29T11:29:38.501695+00:00",
+      "generated_at": "2026-03-29T15:42:23.327293+00:00",
       "version": "v1",
       "status": "pending_review",
       "review_status": "pending",
       "delivery_status": "not_sent"
     },
     {
-      "draft_id": "CLT-004_RBI_MEETING_SCHEDULE_OF_THE_MONETARY_48ed",
+      "draft_id": "CLT-003_RBI_GST_IMS_cb7b",
+      "client_id": "CLT-003",
+      "client_name": "Kapoor Tech Solutions Pvt. Ltd.",
+      "client_email": "ishandesale2004@gmail.com",
+      "client_contact": "Kapoor Tech Solutions Pvt. Ltd.",
+      "circular_id": "RBI_GST_IMS_cb7b",
+      "circular_title": "GST IMS",
+      "circular_no": "",
+      "circular_url": "",
+      "circular_published": "",
+      "regulator": "RBI",
+      "priority": "MEDIUM",
+      "circular_summary": "goods and services tax council secretariat government of india gst advisory no.: gstn/advisory/2026/08 date: march 18, 2026 subject: mandatory implementation of invoice management system (ims) for all gst filers — operational guidelines, reconciliation requirements, and penalty framework effective april 1, 2026 to: all gst registered taxpayers all tax deductors and collectors gst advisory no.: gstn/advisory/2026/08 date: march 18, 2026 subject: mandatory implementation of invoice management system (ims) for all gst filers — operational guidelines, reconciliation requirements, and penalty framework effective april 1, 2026 to: all gst registered taxpayers all tax deductors and collectors under gst all gst practitioners and chartered accountants all authorised service providers on gstn --- ntroduction the goods and services tax network (gstn) has developed the invoice management system (ims) to address the persistent problem of input tax credit (itc) mismatches between supplier filings (gstr-1) and recipient claims (gstr-3b). the ims creates a real-time invoice-level reconciliation dashboard on the gst portal that enables recipients to accept, reject, or keep invoices in pending status before itc is claimed. effective april 1, 2026, use of ims is mandatory for all gst-registered taxpayers with aggregate annual turnover exceeding rs. 5 crore in fy 2025-26. voluntary use is available for all other registered taxpayers from the same date. --- upplier action when a supplier saves or files their gstr-1 or gstr-1a, all b2b invoices are automatically pushed to the ims dashboard of the corresponding recipient. the recipient sees these invoices in real time before filing their gstr-3b. ecipient actions available for each invoice appearing in ims, the recipient can take one of three actions: a) accept — confirms the invoice is correct and itc will be claimed in gstr-3b b) reject — marks the invoice as incorrect; supplier must issue a credit note c) pending — defers the decision ",
+      "actions": [
+        "Renew Letter of Undertaking (LUT) for FY 2026-27 on GST portal before March 31, 2026",
+        "Submit SOFTEX form for each export invoice to the bank within 30 days — required as Kapoor Tech Solutions Pvt. Ltd. is a software exporter under FEMA with unrealised forex ₹5,800,000 and oldest invoice 112 days old"
+      ],
+      "deadline": "2026-03-31",
+      "risk_level": "MEDIUM",
+      "penalty_if_missed": "Not specified in circular — verify at source",
+      "applicable_sections": [
+        "Section 143(2)"
+      ],
+      "email_subject": "Compliance Advisory: GST IMS Renewal and SOFTEX Form Submission",
+      "email_body": "Kapoor Tech Solutions Pvt. Ltd.,\n\nThis advisory is specifically applicable to your company as you are a software exporter under FEMA with unrealised forex ₹5,800,000 and oldest invoice 112 days old, necessitating the submission of SOFTEX forms to the bank.\n\nAs per the recent RBI Circular on GST IMS, we recommend the following actions be taken by your company:\n1. Renew the Letter of Undertaking (LUT) for FY 2026-27 on the GST portal before March 31, 2026.\n2. Submit the SOFTEX form for each export invoice to the bank within 30 days.\n\n**Deadline: March 31, 2026**\n\nPlease note that failure to comply may result in penalties, although the exact penalty is not specified in the circular and should be verified at the source.\n\nIf you require assistance with these compliance requirements, please do not hesitate to contact us.\n\nSincerely,\nCompliance Advisory Team\n\nSource Reference:\nCircular Title: GST IMS\nRegulator: RBI\nSource URL: Refer official regulatory portal",
+      "internal_notes": "CA notes — deadline was explicit, cross-checks needed for related party transactions with Kapoor Tech Inc., Delaware USA",
+      "source_chunks": [
+        {
+          "source": "DOC_EBA6B7BE810D_RBI_FEMA_Export_Compliance_Circular_March2026.txt",
+          "page": 0,
+          "score": 0.1029
+        },
+        {
+          "source": "DOC_EBA6B7BE810D_RBI_FEMA_Export_Compliance_Circular_March2026.txt",
+          "page": 0,
+          "score": 0.038
+        }
+      ],
+      "source_chunk_ids": [
+        "DOC_EBA6B7BE810D_RBI_FEMA_Export_Compliance_Circular_March2026.txt_p0",
+        "DOC_EBA6B7BE810D_RBI_FEMA_Export_Compliance_Circular_March2026.txt_p0"
+      ],
+      "rag_confidence": "high",
+      "low_confidence_flag": false,
+      "rag_top_score": -2.1652,
+      "model_used": "llama-3.1-8b-instant",
+      "generated_at": "2026-03-29T15:42:37.360056+00:00",
+      "version": "v1",
+      "status": "pending_review",
+      "review_status": "pending",
+      "delivery_status": "not_sent"
+    },
+    {
+      "draft_id": "CLT-004_RBI_GST_IMS_cb7b",
       "client_id": "CLT-004",
       "client_name": "Sunrise Finserv NBFC Ltd.",
       "client_email": "sunita.rao@sunrisefinserv.com",
       "client_contact": "Sunrise Finserv NBFC Ltd.",
-      "circular_id": "RBI_MEETING_SCHEDULE_OF_THE_MONETARY_48ed",
-      "circular_title": "Meeting Schedule of the Monetary Policy Committee for 2026-2027",
+      "circular_id": "RBI_GST_IMS_cb7b",
+      "circular_title": "GST IMS",
       "circular_no": "",
-      "circular_url": "https://rbidocs.rbi.org.in/rdocs/PressRelease/PDFs/PR230645E88B9147F84BF8ABAD12BC716CA440.PDF",
+      "circular_url": "",
       "circular_published": "",
       "regulator": "RBI",
       "priority": "MEDIUM",
-      "circular_summary": "RBI regulatory update — Meeting Schedule of the Monetary Policy Committee for 2026-2027.",
+      "circular_summary": "goods and services tax council secretariat government of india gst advisory no.: gstn/advisory/2026/08 date: march 18, 2026 subject: mandatory implementation of invoice management system (ims) for all gst filers — operational guidelines, reconciliation requirements, and penalty framework effective april 1, 2026 to: all gst registered taxpayers all tax deductors and collectors gst advisory no.: gstn/advisory/2026/08 date: march 18, 2026 subject: mandatory implementation of invoice management system (ims) for all gst filers — operational guidelines, reconciliation requirements, and penalty framework effective april 1, 2026 to: all gst registered taxpayers all tax deductors and collectors under gst all gst practitioners and chartered accountants all authorised service providers on gstn --- ntroduction the goods and services tax network (gstn) has developed the invoice management system (ims) to address the persistent problem of input tax credit (itc) mismatches between supplier filings (gstr-1) and recipient claims (gstr-3b). the ims creates a real-time invoice-level reconciliation dashboard on the gst portal that enables recipients to accept, reject, or keep invoices in pending status before itc is claimed. effective april 1, 2026, use of ims is mandatory for all gst-registered taxpayers with aggregate annual turnover exceeding rs. 5 crore in fy 2025-26. voluntary use is available for all other registered taxpayers from the same date. --- upplier action when a supplier saves or files their gstr-1 or gstr-1a, all b2b invoices are automatically pushed to the ims dashboard of the corresponding recipient. the recipient sees these invoices in real time before filing their gstr-3b. ecipient actions available for each invoice appearing in ims, the recipient can take one of three actions: a) accept — confirms the invoice is correct and itc will be claimed in gstr-3b b) reject — marks the invoice as incorrect; supplier must issue a credit note c) pending — defers the decision ",
       "actions": [
-        "Submit NBS-9 return to RBI by 2026-04-07 — penalty for delayed filing",
-        "Update KYC records for all borrowers and depositors at prescribed periodicity — ensure compliance with RBI directions"
+        "Submit RBI monthly return (NBS-9) by the 7th of each month — required as RBI monthly return is due by 7th of each month",
+        "Settle pending demand of ₹42L under Section 271(1)(c) for AY2022-23 — penalty for concealment"
       ],
       "deadline": "2026-04-07",
-      "risk_level": "MEDIUM",
-      "penalty_if_missed": "RBI compliance action — license risk",
+      "risk_level": "HIGH",
+      "penalty_if_missed": "Not specified in circular — verify at source",
       "applicable_sections": [
-        "Section 45ZI of Reserve Bank of India Act, 1934"
+        "Section 271(1)(c)"
       ],
-      "email_subject": "Compliance Advisory: Meeting Schedule of the Monetary Policy Committee for 2026-2027",
-      "email_body": "{\n  \"subject\": \"Compliance Advisory: RBI Circular - Meeting Schedule of the Monetary Policy Committee for 2026-2027\",\n  \"body\": \"Dear Sunrise Finserv NBFC Ltd. Team,\n\nThis advisory is specifically applicable to your NBFC as it is subject to RBI regulations. As a non-banking financial company, you are required to comply with RBI directions and submit returns and update KYC records as per the prescribed periodicity.\n\nPlease take note of the following actions:\n\n1. Submit NBS-9 return to RBI by 2026-04-07 to avoid penalty for delayed filing.\n2. Update KYC records for all borrowers and depositors at prescribed periodicity to ensure compliance with RBI directions.\n\nThe deadline for these actions is **2026-04-07**. Failure to comply may result in RBI compliance action, which could impact your license.\n\nWe are here to assist you in ensuring compliance with RBI regulations. If you have any questions or require assistance, please do not hesitate to contact us.\n\nCompliance Advisory Team\n\nSource Reference:\nCircular Title : Meeting Schedule of the Monetary Policy Committee for 2026-2027\nRegulator      : RBI\nCircular No.   : Refer official portal\nPublished Date : Recent\nSource URL     : https://rbidocs.rbi.org.in/rdocs/PressRelease/PDFs/PR230645E88B9147F84BF8ABAD12BC716CA440.PDF\n\"",
-      "internal_notes": "CA notes — deadline was estimated, cross-checks needed",
-      "source_chunks": [
-        {
-          "source": "rbi_PR230645E88B9147F84BF8ABAD12BC716CA440.pdf",
-          "page": 0,
-          "score": 0.9982
-        },
-        {
-          "source": "rbi_PR230645E88B9147F84BF8ABAD12BC716CA440.pdf",
-          "page": 0,
-          "score": 0.9976
-        },
-        {
-          "source": "rbi_nbfc_governance_2026_sim.txt",
-          "page": 0,
-          "score": 0.9927
-        },
-        {
-          "source": "rbi_nbfc_governance_2026_sim.txt",
-          "page": 0,
-          "score": 0.9351
-        },
-        {
-          "source": "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf",
-          "page": 0,
-          "score": 0.1393
-        },
-        {
-          "source": "rbi_PR2338129089C31EDF4712AF5AB69437F5BE64.pdf",
-          "page": 0,
-          "score": 0.1251
-        },
-        {
-          "source": "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf",
-          "page": 0,
-          "score": 0.111
-        },
-        {
-          "source": "rbi_PR2337E8FAC42DB6494A4D9C4F090E195252CF.pdf",
-          "page": 0,
-          "score": 0.0651
-        },
-        {
-          "source": "rbi_PR23369981C252827845159985FD87AB81285A.pdf",
-          "page": 0,
-          "score": 0.0553
-        },
-        {
-          "source": "rbi_PR23394679F82680DB42A8928D7EA5BA3FD14B.pdf",
-          "page": 0,
-          "score": 0.0337
-        }
-      ],
-      "source_chunk_ids": [
-        "rbi_PR230645E88B9147F84BF8ABAD12BC716CA440.pdf_p0",
-        "rbi_PR230645E88B9147F84BF8ABAD12BC716CA440.pdf_p0",
-        "rbi_nbfc_governance_2026_sim.txt_p0",
-        "rbi_nbfc_governance_2026_sim.txt_p0",
-        "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf_p0",
-        "rbi_PR2338129089C31EDF4712AF5AB69437F5BE64.pdf_p0",
-        "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf_p0",
-        "rbi_PR2337E8FAC42DB6494A4D9C4F090E195252CF.pdf_p0",
-        "rbi_PR23369981C252827845159985FD87AB81285A.pdf_p0",
-        "rbi_PR23394679F82680DB42A8928D7EA5BA3FD14B.pdf_p0"
-      ],
-      "rag_confidence": "high",
-      "low_confidence_flag": false,
-      "rag_top_score": 6.3305,
+      "email_subject": "Compliance Advisory: RBI GST IMS Requirements for Sunrise Finserv NBFC Ltd.",
+      "email_body": "Sunrise Finserv NBFC Ltd.,\n\nWe have identified that your company is required to comply with the RBI GST IMS circular, as you are a Non-Banking Financial Company (NBFC) registered with the Reserve Bank of India (RBI).\n\nTo ensure compliance, please take the following actions by the deadline of 2026-04-07:\n1. Submit RBI monthly return (NBS-9) by the 7th of each month.\n2. Settle the pending demand of ₹42L under Section 271(1)(c) for AY2022-23.\n\nPlease note that the risk level for non-compliance is HIGH, and failure to meet the deadline may result in penalties.\n\nIf you require assistance with these actions, please do not hesitate to contact us.\n\nBest regards,\nCompliance Advisory Team\n\nSource Reference:\nCircular Title: GST IMS\nRegulator: RBI\nCircular No.: Refer official portal\nPublished Date: Recent\nSource URL: Refer official regulatory portal",
+      "internal_notes": "[GUARDRAIL] This advisory was generated WITHOUT verified source documents (RAG confidence: low). CA must cross-verify all actions and deadlines against the original circular before approving. CA notes — deadline was estimated, cross-checks needed",
+      "source_chunks": [],
+      "source_chunk_ids": [],
+      "rag_confidence": "low",
+      "low_confidence_flag": true,
+      "rag_top_score": -3.2327,
       "model_used": "llama-3.1-8b-instant",
-      "generated_at": "2026-03-29T11:30:28.567901+00:00",
+      "generated_at": "2026-03-29T15:43:10.940151+00:00",
       "version": "v1",
       "status": "pending_review",
       "review_status": "pending",
       "delivery_status": "not_sent"
     }
   ],
-  "total_circulars": 2,
-  "total_matches": 6,
+  "total_circulars": 1,
+  "total_matches": 3,
   "total_drafts": 3,
-  "last_run": "2026-03-29T11:30:30.586839+00:00",
-  "run_mode": "hybrid",
+  "last_run": "2026-03-29T15:43:11.021857+00:00",
+  "run_mode": "manual_upload",
   "status": "completed",
   "stage": "completed",
-  "status_message": "Pipeline completed: 2 circular(s), 6 match(es), 3 draft(s)",
-  "started_at": "2026-03-29T11:28:28.878360+00:00",
-  "updated_at": "2026-03-29T11:30:30.586909+00:00"
+  "status_message": "Uploaded document pipeline complete: 3 match(es), 3 draft(s), 25 deadline alert(s) in watchlist",
+  "started_at": "2026-03-29T15:42:17.460631+00:00",
+  "updated_at": "2026-03-29T15:43:11.021872+00:00"
 }

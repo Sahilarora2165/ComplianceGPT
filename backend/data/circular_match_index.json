@@ -2473,5 +2473,165 @@
       }
     ],
     "updated_at": "2026-03-29T11:34:20.493859+00:00"
+  },
+  "rbi|title:gst ims": {
+    "circular_title": "GST IMS",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 3,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "Has FEMA_SOFTEX obligation (pending) under RBI",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "Has RBI_MONTHLY_RETURN obligation (pending) under RBI",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T15:42:17.470211+00:00"
+  },
+  "rbi|title:rbi fema": {
+    "circular_title": "RBI FEMA",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 4,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      }
+    ],
+    "updated_at": "2026-03-29T15:42:20.353997+00:00"
+  },
+  "rbi|title:doc 3ef5ea214bad rbi fema export compliance circular march2026": {
+    "circular_title": "Doc 3Ef5Ea214Bad Rbi Fema Export Compliance Circular March2026",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 4,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      }
+    ],
+    "updated_at": "2026-03-29T16:26:21.536228+00:00"
+  },
+  "rbi|title:doc 5e81d8d0a226 rbi fema export compliance circular march2026": {
+    "circular_title": "Doc 5E81D8D0A226 Rbi Fema Export Compliance Circular March2026",
+    "regulator": "RBI",
+    "circular_no": "",
+    "url": "",
+    "match_count": 4,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+        "urgent": true
+      }
+    ],
+    "updated_at": "2026-03-29T16:26:21.536228+00:00"
   }
 }

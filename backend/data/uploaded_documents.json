@@ -55,5 +55,88 @@
       "first_chunk_preview": "CENTRAL BOARD OF DIRECT TAXES MINISTRY OF FINANCE, GOVERNMENT OF INDIA Circular No.: CBDT/Circular/04/2026 F.No. 275/09/2026-IT(B) Date: March 25, 2026 Subject: Revised TDS Rates and Threshold Limits for FY 2026-27 — Clarification on Section 194C, 194J, 194H, and 194I with Applicability to Technology Service Contracts, Professional Fee Payments, and Rent Transactions To: All P",
       "status": "ingested"
     }
+  },
+  "DOC_EBA6B7BE810D": {
+    "document_id": "DOC_EBA6B7BE810D",
+    "title": "RBI FEMA",
+    "regulator": "RBI",
+    "priority": "HIGH",
+    "summary": "reserve bank of india foreign exchange management act, 1999 rbi/2025-26/147 a.p. (dir series) circular no. 28 date: march 20, 2026 subject: revised timelines and reporting requirements for export of goods and software — softex form submission, export realisation, and letter of undertaking (lut) renewal for fy 2026-27 to: all authorised dealer category-i banks all exporters of foreign exchange management act, 1999 rbi/2025-26/147 a.p. (dir series) circular no. 28 date: march 20, 2026 subject: revised timelines and reporting requirements for export of goods and software — softex form submission, export realisation, and letter of undertaking (lut) renewal for fy 2026-27 to: all authorised dealer category-i banks all exporters of goods and software all sez units and stpi-registered software exporters --- ackground the reserve bank of india, in exercise of powers conferred under section 10(4) and section 11(2) of the foreign exchange management act, 1999 (fema), and all powers enabling it in this behalf, has reviewed the existing export compliance framework. pursuant to representations received from industry bodies including fieo, nasscom, and cii regarding operational difficulties, this circular revises certain timelines and introduces new digital reporting requirements effective april 1, 2026. all exporters of goods and software holding an import export code (iec) are required to note these changes and update their compliance processes accordingly. --- urrent requirement under the existing framework, exporters of software, it services, and it-enabled services are required to submit softex forms to the designated software technology parks of india (stpi) or special economic zone (sez) authorities within 30 days of invoice generation. evised requirement (effective april 1, 2026) the submission timeline for softex forms is revised as follows: a) for invoices up to usd 25,000 (or equivalent): softex submission within 30 days of invoice date (no change) b) for invoices abov",
+    "source": "manual_upload",
+    "stored_filename": "DOC_EBA6B7BE810D_RBI_FEMA_Export_Compliance_Circular_March2026.txt",
+    "original_filename": "RBI_FEMA_Export_Compliance_Circular_March2026.txt",
+    "uploaded_by": "CA",
+    "uploaded_at": "2026-03-29T15:40:59.585510+00:00",
+    "ingest": {
+      "pages": 1,
+      "chunks": 21,
+      "used_ocr": false,
+      "first_chunk_preview": "RESERVE BANK OF INDIA FOREIGN EXCHANGE MANAGEMENT ACT, 1999 RBI/2025-26/147 A.P. (DIR Series) Circular No. 28 Date: March 20, 2026 Subject: Revised Timelines and Reporting Requirements for Export of Goods and Software — SOFTEX Form Submission, Export Realisation, and Letter of Undertaking (LUT) Renewal for FY 2026-27 To: All Authorised Dealer Category-I Banks All Exporters of",
+      "status": "ingested"
+    }
+  },
+  "DOC_F19745B1A0EC": {
+    "document_id": "DOC_F19745B1A0EC",
+    "title": "GST IMS",
+    "regulator": "RBI",
+    "priority": "MEDIUM",
+    "summary": "goods and services tax council secretariat government of india gst advisory no.: gstn/advisory/2026/08 date: march 18, 2026 subject: mandatory implementation of invoice management system (ims) for all gst filers — operational guidelines, reconciliation requirements, and penalty framework effective april 1, 2026 to: all gst registered taxpayers all tax deductors and collectors gst advisory no.: gstn/advisory/2026/08 date: march 18, 2026 subject: mandatory implementation of invoice management system (ims) for all gst filers — operational guidelines, reconciliation requirements, and penalty framework effective april 1, 2026 to: all gst registered taxpayers all tax deductors and collectors under gst all gst practitioners and chartered accountants all authorised service providers on gstn --- ntroduction the goods and services tax network (gstn) has developed the invoice management system (ims) to address the persistent problem of input tax credit (itc) mismatches between supplier filings (gstr-1) and recipient claims (gstr-3b). the ims creates a real-time invoice-level reconciliation dashboard on the gst portal that enables recipients to accept, reject, or keep invoices in pending status before itc is claimed. effective april 1, 2026, use of ims is mandatory for all gst-registered taxpayers with aggregate annual turnover exceeding rs. 5 crore in fy 2025-26. voluntary use is available for all other registered taxpayers from the same date. --- upplier action when a supplier saves or files their gstr-1 or gstr-1a, all b2b invoices are automatically pushed to the ims dashboard of the corresponding recipient. the recipient sees these invoices in real time before filing their gstr-3b. ecipient actions available for each invoice appearing in ims, the recipient can take one of three actions: a) accept — confirms the invoice is correct and itc will be claimed in gstr-3b b) reject — marks the invoice as incorrect; supplier must issue a credit note c) pending — defers the decision ",
+    "source": "manual_upload",
+    "stored_filename": "DOC_F19745B1A0EC_GST_IMS_Advisory_April2026.txt",
+    "original_filename": "GST_IMS_Advisory_April2026.txt",
+    "uploaded_by": "CA",
+    "uploaded_at": "2026-03-29T15:42:14.060189+00:00",
+    "ingest": {
+      "pages": 1,
+      "chunks": 24,
+      "used_ocr": false,
+      "first_chunk_preview": "GOODS AND SERVICES TAX COUNCIL SECRETARIAT GOVERNMENT OF INDIA GST Advisory No.: GSTN/Advisory/2026/08 Date: March 18, 2026 Subject: Mandatory Implementation of Invoice Management System (IMS) for All GST Filers — Operational Guidelines, Reconciliation Requirements, and Penalty Framework Effective April 1, 2026 To: All GST Registered Taxpayers All Tax Deductors and Collectors",
+      "status": "ingested"
+    },
+    "last_pipeline_run": "2026-03-29T15:43:11.032855+00:00",
+    "last_pipeline_summary": {
+      "matches": 3,
+      "drafts": 3,
+      "deadline_alerts": 25,
+      "triggered_by": "CA"
+    }
+  },
+  "DOC_5E81D8D0A226": {
+    "document_id": "DOC_5E81D8D0A226",
+    "title": "RBI Fema",
+    "regulator": "RBI",
+    "priority": "HIGH",
+    "summary": "reserve bank of india foreign exchange management act, 1999 rbi/2025-26/147 a.p. (dir series) circular no. 28 date: march 20, 2026 subject: revised timelines and reporting requirements for export of goods and software — softex form submission, export realisation, and letter of undertaking (lut) renewal for fy 2026-27 to: all authorised dealer category-i banks all exporters of goo foreign exchange management act, 1999 rbi/2025-26/147 a.p. (dir series) circular no. 28 date: march 20, 2026 subject: revised timelines and reporting requirements for export of goods and software — softex form submission, export realisation, and letter of undertaking (lut) renewal for fy 2026-27 to: all authorised dealer category-i banks all exporters of goods and software all sez units and stpi-registered software exporters --- ackground the reserve bank of india, in exercise of powers conferred under section 10(4) and section 11(2) of the foreign exchange management act, 1999 (fema), and all powers enabling it in this behalf, has reviewed the existing export compliance framework. pursuant to representations received from industry bodies including fieo, nasscom, and cii regarding operational difficulties, this circular revises certain timelines and introduces new digital reporting requirements effective april 1, 2026. all exporters of goods and software holding an import export code (iec) are required to note these changes and update their compliance processes accordingly. --- urrent requirement under the existing framework, exporters of software, it services, and it-enabled services are required to submit softex forms to the designated software technology parks of india (stpi) or special economic zone (sez) authorities within 30 days of invoice generation. evised requirement (effective april 1, 2026) the submission timeline for softex forms is revised as follows: a) for invoices up to usd 25,000 (or equivalent): softex submission within 30 days of invoice date (no change) b) for invoices ",
+    "source": "manual_upload",
+    "stored_filename": "DOC_5E81D8D0A226_RBI_FEMA_Export_Compliance_Circular_March2026.pdf",
+    "original_filename": "RBI_FEMA_Export_Compliance_Circular_March2026.pdf",
+    "uploaded_by": "CA",
+    "uploaded_at": "2026-03-29T16:04:10.268547+00:00",
+    "ingest": {
+      "pages": 4,
+      "chunks": 21,
+      "used_ocr": false,
+      "first_chunk_preview": "RESERVE BANK OF INDIA FOREIGN EXCHANGE MANAGEMENT ACT, 1999 RBI/2025-26/147 A.P. (DIR Series) Circular No. 28 Date: March 20, 2026 Subject: Revised Timelines and Reporting Requirements for Export of Goods and Software — SOFTEX Form Submission, Export Realisation, and Letter of Undertaking (LUT) Renewal for FY 2026-27 To: All Authorised Dealer Category-I Banks All Exporters of Goo",
+      "status": "ingested"
+    }
+  },
+  "DOC_3EF5EA214BAD": {
+    "document_id": "DOC_3EF5EA214BAD",
+    "title": "RBI FEMA",
+    "regulator": "RBI",
+    "priority": "HIGH",
+    "summary": "reserve bank of india foreign exchange management act, 1999 rbi/2025-26/147 a.p. (dir series) circular no. 28 date: march 20, 2026 subject: revised timelines and reporting requirements for export of goods and software — softex form submission, export realisation, and letter of undertaking (lut) renewal for fy 2026-27 to: all authorised dealer category-i banks all exporters of goo foreign exchange management act, 1999 rbi/2025-26/147 a.p. (dir series) circular no. 28 date: march 20, 2026 subject: revised timelines and reporting requirements for export of goods and software — softex form submission, export realisation, and letter of undertaking (lut) renewal for fy 2026-27 to: all authorised dealer category-i banks all exporters of goods and software all sez units and stpi-registered software exporters --- ackground the reserve bank of india, in exercise of powers conferred under section 10(4) and section 11(2) of the foreign exchange management act, 1999 (fema), and all powers enabling it in this behalf, has reviewed the existing export compliance framework. pursuant to representations received from industry bodies including fieo, nasscom, and cii regarding operational difficulties, this circular revises certain timelines and introduces new digital reporting requirements effective april 1, 2026. all exporters of goods and software holding an import export code (iec) are required to note these changes and update their compliance processes accordingly. --- urrent requirement under the existing framework, exporters of software, it services, and it-enabled services are required to submit softex forms to the designated software technology parks of india (stpi) or special economic zone (sez) authorities within 30 days of invoice generation. evised requirement (effective april 1, 2026) the submission timeline for softex forms is revised as follows: a) for invoices up to usd 25,000 (or equivalent): softex submission within 30 days of invoice date (no change) b) for invoices ",
+    "source": "manual_upload",
+    "stored_filename": "DOC_3EF5EA214BAD_RBI_FEMA_Export_Compliance_Circular_March2026.pdf",
+    "original_filename": "RBI_FEMA_Export_Compliance_Circular_March2026.pdf",
+    "uploaded_by": "CA",
+    "uploaded_at": "2026-03-29T16:25:12.337309+00:00",
+    "ingest": {
+      "pages": 4,
+      "chunks": 21,
+      "used_ocr": false,
+      "first_chunk_preview": "RESERVE BANK OF INDIA FOREIGN EXCHANGE MANAGEMENT ACT, 1999 RBI/2025-26/147 A.P. (DIR Series) Circular No. 28 Date: March 20, 2026 Subject: Revised Timelines and Reporting Requirements for Export of Goods and Software — SOFTEX Form Submission, Export Realisation, and Letter of Undertaking (LUT) Renewal for FY 2026-27 To: All Authorised Dealer Category-I Banks All Exporters of Goo",
+      "status": "ingested"
+    }
   }
 }

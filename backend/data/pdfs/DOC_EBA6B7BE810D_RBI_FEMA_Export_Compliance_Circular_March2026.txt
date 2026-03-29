@@ -1,0 +1,230 @@
+RESERVE BANK OF INDIA
+FOREIGN EXCHANGE MANAGEMENT ACT, 1999
+
+RBI/2025-26/147
+A.P. (DIR Series) Circular No. 28
+Date: March 20, 2026
+
+Subject: Revised Timelines and Reporting Requirements for Export of Goods and
+         Software — SOFTEX Form Submission, Export Realisation, and
+         Letter of Undertaking (LUT) Renewal for FY 2026-27
+
+To:
+All Authorised Dealer Category-I Banks
+All Exporters of Goods and Software
+All SEZ Units and STPI-registered Software Exporters
+
+---
+
+1. BACKGROUND
+
+The Reserve Bank of India, in exercise of powers conferred under Section 10(4) and
+Section 11(2) of the Foreign Exchange Management Act, 1999 (FEMA), and all powers
+enabling it in this behalf, has reviewed the existing export compliance framework.
+Pursuant to representations received from industry bodies including FIEO, NASSCOM,
+and CII regarding operational difficulties, this circular revises certain timelines
+and introduces new digital reporting requirements effective April 1, 2026.
+
+All exporters of goods and software holding an Import Export Code (IEC) are required
+to note these changes and update their compliance processes accordingly.
+
+---
+
+2. REVISED TIMELINE: SOFTEX FORM SUBMISSION
+
+2.1 Current Requirement
+Under the existing framework, exporters of software, IT services, and IT-enabled
+services are required to submit SOFTEX forms to the designated Software Technology
+Parks of India (STPI) or Special Economic Zone (SEZ) authorities within 30 days of
+invoice generation.
+
+2.2 Revised Requirement (Effective April 1, 2026)
+The submission timeline for SOFTEX forms is revised as follows:
+
+   a) For invoices up to USD 25,000 (or equivalent): SOFTEX submission within
+      30 days of invoice date (no change)
+
+   b) For invoices above USD 25,000 and up to USD 1,00,000: SOFTEX submission
+      within 21 days of invoice date (reduced from 30 days)
+
+   c) For invoices above USD 1,00,000: SOFTEX submission within 15 days of
+      invoice date (reduced from 30 days)
+
+2.3 New Digital Submission Requirement
+With effect from April 1, 2026, all SOFTEX submissions must be made through the
+RBI's Export Data Processing and Monitoring System (EDPMS) portal. Physical
+submission to STPI offices will be accepted only for invoices below USD 10,000,
+and only where the exporter does not have EDPMS access.
+
+2.4 Penalty for Non-Compliance
+Failure to submit SOFTEX within the revised timelines shall attract:
+   - Compounding penalty under FEMA Section 13: up to 3 times the invoice value
+   - In cases of wilful non-submission: export proceeds may be blocked by
+     Authorised Dealer banks pending regularisation
+   - RBI may direct suspension of IEC for repeat defaulters
+
+---
+
+3. EXPORT REALISATION DEADLINE
+
+3.1 Goods Exporters
+The existing timeline for realisation and repatriation of export proceeds for goods
+exporters remains 9 months from the date of shipment for all exporters.
+
+Exception: For exports to countries under the ACU (Asian Clearing Union) mechanism,
+the timeline remains 6 months from shipment date.
+
+3.2 Software and Services Exporters
+For software exports and IT-enabled services, export proceeds must be realised
+within 15 months from the invoice date (enhanced from 12 months, effective
+April 1, 2026). This enhancement is in recognition of longer billing cycles in
+multi-year software contracts.
+
+3.3 Write-Off of Unrealised Export Proceeds
+Exporters may write off unrealised export proceeds (without RBI approval) up to
+10% of the total export proceeds due in a financial year, subject to:
+   i)  The exporter having a satisfactory FEMA compliance record for the preceding
+       3 years
+   ii) The write-off being reported in the annual SOFTEX reconciliation statement
+   iii) AD bank certification that recovery efforts were genuinely made
+
+---
+
+4. LETTER OF UNDERTAKING (LUT) — RENEWAL FOR FY 2026-27
+
+4.1 Mandatory Renewal
+All GST-registered exporters who supply goods or services under zero-rated supply
+without payment of integrated tax must file a fresh Letter of Undertaking (LUT)
+for FY 2026-27 before March 31, 2026.
+
+Exporters who have not renewed their LUT by April 1, 2026 will be required to
+either:
+   a) Pay IGST at applicable rates on all export invoices and claim refund, OR
+   b) Apply for fresh LUT online through the GST portal (Form GST RFD-11)
+
+4.2 Impact of Lapsed LUT
+If the LUT lapses and the exporter raises export invoices without IGST payment:
+   - GST department may raise demand for IGST on all zero-rated supplies made
+     without a valid LUT
+   - Interest at 18% per annum from the date of supply
+   - Penalty up to 10% of the tax demand under Section 122 of the CGST Act
+
+4.3 Process for LUT Renewal
+LUT renewal is entirely online:
+   Step 1: Login to GST portal (www.gst.gov.in)
+   Step 2: Navigate to Services → User Services → Furnish Letter of Undertaking
+   Step 3: Select FY 2026-27 and complete Form RFD-11
+   Step 4: Apply DSC or EVC verification
+   LUT is auto-approved — no physical submission required.
+
+---
+
+5. NEW REQUIREMENT: ANNUAL FEMA COMPLIANCE CERTIFICATE
+
+5.1 Applicability
+With effect from FY 2025-26 (i.e., filing by June 30, 2026), all exporters whose
+cumulative export invoices exceed Rs. 5 crore in a financial year are required to
+submit an Annual FEMA Compliance Certificate (AFCC) to their AD bank.
+
+5.2 What the AFCC Must Cover
+The certificate, signed by a Chartered Accountant, must confirm:
+   i)   All export invoices above USD 25,000 were supported by SOFTEX filings
+   ii)  Export proceeds were realised within the prescribed timelines
+   iii) Write-offs, if any, were within the 10% limit and properly documented
+   iv)  No outstanding export bills beyond the realisation deadline exist without
+        RBI approval or valid extension
+
+5.3 Penalty for Non-Submission
+AD banks are directed to flag exporters who fail to submit the AFCC by June 30,
+2026 to their regional RBI office. Non-submission may result in:
+   - Suspension of export-related FEMA facilities
+   - Requirement for prior RBI approval on future export transactions above
+     USD 50,000
+
+---
+
+6. SPECIFIC GUIDANCE FOR COMMON EXPORTER CATEGORIES
+
+6.1 Textile and Manufacturing Exporters
+Goods exporters in the textile, garment, and manufacturing sectors making
+shipments under Letters of Credit (LC) or Documents against Payment (DP) terms
+must ensure all export bills are reported to the AD bank within 21 days of
+shipment via the EDPMS system. Non-reporting attracts compounding proceedings
+under FEMA.
+
+For exporters with annual export turnover above Rs. 10 crore, the AD bank will
+now conduct a quarterly FEMA compliance review — exporters must maintain
+invoice-wise SOFTEX reconciliation available for review.
+
+6.2 IT and Software Exporters
+Software exporters registered with STPI or operating from SEZs must transition
+fully to EDPMS-based SOFTEX filing by June 30, 2026. During the transition period
+(April 1 to June 30, 2026), parallel filing through both STPI and EDPMS is
+permitted.
+
+Companies with monthly export invoices above USD 50,000 must appoint a dedicated
+FEMA compliance officer and register their details with the AD bank by May 31, 2026.
+
+6.3 NBFCs and Financial Services Companies with ECB (External Commercial Borrowings)
+NBFCs that have raised External Commercial Borrowings must continue to file monthly
+ECB-2 returns with RBI through the EDPMS portal by the 7th of the following month.
+No change to this obligation. However, the minimum reporting threshold for ECB-2
+is reduced from USD 5 million to USD 1 million effective April 1, 2026, bringing
+more NBFCs within the reporting requirement.
+
+---
+
+7. ACTION REQUIRED — SUMMARY FOR ALL EXPORTERS
+
+All entities holding an IEC code must complete the following before April 1, 2026:
+
+   i)   Review all pending SOFTEX submissions and clear any backlog immediately
+   ii)  Register on EDPMS portal (edpms.rbi.org.in) if not already registered
+   iii) Renew LUT for FY 2026-27 on GST portal before March 31, 2026
+   iv)  Identify invoices above USD 25,000 where the revised 21-day/15-day
+        SOFTEX timeline will apply from April 1, 2026
+   v)   If annual export turnover exceeds Rs. 5 crore, engage CA firm for
+        Annual FEMA Compliance Certificate by June 30, 2026
+   vi)  For NBFC ECBs: verify if new USD 1 million threshold brings additional
+        borrowings within ECB-2 reporting scope
+
+---
+
+8. APPLICABILITY
+
+This circular applies to:
+   - All exporters of goods holding an IEC code
+   - All exporters of software, IT services, and IT-enabled services
+   - SEZ units and STPI-registered entities
+   - NBFCs with External Commercial Borrowings
+   - Authorised Dealer Category-I banks (for compliance monitoring purposes)
+
+This circular does not apply to:
+   - Import transactions
+   - Domestic-only businesses without any foreign exchange transactions
+   - Individuals making personal remittances under LRS
+
+---
+
+Yours faithfully,
+
+(Anand Krishnamurthy)
+Chief General Manager
+Foreign Exchange Department
+Reserve Bank of India, Mumbai
+
+---
+
+ANNEXURE A: REVISED SOFTEX SUBMISSION TIMELINES
+
+Invoice Value (USD)    | Previous Timeline | Revised Timeline | Effective Date
+Up to 25,000           | 30 days           | 30 days          | No change
+25,001 to 1,00,000     | 30 days           | 21 days          | April 1, 2026
+Above 1,00,000         | 30 days           | 15 days          | April 1, 2026
+
+ANNEXURE B: EXPORT REALISATION TIMELINES (UNCHANGED EXCEPT SOFTWARE)
+
+Category                        | Timeline
+Goods exports (general)         | 9 months from shipment
+Goods exports (ACU countries)   | 6 months from shipment
+Software/IT services exports    | 15 months from invoice (revised from 12 months)
