@@ -692,12 +692,19 @@ def _execute_pipeline(simulate_mode: bool, include_simulated: bool, regulators, 
             logger.info("🔄 Hash DB reset")
             _update_pipeline_result(status_message="Pipeline state reset. Monitoring stage started")
 
+        def _monitoring_progress(message: str) -> None:
+            _update_pipeline_result(
+                stage="monitoring",
+                status_message=message,
+            )
+
         # Stage 1 — scrape + save PDFs + ingest into ChromaDB
         new_docs = run_monitoring_agent(
             simulate_mode=simulate_mode,
             include_simulated=include_simulated,
             regulators=regulators,
-            auto_ingest=True
+            auto_ingest=True,
+            progress_callback=_monitoring_progress,
         )
         _update_pipeline_result(
             new_documents=new_docs,

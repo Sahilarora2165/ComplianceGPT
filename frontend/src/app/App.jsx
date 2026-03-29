@@ -388,9 +388,7 @@ export default function App() {
         if (status === "completed") {
           clearInterval(timer);
           pollTimerRef.current = null;
-          setActionMessage(
-            `${label} finished - ${next.pipeline?.total_circulars || 0} circulars, ${next.pipeline?.total_matches || 0} matches`,
-          );
+          setActionMessage("");
         } else if (status === "failed") {
           clearInterval(timer);
           pollTimerRef.current = null;
