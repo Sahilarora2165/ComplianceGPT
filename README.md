@@ -469,7 +469,7 @@ OCR_CHAR_THRESHOLD = 50
 
 ### Dashboard
 
-![Dashboard](docs/screenshots/dashboard.png)
+![Dashboard](docs/screenshots/Dashboard.png)
 
 ### Circular Intelligence
 

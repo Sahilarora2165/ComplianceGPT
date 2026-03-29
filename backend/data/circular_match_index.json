@@ -4227,5 +4227,71 @@
       }
     ],
     "updated_at": "2026-03-29T14:20:57.139577+00:00"
+  },
+  "incometax|title:ictdoc_29032026": {
+    "circular_title": "ICTdoc_29032026",
+    "regulator": "IncomeTax",
+    "circular_no": "",
+    "url": "",
+    "match_count": 7,
+    "affected_clients": [
+      {
+        "client_id": "CLT-001",
+        "name": "Arvind Textiles Pvt. Ltd.",
+        "business_type": "Manufacturing & Export",
+        "contact_email": "arvind.shah@arvindtextiles.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-003",
+        "name": "Kapoor Tech Solutions Pvt. Ltd.",
+        "business_type": "IT & Software Export",
+        "contact_email": "ishandesale2004@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-004",
+        "name": "Sunrise Finserv NBFC Ltd.",
+        "business_type": "NBFC",
+        "contact_email": "sunita.rao@sunrisefinserv.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-007",
+        "name": "NovaPharma Distributors Pvt. Ltd.",
+        "business_type": "Pharmaceutical Distribution",
+        "contact_email": "accounts@novapharma.co.in",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-008",
+        "name": "Rajesh Kumar",
+        "business_type": "Unknown",
+        "contact_email": "rajesh.kumar@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-009",
+        "name": "Priya Nair",
+        "business_type": "Unknown",
+        "contact_email": "priya.nair.dubai@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      },
+      {
+        "client_id": "CLT-010",
+        "name": "Vikram Desai",
+        "business_type": "Unknown",
+        "contact_email": "vikram.desai.ca@gmail.com",
+        "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+        "urgent": false
+      }
+    ],
+    "updated_at": "2026-03-29T15:18:09.618242+00:00"
   }
 }
