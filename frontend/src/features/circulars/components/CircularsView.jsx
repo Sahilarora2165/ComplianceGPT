@@ -182,6 +182,8 @@ export default function CircularsView({
 
                 <div className="grid grid-cols-2 gap-3">
                   {[
+                    { label: "Circular No.", value: selected.circular_no || "—" },
+                    { label: "Published", value: selected.published_date || "—" },
                     { label: "Clients matched", value: selected.match_count || 0 },
                     { label: "Drafts generated", value: selected.draftCount },
                     { label: "Status", value: selected.status },

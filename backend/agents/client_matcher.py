@@ -1029,12 +1029,14 @@ def match_clients(documents: list[dict]) -> list[dict]:
     results = []
 
     for doc in documents:
-        regulator = doc.get("regulator", "Unknown").strip()
-        title     = doc.get("title", "Untitled")
-        priority  = doc.get("priority", "LOW")
-        summary   = doc.get("summary", "")
-        url       = doc.get("url", "")
-        urgent    = _is_urgent(priority)
+        regulator      = doc.get("regulator", "Unknown").strip()
+        title          = doc.get("title", "Untitled")
+        priority       = doc.get("priority", "LOW")
+        summary        = doc.get("summary", "")
+        url            = doc.get("url", "")
+        circular_no    = doc.get("circular_no", doc.get("circular_number", ""))
+        published_date = doc.get("published_date", doc.get("date", doc.get("pub_date", "")))
+        urgent         = _is_urgent(priority)
 
         affected: list[dict] = []
 
@@ -1056,27 +1058,44 @@ def match_clients(documents: list[dict]) -> list[dict]:
                 print(f"  Warning: skipping client {cid} due to error: {e}")
                 continue
 
+        match_count = len(affected)
+        # Abstain flag: circular matched zero clients — out of scope for this
+        # client portfolio. Surfaced to the frontend so it can show these as
+        # "No clients affected" instead of silently hiding them.
+        abstained = match_count == 0
+        abstain_reason = (
+            f"No clients in this portfolio are affected by this {regulator} circular. "
+            "Either no client has the required regulatory tags/obligations, or the circular "
+            "is out of scope for the current client set."
+        ) if abstained else None
+
         result = {
             "circular_title":   title,
             "regulator":        regulator,
             "priority":         priority,
             "summary":          summary,
             "url":              url,
+            "circular_no":      circular_no,
+            "published_date":   published_date,
             "affected_clients": affected,
-            "match_count":      len(affected)
+            "match_count":      match_count,
+            "abstained":        abstained,
+            "abstain_reason":   abstain_reason,
         }
         results.append(result)
 
         # Audit log every match event
         log_event(
             agent="ClientMatcher",
-            action="clients_matched",
+            action="clients_matched" if not abstained else "circular_abstained",
             details={
-                "circular":    title,
-                "regulator":   regulator,
-                "priority":    priority,
-                "match_count": len(affected),
-                "client_ids":  [c["client_id"] for c in affected]
+                "circular":      title,
+                "regulator":     regulator,
+                "priority":      priority,
+                "match_count":   match_count,
+                "abstained":     abstained,
+                "abstain_reason": abstain_reason,
+                "client_ids":    [c["client_id"] for c in affected]
             }
         )
 
@@ -1089,41 +1108,55 @@ def match_clients(documents: list[dict]) -> list[dict]:
 
 _SIMULATED_DOCS = [
     {
-        "regulator": "RBI",
-        "title":     "RBI Circular: FEMA Compliance Deadline Extended – March 2026",
-        "url":       "https://www.rbi.org.in/sample/fema_circular_march2026.pdf",
-        "filename":  "rbi_fema_circular_march2026.pdf",
-        "priority":  "HIGH",
-        "summary":   "FEMA reporting deadline for foreign transactions extended by 30 days.",
-        "source":    "simulated"
+        "regulator":      "RBI",
+        "title":          "RBI Circular: FEMA Compliance Deadline Extended – March 2026",
+        "url":            "https://www.rbi.org.in/sample/fema_circular_march2026.pdf",
+        "circular_no":    "RBI/2025-26/89",
+        "published_date": "2026-03-15",
+        "filename":       "rbi_fema_circular_march2026.pdf",
+        "priority":       "HIGH",
+        "summary":        "FEMA reporting deadline for foreign transactions extended by 30 days.",
+        "source":         "simulated"
     },
     {
-        "regulator": "GST",
-        "title":     "GST Advisory: New Invoice Management System (IMS) – April 2026",
-        "priority":  "HIGH",
-        "summary":   "Invoice Management System mandatory from April 1, 2026 for all GST filers.",
-        "source":    "simulated"
+        "regulator":      "GST",
+        "title":          "GST Advisory: New Invoice Management System (IMS) – April 2026",
+        "url":            "https://www.gst.gov.in/newsandupdates/read/611",
+        "circular_no":    "CBIC-20016/2/2024-GST",
+        "published_date": "2026-03-10",
+        "priority":       "HIGH",
+        "summary":        "Invoice Management System mandatory from April 1, 2026 for all GST filers.",
+        "source":         "simulated"
     },
     {
-        "regulator": "IncomeTax",
-        "title":     "CBDT Circular: TDS Rate Revision – FY 2026-27",
-        "priority":  "MEDIUM",
-        "summary":   "TDS rates revised for Section 194C and 194J effective April 2026.",
-        "source":    "simulated"
+        "regulator":      "IncomeTax",
+        "title":          "CBDT Circular: TDS Rate Revision – FY 2026-27",
+        "url":            "https://incometaxindia.gov.in/communications/circular/circular_2026.pdf",
+        "circular_no":    "Circular No. 5/2026",
+        "published_date": "2026-03-20",
+        "priority":       "MEDIUM",
+        "summary":        "TDS rates revised for Section 194C and 194J effective April 2026.",
+        "source":         "simulated"
     },
     {
-        "regulator": "MCA",
-        "title":     "MCA Notification: LLP Annual Filing Deadline – FY 2025-26",
-        "priority":  "MEDIUM",
-        "summary":   "LLP Form 11 annual return due date extended to July 15, 2026.",
-        "source":    "simulated"
+        "regulator":      "MCA",
+        "title":          "MCA Notification: LLP Annual Filing Deadline – FY 2025-26",
+        "url":            "https://www.mca.gov.in/MinistryV2/notification.html",
+        "circular_no":    "G.S.R. 214(E)",
+        "published_date": "2026-03-01",
+        "priority":       "MEDIUM",
+        "summary":        "LLP Form 11 annual return due date extended to July 15, 2026.",
+        "source":         "simulated"
     },
     {
-        "regulator": "SEBI",
-        "title":     "SEBI Circular: ESG Disclosure Norms for Listed Companies",
-        "priority":  "LOW",
-        "summary":   "Enhanced ESG disclosures mandatory for top 1000 listed companies.",
-        "source":    "simulated"
+        "regulator":      "SEBI",
+        "title":          "SEBI Circular: ESG Disclosure Norms for Listed Companies",
+        "url":            "https://www.sebi.gov.in/legal/circulars/mar-2026/esg-circular.html",
+        "circular_no":    "SEBI/HO/CFD/CMD/CIR/2026/42",
+        "published_date": "2026-03-18",
+        "priority":       "LOW",
+        "summary":        "Enhanced ESG disclosures mandatory for top 1000 listed companies.",
+        "source":         "simulated"
     },
 ]
 

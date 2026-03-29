@@ -33,84 +33,104 @@ PORTALS = []   # All portals now use dedicated Playwright scrapers below
 
 SIMULATED_DOCUMENTS = [
     {
-        "regulator": "RBI",
-        "title":     "RBI Circular: FEMA Compliance Deadline Extended - March 2026",
-        "url":       "https://www.rbi.org.in/sample/fema_circular_march2026.pdf",
-        "filename":  "rbi_fema_circular_march2026.pdf",
-        "priority":  "HIGH",
-        "summary":   "FEMA reporting deadline for foreign transactions extended by 30 days.",
+        "regulator":      "RBI",
+        "title":          "RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+        "url":            "https://www.rbi.org.in/sample/fema_circular_march2026.pdf",
+        "filename":       "rbi_fema_circular_march2026.pdf",
+        "circular_no":    "RBI/2025-26/89",
+        "published_date": "2026-03-15",
+        "priority":       "HIGH",
+        "summary":        "FEMA reporting deadline for foreign transactions extended by 30 days.",
     },
     {
-        "regulator": "GST",
-        "title":     "GST Advisory: New Invoice Management System (IMS) - April 2026",
-        "url":       "https://www.gst.gov.in/sample/ims_advisory_april2026.pdf",
-        "filename":  "gst_ims_advisory_april2026.pdf",
-        "priority":  "HIGH",
-        "summary":   "Invoice Management System mandatory from April 1, 2026 for all GST filers.",
+        "regulator":      "GST",
+        "title":          "GST Advisory: New Invoice Management System (IMS) - April 2026",
+        "url":            "https://www.gst.gov.in/sample/ims_advisory_april2026.pdf",
+        "filename":       "gst_ims_advisory_april2026.pdf",
+        "circular_no":    "CBIC-20016/2/2024-GST",
+        "published_date": "2026-03-10",
+        "priority":       "HIGH",
+        "summary":        "Invoice Management System mandatory from April 1, 2026 for all GST filers.",
     },
     {
-        "regulator": "IncomeTax",
-        "title":     "CBDT Circular: TDS Rate Revision - FY 2026-27",
-        "url":       "https://incometaxindia.gov.in/sample/tds_revision_2026.pdf",
-        "filename":  "incometax_tds_revision_2026.pdf",
-        "priority":  "MEDIUM",
-        "summary":   "TDS rates revised for Section 194C and 194J effective April 2026.",
+        "regulator":      "IncomeTax",
+        "title":          "CBDT Circular: TDS Rate Revision - FY 2026-27",
+        "url":            "https://incometaxindia.gov.in/sample/tds_revision_2026.pdf",
+        "filename":       "incometax_tds_revision_2026.pdf",
+        "circular_no":    "Circular No. 5/2026",
+        "published_date": "2026-03-20",
+        "priority":       "MEDIUM",
+        "summary":        "TDS rates revised for Section 194C and 194J effective April 2026.",
     },
     {
-        "regulator": "MCA",
-        "title":     "MCA Notification: LLP Annual Filing Deadline - FY 2025-26",
-        "url":       "https://www.mca.gov.in/sample/llp_filing_2025_26.pdf",
-        "filename":  "mca_llp_filing_2025_26.pdf",
-        "priority":  "MEDIUM",
-        "summary":   "LLP Form 11 annual return due date extended to July 15, 2026.",
+        "regulator":      "MCA",
+        "title":          "MCA Notification: LLP Annual Filing Deadline - FY 2025-26",
+        "url":            "https://www.mca.gov.in/sample/llp_filing_2025_26.pdf",
+        "filename":       "mca_llp_filing_2025_26.pdf",
+        "circular_no":    "G.S.R. 214(E)",
+        "published_date": "2026-03-01",
+        "priority":       "MEDIUM",
+        "summary":        "LLP Form 11 annual return due date extended to July 15, 2026.",
     },
     {
-        "regulator": "SEBI",
-        "title":     "SEBI Circular: ESG Disclosure Norms for Listed Companies",
-        "url":       "https://www.sebi.gov.in/sample/esg_disclosure_2026.pdf",
-        "filename":  "sebi_esg_disclosure_2026.pdf",
-        "priority":  "LOW",
-        "summary":   "Enhanced ESG disclosures mandatory for top 1000 listed companies.",
+        "regulator":      "SEBI",
+        "title":          "SEBI Circular: ESG Disclosure Norms for Listed Companies",
+        "url":            "https://www.sebi.gov.in/sample/esg_disclosure_2026.pdf",
+        "filename":       "sebi_esg_disclosure_2026.pdf",
+        "circular_no":    "SEBI/HO/CFD/CMD/CIR/2026/42",
+        "published_date": "2026-03-18",
+        "priority":       "LOW",
+        "summary":        "Enhanced ESG disclosures mandatory for top 1000 listed companies.",
     },
     {
-        "regulator": "RBI",
-        "title":     "RBI Directions: NBFC Governance and KYC Compliance - 2026",
-        "url":       "https://www.rbi.org.in/sample/nbfc_governance_2026.pdf",
-        "filename":  "rbi_nbfc_governance_2026.pdf",
-        "priority":  "HIGH",
-        "summary":   "RBI issues updated directions on NBFC internal governance, KYC norms, and monthly return filing.",
+        "regulator":      "RBI",
+        "title":          "RBI Directions: NBFC Governance and KYC Compliance - 2026",
+        "url":            "https://www.rbi.org.in/sample/nbfc_governance_2026.pdf",
+        "filename":       "rbi_nbfc_governance_2026.pdf",
+        "circular_no":    "RBI/2025-26/94",
+        "published_date": "2026-03-12",
+        "priority":       "HIGH",
+        "summary":        "RBI issues updated directions on NBFC internal governance, KYC norms, and monthly return filing.",
     },
     {
-        "regulator": "IncomeTax",
-        "title":     "CBDT Circular: Presumptive Taxation under Section 44ADA for Professionals - FY 2026-27",
-        "url":       "https://incometaxindia.gov.in/sample/presumptive_44ada_2026.pdf",
-        "filename":  "incometax_presumptive_44ada_2026.pdf",
-        "priority":  "MEDIUM",
-        "summary":   "CBDT clarifies applicability of presumptive taxation scheme under Section 44ADA for freelancers and professionals.",
+        "regulator":      "IncomeTax",
+        "title":          "CBDT Circular: Presumptive Taxation under Section 44ADA for Professionals - FY 2026-27",
+        "url":            "https://incometaxindia.gov.in/sample/presumptive_44ada_2026.pdf",
+        "filename":       "incometax_presumptive_44ada_2026.pdf",
+        "circular_no":    "Circular No. 3/2026",
+        "published_date": "2026-02-28",
+        "priority":       "MEDIUM",
+        "summary":        "CBDT clarifies applicability of presumptive taxation scheme under Section 44ADA for freelancers and professionals.",
     },
     {
-        "regulator": "IncomeTax",
-        "title":     "CBDT Circular: DTAA Relief for NRI Rental Income and TDS Refund Claims - FY 2026-27",
-        "url":       "https://incometaxindia.gov.in/sample/nri_dtaa_rental_2026.pdf",
-        "filename":  "incometax_nri_dtaa_rental_2026.pdf",
-        "priority":  "MEDIUM",
-        "summary":   "CBDT guidance on DTAA benefit claims for NRI rental income and excess TDS deducted by tenants under Section 195.",
+        "regulator":      "IncomeTax",
+        "title":          "CBDT Circular: DTAA Relief for NRI Rental Income and TDS Refund Claims - FY 2026-27",
+        "url":            "https://incometaxindia.gov.in/sample/nri_dtaa_rental_2026.pdf",
+        "filename":       "incometax_nri_dtaa_rental_2026.pdf",
+        "circular_no":    "Circular No. 4/2026",
+        "published_date": "2026-03-05",
+        "priority":       "MEDIUM",
+        "summary":        "CBDT guidance on DTAA benefit claims for NRI rental income and excess TDS deducted by tenants under Section 195.",
     },
     {
-        "regulator": "IncomeTax",
-        "title":     "CBDT Circular: Capital Gains on Debt Mutual Fund Redemptions - AY 2026-27",
-        "url":       "https://incometaxindia.gov.in/sample/capital_gains_mf_2026.pdf",
-        "filename":  "incometax_capital_gains_mf_2026.pdf",
-        "priority":  "MEDIUM",
-        "summary":   "CBDT clarifies capital gains computation for debt mutual fund redemptions and STT applicability for AY 2026-27.",
+        "regulator":      "IncomeTax",
+        "title":          "CBDT Circular: Capital Gains on Debt Mutual Fund Redemptions - AY 2026-27",
+        "url":            "https://incometaxindia.gov.in/sample/capital_gains_mf_2026.pdf",
+        "filename":       "incometax_capital_gains_mf_2026.pdf",
+        "circular_no":    "Circular No. 6/2026",
+        "published_date": "2026-03-22",
+        "priority":       "MEDIUM",
+        "summary":        "CBDT clarifies capital gains computation for debt mutual fund redemptions and STT applicability for AY 2026-27.",
     },
     {
-        "regulator": "EPFO",
-        "title":     "EPFO Circular: ECR Filing Mandate and Wage Ceiling Update - 2026",
-        "url":       "https://www.epfindia.gov.in/sample/ecr_wage_ceiling_2026.pdf",
-        "filename":  "epfo_ecr_wage_ceiling_2026.pdf",
-        "priority":  "HIGH",
-        "summary":   "EPFO mandates monthly ECR filing and updates PF wage ceiling for covered establishments with 20 or more employees.",
+        "regulator":      "EPFO",
+        "title":          "EPFO Circular: ECR Filing Mandate and Wage Ceiling Update - 2026",
+        "url":            "https://www.epfindia.gov.in/sample/ecr_wage_ceiling_2026.pdf",
+        "filename":       "epfo_ecr_wage_ceiling_2026.pdf",
+        "circular_no":    "WSU/11(1)2019/ECR/14898",
+        "published_date": "2026-03-08",
+        "priority":       "HIGH",
+        "summary":        "EPFO mandates monthly ECR filing and updates PF wage ceiling for covered establishments with 20 or more employees.",
     },
 ]
 
@@ -378,6 +398,64 @@ def _infer_priority(title: str) -> str:
     return "MEDIUM"
 
 
+def _extract_date_from_title(title: str, href: str = "") -> str:
+    """
+    Best-effort: extract a published date from circular title or URL.
+    Returns ISO date string (YYYY-MM-DD) or empty string.
+    Tries: DD-Mon-YYYY, DD/MM/YYYY, YYYY, month+year combos.
+    """
+    combined = f"{title} {href}"
+    # DD-Mon-YYYY e.g. "15-Mar-2026"
+    m = re.search(r"(\d{1,2})[-/\s]([A-Za-z]{3,9})[-/\s](20\d{2})", combined)
+    if m:
+        try:
+            for fmt in ("%d-%b-%Y", "%d-%B-%Y", "%d %b %Y", "%d %B %Y"):
+                try:
+                    return datetime.strptime(
+                        f"{m.group(1)}-{m.group(2)}-{m.group(3)}", fmt
+                    ).strftime("%Y-%m-%d")
+                except ValueError:
+                    continue
+        except Exception:
+            pass
+    # DD/MM/YYYY or DD-MM-YYYY
+    m = re.search(r"(\d{2})[/-](\d{2})[/-](20\d{2})", combined)
+    if m:
+        try:
+            return datetime.strptime(
+                f"{m.group(1)}/{m.group(2)}/{m.group(3)}", "%d/%m/%Y"
+            ).strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+    # Year only from URL e.g. "/2026/"
+    m = re.search(r"/(20\d{2})/", href)
+    if m:
+        return f"{m.group(1)}-01-01"
+    return ""
+
+
+def _extract_circular_no_from_title(title: str) -> str:
+    """
+    Best-effort: extract circular number from title text.
+    Handles patterns like "Circular No. 5/2026", "SEBI/HO/.../2026/42",
+    "RBI/2025-26/89", "Notification No. GSR 214(E)".
+    """
+    patterns = [
+        r"(RBI/\d{4}-\d{2}/\d+)",                          # RBI/2025-26/89
+        r"(SEBI/[A-Z/]+/\d{4}/\d+)",                       # SEBI/HO/CFD/.../2026/42
+        r"(CBIC[-\s]\d+/\d+/\d{4}[-\s]GST)",               # CBIC-20016/2/2024-GST
+        r"(Circular\s+No\.?\s*[\d/\-]+)",                   # Circular No. 5/2026
+        r"(Notification\s+No\.?\s*[A-Z\.]+\s*\d+\([A-Z]\))", # Notification No. GSR 214(E)
+        r"(G\.S\.R\.\s*\d+\([A-Z]\))",                     # G.S.R. 214(E)
+        r"(\d+/\d{4}[-\s](?:GST|IT|MCA|RBI|SEBI|EPFO))",  # 5/2026-GST
+    ]
+    for pat in patterns:
+        m = re.search(pat, title, re.IGNORECASE)
+        if m:
+            return m.group(1).strip()
+    return ""
+
+
 _RBI_PRESS_SKIP = {
     "auction result",
     "t-bill",
@@ -551,6 +629,8 @@ def _scrape_rbi_playwright(hash_db: dict) -> list[dict]:
                     "priority":  _infer_priority(title),
                     "summary":   "",
                     "source":    "real_scrape",
+                    "circular_no":    _extract_circular_no_from_title(title),
+                    "published_date": _extract_date_from_title(title, href),
                 })
                 continue
 
@@ -579,6 +659,8 @@ def _scrape_rbi_playwright(hash_db: dict) -> list[dict]:
                     "priority":  _infer_priority(title),
                     "summary":   "",
                     "source":    "real_scrape",
+                    "circular_no":    _extract_circular_no_from_title(title),
+                    "published_date": _extract_date_from_title(title, href),
                 })
 
             except Exception as e:
@@ -775,6 +857,8 @@ def _scrape_rbi_circulars_playwright(hash_db: dict) -> list[dict]:
                 "priority":  _infer_priority(title),
                 "summary":   "",
                 "source":    "real_scrape",
+                "circular_no":    _extract_circular_no_from_title(title),
+                "published_date": _extract_date_from_title(title, href),
             })
 
             time.sleep(1)
@@ -918,7 +1002,9 @@ def _scrape_gst_playwright(hash_db: dict) -> list[dict]:
                     print(f"    Download failed: {e}"); filename = ""
             new_docs.append({"regulator": "GST", "title": title, "url": href,
                              "filename": filename, "priority": _infer_priority(title),
-                             "summary": "", "source": "real_scrape"})
+                             "summary": "", "source": "real_scrape",
+                             "circular_no": row.get("circular_no", ""),
+                             "published_date": row.get("date", "")})
             time.sleep(1)
         browser.close()
 
@@ -1179,7 +1265,9 @@ def _scrape_incometax_playwright(hash_db: dict) -> list[dict]:
                     print(f"    Download failed: {e}"); filename = ""
             new_docs.append({"regulator": "IncomeTax", "title": title, "url": href,
                              "filename": filename, "priority": _infer_priority(title),
-                             "summary": "", "source": "real_scrape"})
+                             "summary": "", "source": "real_scrape",
+                             "circular_no":    _extract_circular_no_from_title(title),
+                             "published_date": _extract_date_from_title(title, href)})
             time.sleep(1)
         browser.close()
 

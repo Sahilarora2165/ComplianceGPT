@@ -168,3 +168,7 @@ export function updateClient(clientId, client) {
 export function deleteClient(clientId) {
   return request(`/clients/${clientId}`, { method: "DELETE" });
 }
+
+export function getGuardrailMetrics() {
+  return request("/guardrail-metrics");
+}
