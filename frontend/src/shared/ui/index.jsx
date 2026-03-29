@@ -35,26 +35,9 @@ export function formatCurrency(value) {
 export function extractEmailBody(emailBody) {
   if (!emailBody) return "";
   if (typeof emailBody !== "string") return String(emailBody);
-  try {
-    const parsed = JSON.parse(emailBody);
-    // Handle case where entire email JSON (with subject+body) is stored in email_body
-    let body = parsed.body || parsed.email_body || parsed.message || emailBody;
-    if (typeof body === "string") {
-      // The body is a JSON-escaped string - unescape it properly
-      // IMPORTANT: Handle backslashes FIRST to avoid creating new escape sequences
-      return body
-        .replace(/\\\\/g, '\x00\x00')  // Temporarily replace \\ with placeholder
-        .replace(/\\n/g, '\n')         // Newline
-        .replace(/\\r/g, '')           // Carriage return
-        .replace(/\\t/g, '\t')         // Tab
-        .replace(/\\"/g, '"')          // Double quote
-        .replace(/\x00\x00/g, '\\')    // Restore backslashes
-        .trim();
-    }
-    return String(body);
-  } catch {
-    // Handle raw strings with escaped characters
-    return emailBody
+
+  const unescapeBodyText = (value) =>
+    String(value || "")
       .replace(/\\\\/g, '\x00\x00')
       .replace(/\\n/g, '\n')
       .replace(/\\r/g, '')
@@ -62,6 +45,31 @@ export function extractEmailBody(emailBody) {
       .replace(/\\"/g, '"')
       .replace(/\x00\x00/g, '\\')
       .trim();
+
+  try {
+    const parsed = JSON.parse(emailBody);
+    // Handle case where entire email JSON (with subject+body) is stored in email_body
+    let body = parsed.body || parsed.email_body || parsed.message || emailBody;
+    if (typeof body === "string") {
+      return unescapeBodyText(body);
+    }
+    return String(body);
+  } catch {
+    // Some LLM responses are JSON-like but invalid because they contain raw
+    // newlines inside the "body" value. Extract the body field heuristically.
+    const bodyMatch = emailBody.match(/"body"\s*:\s*"([\s\S]*)$/i);
+    if (bodyMatch?.[1]) {
+      const extracted = bodyMatch[1].replace(/"\s*}\s*$/, "");
+      return unescapeBodyText(extracted);
+    }
+
+    const messageMatch = emailBody.match(/"message"\s*:\s*"([\s\S]*)$/i);
+    if (messageMatch?.[1]) {
+      const extracted = messageMatch[1].replace(/"\s*}\s*$/, "");
+      return unescapeBodyText(extracted);
+    }
+
+    return unescapeBodyText(emailBody);
   }
 }
 

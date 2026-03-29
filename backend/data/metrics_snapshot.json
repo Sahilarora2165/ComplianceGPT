@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-03-29T11:30:30.591212Z",
+  "timestamp": "2026-03-29T14:22:35.528378Z",
   "total_circulars": 2,
   "total_matches": 6,
   "total_drafts": 3,
-  "pending_drafts": 10,
-  "deadline_alerts": 6,
-  "total_exposure": 6600000,
-  "last_run": "2026-03-29T11:30:30.591212Z",
+  "pending_drafts": 7,
+  "deadline_alerts": 20,
+  "total_exposure": 3479400,
+  "last_run": "2026-03-29T14:22:35.528378Z",
   "run_mode": "hybrid",
   "message": null
 }

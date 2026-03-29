@@ -55,5 +55,24 @@
       "first_chunk_preview": "CENTRAL BOARD OF DIRECT TAXES MINISTRY OF FINANCE, GOVERNMENT OF INDIA Circular No.: CBDT/Circular/04/2026 F.No. 275/09/2026-IT(B) Date: March 25, 2026 Subject: Revised TDS Rates and Threshold Limits for FY 2026-27 — Clarification on Section 194C, 194J, 194H, and 194I with Applicability to Technology Service Contracts, Professional Fee Payments, and Rent Transactions To: All P",
       "status": "ingested"
     }
+  },
+  "DOC_87027C95FCA7": {
+    "document_id": "DOC_87027C95FCA7",
+    "title": "ICTdoc_29032026",
+    "regulator": "IncomeTax",
+    "priority": "MEDIUM",
+    "summary": "central board of direct taxes ministry of finance, government of india circular no.: cbdt/circular/04/2026 f.no. 275/09/2026-it(b) date: march 25, 2026 subject: revised tds rates and threshold limits for fy 2026-27 — clarification on section 194c, 194j, 194h, and 194i with applicability to technology service contracts, professional fee payments, and rent transactions to: all p ministry of finance, government of india circular no.: cbdt/circular/04/2026 f.no. 275/09/2026-it(b) date: march 25, 2026 subject: revised tds rates and threshold limits for fy 2026-27 — clarification on section 194c, 194j, 194h, and 194i with applicability to technology service contracts, professional fee payments, and rent transactions to: all principal chief commissioners of income tax all chief commissioners of income tax all principal commissioners of income tax all assessing officers all tax deductors and collectors (tan holders) --- ackground the finance act 2026 has amended the tds provisions under chapter xvii-b of the income tax act, 1961. this circular provides consolidated guidance on the revised tds rates, enhanced threshold limits, and new compliance obligations effective april 1, 2026 (assessment year 2027-28). all tax deductors holding a valid tan are required to note these changes and update their deduction logic before the first payment of fy 2026-27. --- ection 194j — professional and technical services the tds rate under section 194j is revised as follows: a) fees for professional services (doctors, lawyers, architects, accountants): rate revised from 10% to 10% (no change) threshold: enhanced from rs. 30,000 to rs. 50,000 per annum b) fees for technical services (it, software, engineering consultancy): rate revised from 2% to 2% (no change) threshold: enhanced from rs. 30,000 to rs. 50,000 per annum c) royalty payments (software licenses, ip usage fees): rate: 10% threshold: rs. 50,000 per annum (enhanced from rs. 30,000) key clarification: payments to it and software comp",
+    "source": "manual_upload",
+    "stored_filename": "DOC_87027C95FCA7_CBDT_Circular_TDS_Rate_Revision_FY2026_27.txt",
+    "original_filename": "CBDT_Circular_TDS_Rate_Revision_FY2026_27.txt",
+    "uploaded_by": "CA",
+    "uploaded_at": "2026-03-29T15:01:04.693421+00:00",
+    "ingest": {
+      "pages": 1,
+      "chunks": 18,
+      "used_ocr": false,
+      "first_chunk_preview": "CENTRAL BOARD OF DIRECT TAXES MINISTRY OF FINANCE, GOVERNMENT OF INDIA Circular No.: CBDT/Circular/04/2026 F.No. 275/09/2026-IT(B) Date: March 25, 2026 Subject: Revised TDS Rates and Threshold Limits for FY 2026-27 — Clarification on Section 194C, 194J, 194H, and 194I with Applicability to Technology Service Contracts, Professional Fee Payments, and Rent Transactions To: All P",
+      "status": "ingested"
+    }
   }
 }
