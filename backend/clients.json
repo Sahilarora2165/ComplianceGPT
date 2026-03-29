@@ -77,6 +77,15 @@
         "penalty": "Exports blocked without LUT — 18% IGST on all exports"
       },
       {
+        "code": "TDS_26Q",
+        "status": "pending",
+        "periods": ["2025-Q3"],
+        "frequency": "quarterly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-01-31",
+        "penalty": "₹200/day + 1.5%/month interest"
+      },
+      {
         "code": "MCA_AOC4",
         "status": "overdue",
         "periods": ["FY2023-24"],
@@ -100,8 +109,8 @@
       "high_risk_areas": ["FEMA", "MCA", "GST"],
       "recent_misses": 3
     },
-    "tags": ["GST", "FEMA", "MCA", "Export"],
-    "notes": "Textile exporter to UAE and UK. Exports via HDFC Bank Fort Branch. LUT holder since FY2022. Related party transactions with Arvind Global FZE (UAE) — TP applicable. AOC-4 and MGT-7 for FY24 unfiled — director attention needed."
+    "tags": ["GST", "FEMA", "MCA", "IncomeTax", "TDS", "Export"],
+    "notes": "Textile exporter to UAE and UK. Exports via HDFC Bank Fort Branch. LUT holder since FY2022. Related party transactions with Arvind Global FZE (UAE) — TP applicable. AOC-4 and MGT-7 for FY24 unfiled — director attention needed. Deducts TDS on contractor and vendor payments under 194C."
   },
 
   {
@@ -379,8 +388,8 @@
     },
     "registrations": {
       "pan": "AABCG5678R",
-      "tan": "MUMG45678E",
-      "gstin": "27AABCG5678R1Z1",
+      "tan": null,
+      "gstin": null,
       "cin": "U67120MH2012PTC234567",
       "iec_code": null
     },
@@ -557,6 +566,15 @@
         "penalty": "₹100/day — currently ₹11,800+ accrued"
       },
       {
+        "code": "TDS_26Q",
+        "status": "pending",
+        "periods": ["2025-Q3", "2025-Q4"],
+        "frequency": "quarterly",
+        "regulator": "IncomeTax",
+        "due_date": "2026-01-31",
+        "penalty": "₹200/day + 1.5%/month interest"
+      },
+      {
         "code": "GST_GSTR3B",
         "status": "pending",
         "periods": ["2026-02", "2026-03"],
@@ -580,8 +598,8 @@
       "high_risk_areas": ["MCA"],
       "recent_misses": 2
     },
-    "tags": ["GST", "MCA", "EPFO"],
-    "notes": "Pharma distributor — high volume, e-invoicing mandatory (turnover > ₹5Cr). MGT-7 for FY24 overdue. Drug license held under Karnataka State FDA. No export activity. Turnover ₹14.5Cr — tax audit mandatory. Q4 advance tax and Q3/Q4 TDS both pending."
+    "tags": ["GST", "MCA", "EPFO", "IncomeTax", "TDS"],
+    "notes": "Pharma distributor — high volume, e-invoicing mandatory (turnover > ₹5Cr). MGT-7 for FY24 overdue. Drug license held under Karnataka State FDA. No export activity. Turnover ₹14.5Cr — tax audit mandatory. Q4 advance tax and Q3/Q4 TDS both pending. Deducts TDS on distributor commissions (194H) and contractor payments (194C)."
   },
 
   {
@@ -594,6 +612,13 @@
       "phone": "+91-9812345678",
       "address": "Flat 4B, Oberoi Springs, Andheri West, Mumbai - 400053",
       "nri_status": false
+    },
+    "registrations": {
+      "pan": "ABCPK1234D",
+      "tan": null,
+      "gstin": null,
+      "cin": null,
+      "iec_code": null
     },
     "tax_context": {
       "financial_year": "2025-26",
@@ -667,6 +692,13 @@
       "phone": "+971-501234567",
       "address": "C/o 18, Sea Face Park, Worli, Mumbai - 400018",
       "nri_status": true
+    },
+    "registrations": {
+      "pan": "BNPPR5678K",
+      "tan": null,
+      "gstin": null,
+      "cin": null,
+      "iec_code": null
     },
     "tax_context": {
       "financial_year": "2025-26",
@@ -744,6 +776,13 @@
       "phone": "+91-9867890123",
       "address": "301, Raheja Residency, Koramangala, Bengaluru - 560034",
       "nri_status": false
+    },
+    "registrations": {
+      "pan": "CVPVD9012M",
+      "tan": null,
+      "gstin": null,
+      "cin": null,
+      "iec_code": null
     },
     "tax_context": {
       "financial_year": "2025-26",

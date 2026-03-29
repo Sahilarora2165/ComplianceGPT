@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 sys.path.append(str(Path(__file__).parent))
 
 _BACKEND_DIR = Path(__file__).parent
-from config import PDF_DIR, LOGS_DIR
+from config import PDF_DIR, LOGS_DIR, VECTORSTORE_DIR, CHROMA_COLLECTION
 from core.ingest    import ingest_pdf
 from core.retriever import query_rag, invalidate_collection_cache
 from core.audit     import read_audit_log, log_event
@@ -166,10 +166,39 @@ def _infer_priority_from_title(title: str) -> str:
 
 
 def _summary_from_preview(preview_text: str) -> str:
+    """Short summary from first chunk — used as display text."""
     compact = re.sub(r"\s+", " ", preview_text or "").strip()
     if not compact:
         return "Manual upload document for compliance processing."
     return compact[:220]
+
+
+def _extract_keyword_summary(ingest_result: dict) -> str:
+    """
+    Build a richer summary by scanning ALL ingested chunks for section-level
+    keywords.  This lets the client matcher's content rules detect topics like
+    presumptive taxation (44ADA), NRI provisions, capital gains, etc. that
+    appear deep in the document body — not just the header.
+    """
+    file_name = (ingest_result or {}).get("file", "")
+    if not file_name:
+        return ""
+    try:
+        from core.chroma_client import get_persistent_client
+        client = get_persistent_client(VECTORSTORE_DIR)
+        collection = client.get_or_create_collection(name=CHROMA_COLLECTION)
+        stem = Path(file_name).stem
+        # Fetch first 30 chunk IDs for this document
+        ids = [f"{stem}_chunk_{i}" for i in range(30)]
+        result = collection.get(ids=ids, include=["documents"])
+        docs = result.get("documents", [])
+        if not docs:
+            return ""
+        full_text = " ".join(d for d in docs if d).lower()
+        # Return first 2000 chars — enough for keyword matching
+        return re.sub(r"\s+", " ", full_text).strip()[:2000]
+    except Exception:
+        return ""
 
 
 # ── Scheduler ─────────────────────────────────────────────────────────────────
@@ -1543,7 +1572,11 @@ async def upload_document(
     invalidate_collection_cache()
 
     preview = (ingest_result or {}).get("first_chunk_preview", "")
-    summary = _summary_from_preview(preview)
+    display_summary = _summary_from_preview(preview)
+    # Build a keyword-rich summary from ALL chunks so the client matcher's
+    # content rules can detect deep topics (44ADA, NRI, capital gains, etc.)
+    keyword_summary = _extract_keyword_summary(ingest_result)
+    summary = keyword_summary if keyword_summary else display_summary
     priority = _infer_priority_from_title(title)
     uploaded_at = _now()
     uploaded_record = {

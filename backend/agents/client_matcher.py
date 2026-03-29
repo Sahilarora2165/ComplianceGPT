@@ -193,6 +193,8 @@ _CONTENT_RULES: dict[str, list[dict]] = {
                 "form 24q", "form 26q", "tds return", "tds rate",
             ],
             "required_tags": ["TDS"],
+            "alt_field": "registrations.tan",
+            "require_field": "registrations.tan",
             "reason": "TDS/TCS circular — applicable to clients with TAN (deductors)",
         },
         {
@@ -351,35 +353,68 @@ def _content_match(
     client_tags = [t.upper() for t in client.get("tags", [])]
     biz = client.get("profile", {}).get("industry", "").lower()
 
+    # A circular may match MULTIPLE content rules (e.g. a TDS circular that
+    # also mentions 44ADA or NRI provisions).  Accept the client if ANY
+    # matching rule passes — don't block on the first failed rule.
+    any_rule_matched_keywords = False
+    accepted_reason = ""
+
     for rule in rules:
         if not _matches_any(text, rule["keywords"]):
             continue
+
+        any_rule_matched_keywords = True
 
         # Keywords matched — check required client type (business vs individual)
         required_client_type = rule.get("required_client_type")
         if required_client_type:
             actual_type = client.get("client_type", "business")
             if actual_type != required_client_type:
-                return False, ""
+                continue  # try next rule
+
+        # Hard field gate: require_field must be present even for obligation-matched
+        # clients.  E.g. TDS circulars require TAN — individuals without TAN are
+        # deductees (TDS is deducted FROM them), not deductors.
+        require_field = rule.get("require_field")
+        if require_field:
+            val = _resolve_field(client, require_field)
+            if val is None or str(val).strip() in ("", "None", "null"):
+                continue  # try next rule
 
         # Tag check: skip for obligation-matched clients (they already proved relevance).
         required_tags = rule.get("required_tags", [])
         if required_tags and not obligation_matched:
-            if not any(t.upper() in client_tags for t in required_tags):
-                return False, ""
+            tag_ok = any(t.upper() in client_tags for t in required_tags)
+            # alt_field: accept clients who have this field set (e.g. TAN holders
+            # are deductors even if they lack the "TDS" tag in their profile).
+            alt_field = rule.get("alt_field")
+            alt_ok = False
+            if alt_field:
+                alt_val = _resolve_field(client, alt_field)
+                alt_ok = alt_val is not None and str(alt_val).strip() not in ("", "None", "null")
+            if not tag_ok and not alt_ok:
+                continue  # try next rule
 
         required_constitution = rule.get("required_constitution")
         if required_constitution:
             constitution = client.get("profile", {}).get("constitution", "").lower()
             if required_constitution not in constitution:
-                return False, ""
+                continue  # try next rule
 
         # Optionally narrow by business type
         biz_kws = rule.get("business_contains", [])
         if biz_kws and not _matches_any(biz, biz_kws):
-            return False, ""
+            continue  # try next rule
 
-        return True, rule["reason"]
+        accepted_reason = rule["reason"]
+        break  # accepted — stop checking
+
+    if accepted_reason:
+        return True, accepted_reason
+    if any_rule_matched_keywords:
+        # At least one rule's keywords matched the circular, but this client
+        # failed all of them — reject.
+        return False, ""
 
     # No content rule matched → apply catch-all policy.
     # Obligation-matched clients bypass tag checks here too — they have a real
@@ -698,6 +733,16 @@ def match_clients(documents: list[dict]) -> list[dict]:
             "match_count":      len(affected)
         }
         results.append(result)
+
+        # Console log for visibility
+        print(f"\n[CLIENT MATCHER] Circular: {title[:80]}")
+        print(f"[CLIENT MATCHER] Regulator: {regulator} | Priority: {priority}")
+        print(f"[CLIENT MATCHER] Matched {len(affected)} client(s):")
+        if affected:
+            for c in affected:
+                print(f"  ✓ {c['client_id']} — {c['name']} | Reason: {c['reason']}")
+        else:
+            print("  (no matches)")
 
         # Audit log every match event
         log_event(
