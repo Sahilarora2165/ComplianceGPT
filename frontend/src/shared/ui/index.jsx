@@ -37,20 +37,15 @@ export function extractEmailBody(emailBody) {
   if (typeof emailBody !== "string") return String(emailBody);
   try {
     const parsed = JSON.parse(emailBody);
-    const body = parsed.body || parsed.email_body || emailBody;
-    // Fix escaped characters from LLM/JSON output
-    return body
-      .replace(/\\n/g, "\n")
-      .replace(/\\t/g, "  ")
-      .replace(/\\\\/g, "\\")
-      .trim();
+    // Handle case where entire email JSON (with subject+body) is stored in email_body
+    const body = parsed.body || parsed.email_body || parsed.message || emailBody;
+    // Fix escaped characters from LLM/JSON output and ensure body is a string
+    return typeof body === "string"
+      ? body.replace(/\\n/g, "\n").replace(/\\t/g, "  ").replace(/\\\\/g, "\\").trim()
+      : String(body);
   } catch {
     // Handle raw strings with escaped characters
-    return emailBody
-      .replace(/\\n/g, "\n")
-      .replace(/\\t/g, "  ")
-      .replace(/\\\\/g, "\\")
-      .trim();
+    return emailBody.replace(/\\n/g, "\n").replace(/\\t/g, "  ").replace(/\\\\/g, "\\").trim();
   }
 }
 
