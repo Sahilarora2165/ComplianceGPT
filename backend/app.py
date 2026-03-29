@@ -151,6 +151,110 @@ def _save_uploaded_documents(documents: dict) -> None:
     )
 
 
+def _build_persisted_document_catalog() -> list[dict]:
+    """
+    Build a durable document list from the persistent knowledge base.
+
+    Why this exists:
+    - Chroma already stores previously ingested scraped/uploaded documents.
+    - The UI was showing only the latest pipeline result, so older docs
+      disappeared after restart even though RAG could still answer from them.
+    """
+    uploaded_docs = _load_uploaded_documents()
+    uploaded_by_filename = {
+        doc.get("stored_filename"): doc
+        for doc in uploaded_docs.values()
+        if isinstance(doc, dict) and doc.get("stored_filename")
+    }
+    match_results = {
+        item.get("circular_title"): item
+        for item in _latest_result.get("match_results", [])
+        if isinstance(item, dict) and item.get("circular_title")
+    }
+
+    try:
+        from core.chroma_client import get_persistent_client
+
+        client = get_persistent_client(VECTORSTORE_DIR)
+        collection = client.get_or_create_collection(name=CHROMA_COLLECTION)
+        if collection.count() == 0:
+            return []
+
+        metadata_result = collection.get(include=["metadatas"])
+        source_rows: dict[str, dict] = {}
+        for meta in metadata_result.get("metadatas", []):
+            if not isinstance(meta, dict):
+                continue
+            source_name = str(meta.get("source") or "").strip()
+            if not source_name or source_name in source_rows:
+                continue
+            source_rows[source_name] = meta
+
+        first_chunk_ids = [f"{Path(source).stem}_chunk_0" for source in source_rows]
+        first_chunk_result = collection.get(
+            ids=first_chunk_ids,
+            include=["documents", "metadatas"],
+        )
+
+        first_doc_by_source: dict[str, str] = {}
+        for doc, meta in zip(
+            first_chunk_result.get("documents", []),
+            first_chunk_result.get("metadatas", []),
+        ):
+            if not isinstance(meta, dict):
+                continue
+            source_name = str(meta.get("source") or "").strip()
+            if source_name and isinstance(doc, str):
+                first_doc_by_source[source_name] = doc
+
+        documents = []
+        for source_name, meta in source_rows.items():
+            uploaded = uploaded_by_filename.get(source_name, {})
+            title = (
+                str(meta.get("title") or "").strip()
+                or str(uploaded.get("title") or "").strip()
+                or Path(source_name).stem.replace("_", " ").strip()
+            )
+            matched = match_results.get(title, {})
+            preview_text = first_doc_by_source.get(source_name, "")
+            published_date = (
+                str(meta.get("document_date") or "").strip()
+                or str(uploaded.get("uploaded_at") or "").strip()
+            )
+            source_type = "manual_upload" if uploaded else ("scraped" if meta.get("url") else "knowledge_base")
+            documents.append(
+                {
+                    "document_id": uploaded.get("document_id"),
+                    "circular_title": title,
+                    "title": title,
+                    "regulator": str(meta.get("regulator") or uploaded.get("regulator") or "Unknown").strip(),
+                    "priority": str(uploaded.get("priority") or _infer_priority_from_title(title)).strip(),
+                    "summary": str(uploaded.get("summary") or _summary_from_preview(preview_text)).strip(),
+                    "published_date": published_date or None,
+                    "source": source_type,
+                    "source_file": source_name,
+                    "source_url": str(meta.get("url") or "").strip() or None,
+                    "uploaded_by": uploaded.get("uploaded_by"),
+                    "uploaded_at": uploaded.get("uploaded_at"),
+                    "match_count": int(matched.get("match_count") or len(matched.get("affected_clients") or [])),
+                    "affected_clients": matched.get("affected_clients", []),
+                }
+            )
+
+        documents.sort(
+            key=lambda item: (
+                item.get("published_date") or "",
+                item.get("uploaded_at") or "",
+                item.get("circular_title") or "",
+            ),
+            reverse=True,
+        )
+        return documents
+    except Exception as exc:
+        logger.warning(f"Failed to build persisted document catalog: {exc}")
+        return []
+
+
 def _slugify_filename(name: str) -> str:
     stem = re.sub(r"[^A-Za-z0-9._-]+", "_", name).strip("._")
     return stem or "document"
@@ -730,8 +834,9 @@ def reset_pipeline():
 
 @app.get("/circulars")
 def get_circulars():
-    """Return latest detected circulars with match counts."""
-    return {"circulars": _latest_result.get("match_results", [])}
+    """Return all persisted knowledge-base documents, not just the latest run."""
+    circulars = _build_persisted_document_catalog()
+    return {"circulars": circulars, "total": len(circulars)}
 
 
 @app.get("/circulars/simulate")

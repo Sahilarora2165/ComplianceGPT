@@ -218,7 +218,10 @@ export default function App() {
 
   const allDrafts = useMemo(() => data.drafts?.drafts || [], [data.drafts]);
   const allDeadlines = useMemo(() => data.deadlines?.alerts || [], [data.deadlines]);
-  const allCirculars = useMemo(() => data.pipeline?.match_results || [], [data.pipeline]);
+  const allCirculars = useMemo(
+    () => data.circulars?.circulars || data.pipeline?.match_results || [],
+    [data.circulars, data.pipeline],
+  );
   const calendarData = useMemo(() => data.calendar || null, [data.calendar]);
   const clients = useMemo(() => {
     if (Array.isArray(data.clients)) return data.clients;
@@ -254,6 +257,12 @@ export default function App() {
         metrics.total_exposure ?? 0,
         data.deadlines?.summary?.total_exposure ?? 0,
       ),
+      circulars: data.circulars?.total ?? metrics.total_circulars ?? data.pipeline?.total_circulars ?? allCirculars.length,
+      affectedClients: metrics.total_matches ?? data.pipeline?.total_matches ?? 0,
+      pendingDrafts:
+        metrics.pending_drafts ?? allDrafts.filter((draft) => isDraftPendingReview(draft)).length,
+      deadlineAlerts: metrics.deadline_alerts ?? data.deadlines?.total ?? allDeadlines.length,
+      totalExposure: metrics.total_exposure ?? data.deadlines?.summary?.total_exposure ?? 0,
       timestamp: metrics.timestamp,
       last_run: metrics.last_run,
       run_mode: metrics.run_mode,
