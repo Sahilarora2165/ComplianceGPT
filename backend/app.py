@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 sys.path.append(str(Path(__file__).parent))
 
 _BACKEND_DIR = Path(__file__).parent
-from config import PDF_DIR, LOGS_DIR
+from config import PDF_DIR, LOGS_DIR, VECTORSTORE_DIR, CHROMA_COLLECTION
 from core.ingest    import ingest_pdf
 from core.retriever import query_rag, invalidate_collection_cache
 from core.audit     import read_audit_log, log_event
@@ -166,10 +166,39 @@ def _infer_priority_from_title(title: str) -> str:
 
 
 def _summary_from_preview(preview_text: str) -> str:
+    """Short summary from first chunk — used as display text."""
     compact = re.sub(r"\s+", " ", preview_text or "").strip()
     if not compact:
         return "Manual upload document for compliance processing."
     return compact[:220]
+
+
+def _extract_keyword_summary(ingest_result: dict) -> str:
+    """
+    Build a richer summary by scanning ALL ingested chunks for section-level
+    keywords.  This lets the client matcher's content rules detect topics like
+    presumptive taxation (44ADA), NRI provisions, capital gains, etc. that
+    appear deep in the document body — not just the header.
+    """
+    file_name = (ingest_result or {}).get("file", "")
+    if not file_name:
+        return ""
+    try:
+        from core.chroma_client import get_persistent_client
+        client = get_persistent_client(VECTORSTORE_DIR)
+        collection = client.get_or_create_collection(name=CHROMA_COLLECTION)
+        stem = Path(file_name).stem
+        # Fetch first 30 chunk IDs for this document
+        ids = [f"{stem}_chunk_{i}" for i in range(30)]
+        result = collection.get(ids=ids, include=["documents"])
+        docs = result.get("documents", [])
+        if not docs:
+            return ""
+        full_text = " ".join(d for d in docs if d).lower()
+        # Return first 2000 chars — enough for keyword matching
+        return re.sub(r"\s+", " ", full_text).strip()[:2000]
+    except Exception:
+        return ""
 
 
 # ── Scheduler ─────────────────────────────────────────────────────────────────
@@ -383,6 +412,8 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             stage="matching",
             status_message=f"Matching complete: {total_matches} client match(es) found",
         )
+        # Live metric update after matching
+        update_metrics_store({"total_circulars": len(new_docs), "total_matches": total_matches, "total_drafts": 0, "run_mode": "simulate" if simulate_mode else "real"})
 
         # Stage 3
         # Deduplicate match_results: same circular can appear twice when scraped from
@@ -462,6 +493,8 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
                             f"Drafting in progress: {processed_targets}/{total_targets} draft(s) generated"
                         ),
                     )
+                    # Live metric update after each draft
+                    update_metrics_store({"total_circulars": len(new_docs), "total_matches": total_matches, "total_drafts": len(drafts), "run_mode": "simulate" if simulate_mode else "real"})
                     # Pace LLM calls to stay under Groq free-tier rate limit (~30 req/min).
                     # 2s gap = max 30 drafts/min; reduces 429 retries from hammering the API.
                     if processed_targets < total_targets:
@@ -483,10 +516,10 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             "updated_at":      _now(),
         }
         _save_pipeline_status(_latest_result)
-        
+
         # Update metrics store
         update_metrics_store(_latest_result)
-        
+
         logger.info(f"✅ Pipeline complete — {len(new_docs)} circulars, {total_matches} matches, {len(drafts)} drafts")
     except Exception as e:
         _update_pipeline_result(
@@ -543,6 +576,8 @@ def _execute_uploaded_document_pipeline(document_id: str, ca_name: str):
             stage="matching",
             status_message=f"Matching complete: {total_matches} client match(es)",
         )
+        # Live metric update after matching
+        update_metrics_store({"total_circulars": 1, "total_matches": total_matches, "total_drafts": 0, "run_mode": "manual_upload"})
 
         _update_pipeline_result(
             stage="drafting",
@@ -581,6 +616,8 @@ def _execute_uploaded_document_pipeline(document_id: str, ca_name: str):
                             f"Drafting in progress: {processed_targets}/{total_targets} draft(s) generated"
                         ),
                     )
+                    # Live metric update after each draft
+                    update_metrics_store({"total_circulars": 1, "total_matches": total_matches, "total_drafts": len(drafts), "run_mode": "manual_upload"})
 
         _update_pipeline_result(
             stage="deadlines",
@@ -608,6 +645,7 @@ def _execute_uploaded_document_pipeline(document_id: str, ca_name: str):
             "updated_at": _now(),
         }
         _save_pipeline_status(_latest_result)
+        update_metrics_store(_latest_result)
 
         uploaded["last_pipeline_run"] = _now()
         uploaded["last_pipeline_summary"] = {
@@ -1577,7 +1615,11 @@ async def upload_document(
     invalidate_collection_cache()
 
     preview = (ingest_result or {}).get("first_chunk_preview", "")
-    summary = _summary_from_preview(preview)
+    display_summary = _summary_from_preview(preview)
+    # Build a keyword-rich summary from ALL chunks so the client matcher's
+    # content rules can detect deep topics (44ADA, NRI, capital gains, etc.)
+    keyword_summary = _extract_keyword_summary(ingest_result)
+    summary = keyword_summary if keyword_summary else display_summary
     priority = _infer_priority_from_title(title)
     uploaded_at = _now()
     uploaded_record = {
