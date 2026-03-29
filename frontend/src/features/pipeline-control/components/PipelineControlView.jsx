@@ -19,6 +19,8 @@ export default function PipelineControlView({
   loading,
   pipeline,
   scheduler,
+  onRunLiveMonitoring,
+  onRunDemoMonitoring,
   onResetPipeline,
   onTriggerScheduler,
   onOpenDocumentIntake,
@@ -120,10 +122,24 @@ export default function PipelineControlView({
             <h3 className="mb-4 font-headline text-base font-bold">Quick Operations</h3>
             <div className="space-y-2">
               <button
+                onClick={onRunLiveMonitoring}
+                className="flex w-full items-center justify-between rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-4 py-3 text-sm font-medium text-emerald-100 transition hover:bg-emerald-500/25"
+              >
+                Run Live Monitoring
+                <span className="material-symbols-outlined text-base">arrow_forward</span>
+              </button>
+              <button
+                onClick={onRunDemoMonitoring}
+                className="flex w-full items-center justify-between rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium transition hover:bg-white/10"
+              >
+                Run Demo Monitoring
+                <span className="material-symbols-outlined text-base">arrow_forward</span>
+              </button>
+              <button
                 onClick={onTriggerScheduler}
                 className="flex w-full items-center justify-between rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium transition hover:bg-white/10"
               >
-                Trigger Scheduler
+                Trigger Monitoring Job
                 <span className="material-symbols-outlined text-base">arrow_forward</span>
               </button>
               <button

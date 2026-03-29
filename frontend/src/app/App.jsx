@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   approveDraft,
   getDashboardData,
@@ -21,6 +21,7 @@ import AnalystQueryView from "@/features/analyst-query";
 import ClientProfilesView from "@/features/client-profiles";
 import CircularsView from "@/features/circulars";
 import DeadlineWatchView from "@/features/deadline-watch";
+import DocumentIntakeWorkspace from "@/features/document-intake";
 import DraftReviewView from "@/features/draft-review";
 import PipelineControlView from "@/features/pipeline-control";
 
@@ -31,6 +32,7 @@ const NAV = [
   { key: "deadlines", label: "Deadline Watch", icon: "alarm" },
   { key: "calendar", label: "Compliance Calendar", icon: "calendar_month" },
   { key: "clients", label: "Clients", icon: "group" },
+  { key: "intake", label: "Document Intake", icon: "upload_file" },
   { key: "analyst", label: "Analyst Query", icon: "psychology" },
   { key: "audit", label: "Audit Trail", icon: "history_edu" },
   { key: "operations", label: "Operations Center", icon: "account_tree" },
@@ -147,6 +149,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState("");
   const [openIntakeSignal, setOpenIntakeSignal] = useState(0);
+  const pollTimerRef = useRef(null);
 
   useEffect(() => {
     let ignore = false;
@@ -177,9 +180,21 @@ export default function App() {
 
     load();
     return () => {
+      if (pollTimerRef.current) {
+        clearInterval(pollTimerRef.current);
+        pollTimerRef.current = null;
+      }
       ignore = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!actionMessage) return undefined;
+    const running = data.pipeline?.status === "running";
+    if (running) return undefined;
+    const timer = setTimeout(() => setActionMessage(""), 6000);
+    return () => clearTimeout(timer);
+  }, [actionMessage, data.pipeline?.status]);
 
   async function reloadDashboard() {
     const next = await getDashboardData();
@@ -217,12 +232,28 @@ export default function App() {
   // Use metrics from API if available, otherwise compute from data
   const displayMetrics = useMemo(
     () => ({
-      circulars: metrics.total_circulars ?? data.pipeline?.total_circulars ?? allCirculars.length,
-      affectedClients: metrics.total_matches ?? data.pipeline?.total_matches ?? 0,
-      pendingDrafts:
-        metrics.pending_drafts ?? allDrafts.filter((draft) => isDraftPendingReview(draft)).length,
-      deadlineAlerts: metrics.deadline_alerts ?? data.deadlines?.total ?? allDeadlines.length,
-      totalExposure: metrics.total_exposure ?? data.deadlines?.summary?.total_exposure ?? 0,
+      circulars: Math.max(
+        metrics.total_circulars ?? 0,
+        data.pipeline?.total_circulars ?? 0,
+        allCirculars.length,
+      ),
+      affectedClients: Math.max(
+        metrics.total_matches ?? 0,
+        data.pipeline?.total_matches ?? 0,
+      ),
+      pendingDrafts: Math.max(
+        metrics.pending_drafts ?? 0,
+        allDrafts.filter((draft) => isDraftPendingReview(draft)).length,
+      ),
+      deadlineAlerts: Math.max(
+        metrics.deadline_alerts ?? 0,
+        data.deadlines?.total ?? 0,
+        allDeadlines.length,
+      ),
+      totalExposure: Math.max(
+        metrics.total_exposure ?? 0,
+        data.deadlines?.summary?.total_exposure ?? 0,
+      ),
       timestamp: metrics.timestamp,
       last_run: metrics.last_run,
       run_mode: metrics.run_mode,
@@ -283,10 +314,14 @@ export default function App() {
     }
   }
 
-  async function handleRunPipeline({ simulateMode, reset, label }) {
+  async function handleRunPipeline({ simulateMode, reset, label, regulators }) {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
     setActionMessage(`${label} starting...`);
     try {
-      await runPipeline({ simulateMode, reset });
+      await runPipeline({ simulateMode, reset, regulators });
       setActionMessage(`${label} started - monitoring for completion...`);
       pollCompletion(label);
     } catch {
@@ -309,6 +344,10 @@ export default function App() {
   }
 
   async function handleRunDocumentPipeline(documentId, title) {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
     const label = title ? `Document processing (${title})` : "Document processing";
     setActionMessage(`${label} starting...`);
     try {
@@ -322,6 +361,10 @@ export default function App() {
   }
 
   function pollCompletion(label) {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
     let attempts = 0;
     const timer = setInterval(async () => {
       attempts++;
@@ -333,11 +376,13 @@ export default function App() {
         }
         if (status === "completed") {
           clearInterval(timer);
+          pollTimerRef.current = null;
           setActionMessage(
             `${label} finished - ${next.pipeline?.total_circulars || 0} circulars, ${next.pipeline?.total_matches || 0} matches`,
           );
         } else if (status === "failed") {
           clearInterval(timer);
+          pollTimerRef.current = null;
           setActionMessage(`${label} failed`);
         }
       } catch {
@@ -346,14 +391,15 @@ export default function App() {
 
       if (attempts >= 180) {
         clearInterval(timer);
+        pollTimerRef.current = null;
         setActionMessage("Processing is still running - check back shortly.");
       }
     }, 2000);
+    pollTimerRef.current = timer;
   }
 
   function openDocumentIntakeWorkspace() {
-    setPage("analyst");
-    setOpenIntakeSignal((current) => current + 1);
+    setPage("intake");
   }
 
   async function handleDraftReject(draftId) {
@@ -437,6 +483,10 @@ export default function App() {
         eyebrow: "Client Intelligence",
         subtitle: "Review compliance footprint and risk context",
       },
+      intake: {
+        eyebrow: "Document Intake",
+        subtitle: "Upload and process circulars directly for matching and drafting",
+      },
       audit: {
         eyebrow: "Workflow Traceability",
         subtitle: "Immutable log of every system and agent action",
@@ -507,7 +557,7 @@ export default function App() {
                 handleRunPipeline({
                   simulateMode: false,
                   reset: false,
-                  label: "Real monitoring",
+                  label: "Live monitoring (all regulators)",
                 })
               }
             />
@@ -551,6 +601,13 @@ export default function App() {
             />
           ) : page === "audit" ? (
             <AuditTrailView events={auditEvents} loading={loading} />
+          ) : page === "intake" ? (
+            <DocumentIntakeWorkspace
+              onUploadDocument={handleDocumentUpload}
+              onRunUploadedDocumentPipeline={handleRunDocumentPipeline}
+              uploadHistory={auditEvents}
+              compact={false}
+            />
           ) : page === "analyst" ? (
             <AnalystQueryView
               actionMessage={actionMessage}
@@ -565,14 +622,28 @@ export default function App() {
               loading={loading}
               pipeline={data.pipeline}
               scheduler={scheduler}
+              onRunLiveMonitoring={() =>
+                handleRunPipeline({
+                  simulateMode: false,
+                  reset: false,
+                  label: "Live monitoring (all regulators)",
+                })
+              }
+              onRunDemoMonitoring={() =>
+                handleRunPipeline({
+                  simulateMode: true,
+                  reset: true,
+                  label: "Demo monitoring run",
+                })
+              }
               onResetPipeline={() =>
                 refresh(resetPipelineState, "Monitoring state reset", "Monitoring state reset")
               }
               onTriggerScheduler={() =>
                 refresh(
-                  triggerSchedulerMonitoring,
-                  "Scheduler trigger",
-                  "Scheduler triggered",
+                  () => triggerSchedulerMonitoring({ simulateMode: false }),
+                  "Scheduler trigger (live)",
+                  "Scheduler triggered (live)",
                 )
               }
               onOpenDocumentIntake={openDocumentIntakeWorkspace}
@@ -591,11 +662,27 @@ export default function App() {
                 <div className="flex flex-wrap gap-3 xl:justify-end xl:pt-4">
                   <button
                     onClick={() =>
-                      handleRunPipeline({ simulateMode: true, reset: true, label: "Demo monitoring run" })
+                      handleRunPipeline({
+                        simulateMode: false,
+                        reset: false,
+                        label: "Live monitoring (all regulators)",
+                      })
+                    }
+                    className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                  >
+                    Run Live Monitoring
+                  </button>
+                  <button
+                    onClick={() =>
+                      handleRunPipeline({
+                        simulateMode: true,
+                        reset: true,
+                        label: "Demo monitoring run",
+                      })
                     }
                     className="rounded-xl bg-shell px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-shellSoft"
                   >
-                    Run Compliance Scan
+                    Run Demo Monitoring
                   </button>
                 </div>
               </div>
@@ -613,35 +700,41 @@ export default function App() {
                     value: displayMetrics.circulars,
                     tone: "border-accent",
                     icon: "policy",
+                    targetPage: "circulars",
                   },
                   {
                     title: "Clients Affected",
                     value: displayMetrics.affectedClients,
                     tone: "border-accent",
                     icon: "group",
+                    targetPage: "clients",
                   },
                   {
                     title: "Pending Reviews",
                     value: displayMetrics.pendingDrafts,
                     tone: "border-warning",
                     icon: "pending_actions",
+                    targetPage: "drafts",
                   },
                   {
                     title: "Deadline Alerts",
                     value: displayMetrics.deadlineAlerts,
                     tone: "border-danger",
                     icon: "alarm",
+                    targetPage: "deadlines",
                   },
                   {
                     title: "Exposure at Risk",
                     value: currency(displayMetrics.totalExposure),
                     tone: "border-warning",
                     icon: "monetization_on",
+                    targetPage: "deadlines",
                   },
                 ].map((metric) => (
-                  <div
+                  <button
                     key={metric.title}
-                    className={`rounded-2xl border-l-4 ${metric.tone} bg-white p-4 shadow-panel`}
+                    onClick={() => setPage(metric.targetPage)}
+                    className={`rounded-2xl border-l-4 ${metric.tone} bg-white p-4 text-left shadow-panel transition hover:shadow-md`}
                   >
                     <div className="mb-2 flex items-start justify-between">
                       <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
@@ -654,7 +747,7 @@ export default function App() {
                     <p className="text-[1.75rem] font-extrabold leading-none text-slate-950">
                       {metric.value}
                     </p>
-                  </div>
+                  </button>
                 ))}
               </div>
 

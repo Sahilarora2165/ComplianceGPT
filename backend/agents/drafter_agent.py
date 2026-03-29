@@ -52,7 +52,9 @@ from core.chroma_client import get_persistent_client
 # Assign models by priority to maximize free tier usage
 # Each model has separate TPD (tokens per day) bucket on Groq free tier
 MODEL_BY_PRIORITY = {
-    "HIGH":   "llama-3.3-70b-versatile",    # Best quality for critical advisories
+    # Use 8b for HIGH as well to avoid hard stops when 70b free-tier TPD is exhausted.
+    # Hackathon priority: keep pipeline running end-to-end with stable drafts.
+    "HIGH":   "llama-3.1-8b-instant",
     "MEDIUM": "llama-3.1-8b-instant",        # Fast, good quality for routine filings
     "LOW":    "gemma2-9b-it",                # Basic quality for awareness-only
 }

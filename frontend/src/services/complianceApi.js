@@ -56,10 +56,14 @@ export function getMetrics() {
   return request("/metrics");
 }
 
-export function runPipeline({ simulateMode = true, reset = false } = {}) {
+export function runPipeline({ simulateMode = false, reset = false, regulators } = {}) {
   return request("/pipeline/run", {
     method: "POST",
-    body: JSON.stringify({ simulate_mode: simulateMode, reset }),
+    body: JSON.stringify({
+      simulate_mode: simulateMode,
+      reset,
+      ...(Array.isArray(regulators) ? { regulators } : {}),
+    }),
   });
 }
 
@@ -114,9 +118,20 @@ export function resetPipelineState() {
   });
 }
 
-export function triggerSchedulerMonitoring() {
+export function triggerSchedulerMonitoring({
+  simulateMode = false,
+  reset = false,
+  autoIngest = true,
+  regulators,
+} = {}) {
   return request("/scheduler/trigger", {
     method: "POST",
+    body: JSON.stringify({
+      simulate_mode: simulateMode,
+      reset,
+      auto_ingest: autoIngest,
+      ...(Array.isArray(regulators) ? { regulators } : {}),
+    }),
   });
 }
 

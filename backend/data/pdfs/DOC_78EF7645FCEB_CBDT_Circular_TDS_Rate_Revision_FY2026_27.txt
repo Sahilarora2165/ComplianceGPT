@@ -1,0 +1,209 @@
+CENTRAL BOARD OF DIRECT TAXES
+MINISTRY OF FINANCE, GOVERNMENT OF INDIA
+
+Circular No.: CBDT/Circular/04/2026
+F.No. 275/09/2026-IT(B)
+Date: March 25, 2026
+
+Subject: Revised TDS Rates and Threshold Limits for FY 2026-27 — Clarification on
+         Section 194C, 194J, 194H, and 194I with Applicability to Technology
+         Service Contracts, Professional Fee Payments, and Rent Transactions
+
+To:
+All Principal Chief Commissioners of Income Tax
+All Chief Commissioners of Income Tax
+All Principal Commissioners of Income Tax
+All Assessing Officers
+All Tax Deductors and Collectors (TAN Holders)
+
+---
+
+1. BACKGROUND
+
+The Finance Act 2026 has amended the TDS provisions under Chapter XVII-B of the
+Income Tax Act, 1961. This circular provides consolidated guidance on the revised
+TDS rates, enhanced threshold limits, and new compliance obligations effective
+April 1, 2026 (Assessment Year 2027-28).
+
+All tax deductors holding a valid TAN are required to note these changes and update
+their deduction logic before the first payment of FY 2026-27.
+
+---
+
+2. REVISED TDS RATES EFFECTIVE APRIL 1, 2026
+
+2.1 Section 194J — Professional and Technical Services
+
+The TDS rate under Section 194J is revised as follows:
+
+  a) Fees for Professional Services (doctors, lawyers, architects, accountants):
+     Rate revised from 10% to 10% (no change)
+     Threshold: Enhanced from Rs. 30,000 to Rs. 50,000 per annum
+
+  b) Fees for Technical Services (IT, software, engineering consultancy):
+     Rate revised from 2% to 2% (no change)
+     Threshold: Enhanced from Rs. 30,000 to Rs. 50,000 per annum
+
+  c) Royalty payments (software licenses, IP usage fees):
+     Rate: 10%
+     Threshold: Rs. 50,000 per annum (enhanced from Rs. 30,000)
+
+Key clarification: Payments to IT and software companies for software development,
+maintenance contracts, and SaaS subscriptions where a service element is predominant
+shall continue to be classified under Section 194J(b) at 2%, NOT under Section 194C.
+This clarification resolves prior ambiguity flagged in CBDT Circular 7/2024.
+
+2.2 Section 194C — Payments to Contractors and Sub-Contractors
+
+  Rate: 1% (Individual/HUF) | 2% (others — companies, firms, LLPs)
+  Single transaction threshold: Enhanced from Rs. 30,000 to Rs. 50,000
+  Annual aggregate threshold: Enhanced from Rs. 1,00,000 to Rs. 1,50,000
+
+Applicable to: manufacturing contracts, logistics, facility management, event
+management, advertising agencies, and all work contracts. NOT applicable to
+IT service agreements covered under 194J above.
+
+2.3 Section 194H — Commission and Brokerage
+
+  Rate: 5% (no change)
+  Threshold: Enhanced from Rs. 15,000 to Rs. 20,000 per annum
+
+Applicable to: stock brokers, insurance agents, travel agents, real estate brokers,
+and all other commission-earning intermediaries. Stock broking firms paying sub-broker
+commissions must deduct at source under this section.
+
+2.4 Section 194I — Rent
+
+  Rent for land, building, furniture, fittings: 10%
+  Rent for plant, machinery, equipment: 2%
+  Threshold: Enhanced from Rs. 2,40,000 to Rs. 3,00,000 per annum
+
+This change directly impacts all businesses paying office rent above Rs. 25,000
+per month. Deductors who have not been deducting TDS because the annual rent
+was below the old Rs. 2,40,000 threshold must now reassess their obligation.
+
+---
+
+3. NEW OBLIGATION: QUARTERLY TDS RECONCILIATION CERTIFICATE
+
+With effect from April 1, 2026, all deductors with TDS deductions exceeding
+Rs. 5 lakh in the preceding financial year must file a Quarterly TDS
+Reconciliation Certificate (Form 26QC-A) within 30 days of the close of each
+quarter. This is in addition to the existing quarterly TDS return (Form 24Q/26Q).
+
+Non-filing of Form 26QC-A attracts a penalty of Rs. 500 per day under the newly
+inserted Section 272A(2)(k), subject to a maximum of Rs. 1,00,000 per quarter.
+
+---
+
+4. UPDATED DUE DATES FOR TDS RETURNS (FY 2026-27)
+
+Quarter | Period        | Due Date for Return Filing
+Q1      | Apr–Jun 2026  | July 31, 2026
+Q2      | Jul–Sep 2026  | October 31, 2026
+Q3      | Oct–Dec 2026  | January 31, 2027
+Q4      | Jan–Mar 2027  | May 31, 2027
+
+TDS deposit due dates remain unchanged:
+  - Government deductors: same day of deduction
+  - Non-government deductors: 7th of the following month (March: 30th April)
+
+---
+
+5. CONSEQUENCE OF NON-COMPLIANCE
+
+5.1 Short Deduction or Non-Deduction
+Where TDS is not deducted or is deducted at a lower rate, the deductor is treated
+as an assessee-in-default under Section 201. Interest at 1% per month is charged
+from the date on which TDS was deductible to the date of actual deduction, and
+interest at 1.5% per month from the date of deduction to the date of deposit.
+
+5.2 Late Filing of TDS Returns
+Fee of Rs. 200 per day under Section 234E, with a maximum up to the amount of
+TDS involved. In addition, penalty under Section 271H may be levied up to
+Rs. 1,00,000 in cases of inaccurate information.
+
+5.3 Non-Issue of TDS Certificate (Form 16/16A)
+Penalty of Rs. 100 per day under Section 272A(2)(g) for delay in issue of TDS
+certificates to deductees. Form 16 for salaried employees must be issued by
+June 15 of the assessment year. Form 16A must be issued within 15 days of the
+due date of filing the quarterly TDS return.
+
+---
+
+6. SPECIFIC GUIDANCE FOR COMMON BUSINESS SCENARIOS
+
+6.1 IT and Software Companies (Exporters)
+Software export companies receiving payments from overseas clients: TDS is not
+applicable on receipts. However, when making payments to Indian sub-contractors,
+freelancers, or technical consultants within India, TDS under 194J(b) at 2% applies.
+Such companies must also ensure Form 26AS reconciliation is complete before filing
+advance tax for Q4 FY 2026-27.
+
+6.2 NBFCs and Financial Services Companies
+NBFCs paying interest on deposits, borrowings, or subordinated debt must continue
+to deduct TDS under Section 194A at 10% (PAN available) or 20% (PAN not available).
+Additionally, NBFCs must ensure TDS on all professional fee payments (legal, audit,
+actuarial) is updated to the enhanced threshold of Rs. 50,000 effective April 1.
+
+6.3 Stock Broking Firms
+Sub-broker commissions paid by broking firms must be assessed against the revised
+Section 194H threshold of Rs. 20,000. Firms whose sub-brokers earned commissions
+between Rs. 15,000 and Rs. 20,000 in FY 2025-26 who were previously exempt are
+now clearly exempt going forward but must verify FY 2025-26 deductions were correct.
+
+6.4 Individuals and Professionals Under Presumptive Taxation
+Professionals under Section 44ADA or 44AD who receive payments subject to TDS need
+not take any action — TDS is the obligation of the payer. However, they must ensure
+their Form 26AS reflects all TDS deducted by clients before filing ITR for AY 2026-27.
+Mismatch between Form 26AS and ITR schedule TDS remains a primary trigger for
+scrutiny notices under Section 143(2).
+
+---
+
+7. ACTION REQUIRED
+
+All tax deductors must:
+
+  i)   Update payroll and accounts software with revised thresholds before April 1, 2026
+  ii)  Review all vendor contracts to reclassify payments under correct TDS sections
+  iii) Obtain Form 15G/15H from eligible vendors to avoid excess deduction
+  iv)  File any pending TDS returns for Q3 FY 2025-26 (due January 31, 2026)
+       immediately — interest and penalty are accruing daily
+  v)   Issue Form 16A for Q3 within 15 days of filing the Q3 return
+  vi)  Enroll for the new Form 26QC-A filing obligation if aggregate TDS exceeds
+       Rs. 5 lakh in FY 2025-26
+
+---
+
+8. APPLICABILITY
+
+This circular is applicable to all persons responsible for deducting tax at source
+under Chapter XVII-B of the Income Tax Act, 1961, including:
+  - Companies (public and private)
+  - Limited Liability Partnerships
+  - Partnership firms
+  - Individuals and HUFs whose accounts are subject to audit under Section 44AB
+  - Government offices and PSUs
+
+This circular does not apply to individuals and HUFs not required to get their
+accounts audited, unless they are paying rent under Section 194-IB.
+
+---
+
+Sd/-
+(Ravi Shankar Prasad)
+Under Secretary to the Government of India
+Central Board of Direct Taxes
+
+---
+
+ANNEXURE A: SUMMARY OF REVISED THRESHOLDS
+
+Section | Nature of Payment         | Old Threshold | New Threshold | Rate
+194C    | Contractor payments        | Rs. 1,00,000  | Rs. 1,50,000  | 1%/2%
+194J(a) | Professional services      | Rs. 30,000    | Rs. 50,000    | 10%
+194J(b) | Technical/IT services      | Rs. 30,000    | Rs. 50,000    | 2%
+194H    | Commission/Brokerage       | Rs. 15,000    | Rs. 20,000    | 5%
+194I    | Rent (building/land)       | Rs. 2,40,000  | Rs. 3,00,000  | 10%
+194I    | Rent (machinery/equipment) | Rs. 2,40,000  | Rs. 3,00,000  | 2%

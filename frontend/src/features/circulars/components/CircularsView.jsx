@@ -5,6 +5,9 @@ import {
   regulatorTone,
 } from "@/shared/ui";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:8000";
+
 function statusTone(status) {
   if (status === "drafted") return "bg-emerald-100 text-emerald-800";
   if (status === "matched") return "bg-sky-100 text-sky-800";
@@ -17,29 +20,62 @@ function statusFromItem(item, draftCount) {
   return "detected";
 }
 
+function sourceLabel(source) {
+  if (source === "simulated") return "Simulated";
+  if (source === "real_scrape") return "Real Scrape";
+  if (source === "manual_upload") return "Manual Upload";
+  return "Unknown";
+}
+
+function normalizeText(value) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function localDocumentUrl(filename) {
+  const clean = normalizeText(filename);
+  if (!clean) return "";
+  return `${API_BASE_URL}/documents/file/${encodeURIComponent(clean)}`;
+}
+
 export default function CircularsView({
   allCirculars,
   allDrafts,
   loading,
   pipeline,
+  onRunDemo,
+  onRunReal,
 }) {
   const [selectedTitle, setSelectedTitle] = useState(null);
 
   const sourceMap = useMemo(() => {
     const docs = pipeline?.new_documents || [];
-    return new Map(docs.map((d) => [d.title, d.source || "unknown"]));
+    return new Map(
+      docs.map((d) => [
+        d.title,
+        {
+          source: d.source || "unknown",
+          url: d.url || "",
+          filename: d.filename || "",
+          document_id: d.document_id || "",
+        },
+      ]),
+    );
   }, [pipeline]);
 
   const circulars = useMemo(
     () =>
       allCirculars.map((item) => {
+        const sourceMeta = sourceMap.get(item.circular_title) || {};
         const draftCount = allDrafts.filter(
           (d) => d.circular_title === item.circular_title,
         ).length;
         return {
           ...item,
           draftCount,
-          source: sourceMap.get(item.circular_title) || "unknown",
+          source: item.source || sourceMeta.source || "unknown",
+          url: item.url || sourceMeta.url || "",
+          filename: item.filename || sourceMeta.filename || "",
+          document_id: item.document_id || sourceMeta.document_id || "",
           status: statusFromItem(item, draftCount),
         };
       }),
@@ -58,6 +94,9 @@ export default function CircularsView({
 
   const selected =
     circulars.find((i) => i.circular_title === selectedTitle) || circulars[0] || null;
+  const selectedLocalUrl = selected ? localDocumentUrl(selected.filename) : "";
+  const selectedExternalUrl = normalizeText(selected?.url);
+  const hasSourceLink = Boolean(selectedLocalUrl || selectedExternalUrl);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
@@ -67,6 +106,20 @@ export default function CircularsView({
             <span className="text-xs font-bold uppercase tracking-widest text-muted">
               {circulars.length} circular{circulars.length !== 1 ? "s" : ""}
             </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onRunReal}
+                className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
+              >
+                Run Live Monitoring
+              </button>
+              <button
+                onClick={onRunDemo}
+                className="rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-900"
+              >
+                Run Demo Monitoring
+              </button>
+            </div>
           </div>
 
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
@@ -189,7 +242,7 @@ export default function CircularsView({
                     { label: "Status", value: selected.status },
                     {
                       label: "Source",
-                      value: selected.source === "simulated" ? "Simulated" : "Real",
+                      value: sourceLabel(selected.source),
                     },
                   ].map((field) => (
                     <div key={field.label} className="rounded-xl bg-slate-50 px-3 py-2.5">
@@ -201,6 +254,46 @@ export default function CircularsView({
                       </p>
                     </div>
                   ))}
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+                    Source document
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {selectedLocalUrl ? (
+                      <a
+                        href={selectedLocalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800"
+                      >
+                        <span className="material-symbols-outlined text-sm">description</span>
+                        Open Ingested File
+                      </a>
+                    ) : null}
+                    {selectedExternalUrl ? (
+                      <a
+                        href={selectedExternalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                      >
+                        <span className="material-symbols-outlined text-sm">open_in_new</span>
+                        Open Official Link
+                      </a>
+                    ) : null}
+                    {!hasSourceLink ? (
+                      <span className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+                        Source not available for this circular
+                      </span>
+                    ) : null}
+                  </div>
+                  {selected.filename ? (
+                    <p className="mt-2 truncate text-xs text-muted">
+                      File: {selected.filename}
+                    </p>
+                  ) : null}
                 </div>
 
                 {selected.affected_clients?.length > 0 ? (

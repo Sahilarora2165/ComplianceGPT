@@ -1,0 +1,1 @@
+Manual upload smoke test for GST compliance workflow.

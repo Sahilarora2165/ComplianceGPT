@@ -6,7 +6,7 @@ import time
 import requests
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Callable
 from bs4 import BeautifulSoup
 
 # ── Path bootstrap ─────────────────────────────────────────────────────────────
@@ -21,6 +21,9 @@ HASH_DB_PATH    = LOGS_DIR / "seen_documents.json"
 SCRAPE_DELAY    = 5
 REQUEST_TIMEOUT = 15
 DEBUG_DIR       = LOGS_DIR / "scrape_debug"
+# Keep monitoring focused on the most recent circulars only.
+LATEST_WINDOW_DAYS = 365
+MAX_DOCS_PER_REGULATOR = 10
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -28,6 +31,16 @@ HEADERS = {
         "Chrome/120.0.0.0 Safari/537.36"
     )
 }
+
+
+def _emit_progress(progress_callback: Optional[Callable[[str], None]], message: str) -> None:
+    if not progress_callback:
+        return
+    try:
+        progress_callback(message)
+    except Exception:
+        # Progress callbacks should never break scraping flow.
+        pass
 
 PORTALS = []   # All portals now use dedicated Playwright scrapers below
 
@@ -497,15 +510,49 @@ _MCA_SKIP = {
     "rule",
 }
 
+_INDIC_DIGIT_MAP = str.maketrans({
+    "०": "0", "१": "1", "२": "2", "३": "3", "४": "4",
+    "५": "5", "६": "6", "७": "7", "८": "8", "९": "9",
+    "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4",
+    "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9",
+})
+
+_HINDI_MONTH_MAP = {
+    "जनवरी": "January",
+    "फ़रवरी": "February",
+    "फरवरी": "February",
+    "मार्च": "March",
+    "अप्रैल": "April",
+    "मई": "May",
+    "जून": "June",
+    "जुलाई": "July",
+    "अगस्त": "August",
+    "सितम्बर": "September",
+    "सितंबर": "September",
+    "अक्टूबर": "October",
+    "नवम्बर": "November",
+    "नवंबर": "November",
+    "दिसम्बर": "December",
+    "दिसंबर": "December",
+}
+
 
 def _contains_any(text: str, patterns: set[str]) -> bool:
     lowered = (text or "").lower()
     return any(pattern in lowered for pattern in patterns)
 
 
+def _normalize_localized_date_text(value: str) -> str:
+    text = (value or "").translate(_INDIC_DIGIT_MAP)
+    for hi, en in _HINDI_MONTH_MAP.items():
+        text = re.sub(hi, en, text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
 def _looks_recent(text: str, href: str, window_years: int = 1) -> bool:
     current_year = datetime.now().year
-    accepted = {str(current_year), str(current_year - 1)}
+    accepted = {str(current_year - offset) for offset in range(window_years + 1)}
     hay = f"{text} {href}"
     return any(year in hay for year in accepted)
 
@@ -555,12 +602,62 @@ def _parse_indian_date(value: str):
     value = (value or "").strip()
     if not value:
         return None
-    for fmt in ("%d-%m-%Y", "%d/%m/%Y", "%d.%m.%Y"):
+    for fmt in (
+        "%d-%m-%Y",
+        "%d/%m/%Y",
+        "%d.%m.%Y",
+        "%d-%b-%Y",
+        "%d-%B-%Y",
+        "%d %b %Y",
+        "%d %B %Y",
+        "%Y-%m-%d",
+    ):
         try:
             return datetime.strptime(value, fmt)
         except ValueError:
             continue
     return None
+
+
+def _parse_any_date(value: str):
+    raw = _normalize_localized_date_text(value)
+    if not raw:
+        return None
+    parsed = _parse_indian_date(raw)
+    if parsed:
+        return parsed
+
+    # Handle embedded numeric dates in larger text.
+    match = re.search(r"(\d{1,2}[./-]\d{1,2}[./-]20\d{2})", raw)
+    if match:
+        candidate = match.group(1).replace(".", "-").replace("/", "-")
+        parsed = _parse_indian_date(candidate)
+        if parsed:
+            return parsed
+
+    # Handle embedded month-name dates in larger text.
+    match = re.search(r"(\d{1,2}[-/\s][A-Za-z]{3,9}[-/\s]20\d{2})", raw)
+    if match:
+        parsed = _parse_indian_date(match.group(1).replace("/", "-"))
+        if parsed:
+            return parsed
+
+    # Year-only fallback (treated as Jan 1 of that year).
+    year_match = re.search(r"\b(20\d{2})\b", raw)
+    if year_match:
+        try:
+            return datetime.strptime(f"01-01-{year_match.group(1)}", "%d-%m-%Y")
+        except ValueError:
+            return None
+    return None
+
+
+def _is_latest_window(parsed_date: Optional[datetime], window_days: int = LATEST_WINDOW_DAYS) -> bool:
+    if not parsed_date:
+        return False
+    today = datetime.now(timezone.utc).date()
+    delta_days = (today - parsed_date.date()).days
+    return 0 <= delta_days <= window_days
 
 
 def _scrape_rbi_playwright(hash_db: dict) -> list[dict]:
@@ -600,7 +697,7 @@ def _scrape_rbi_playwright(hash_db: dict) -> list[dict]:
         )
         print(f"    Found {len(links)} PDF link(s)")
 
-        for link in links[:20]:
+        for link in links[:40]:
             href  = link.get("href", "").strip()
             title = link.get("text", "").strip()
             title = re.sub(r'\s*\d+\s*kb\s*$', '', title, flags=re.IGNORECASE).strip()
@@ -609,6 +706,10 @@ def _scrape_rbi_playwright(hash_db: dict) -> list[dict]:
             if not href or ".pdf" not in href.lower():
                 continue
             if _contains_any(title, _RBI_PRESS_SKIP):
+                continue
+            published_date = _extract_date_from_title(title, href)
+            parsed_date = _parse_any_date(published_date or title or href)
+            if not _is_latest_window(parsed_date):
                 continue
 
             if not _is_new_document(href, href.encode(), hash_db):
@@ -630,8 +731,10 @@ def _scrape_rbi_playwright(hash_db: dict) -> list[dict]:
                     "summary":   "",
                     "source":    "real_scrape",
                     "circular_no":    _extract_circular_no_from_title(title),
-                    "published_date": _extract_date_from_title(title, href),
+                    "published_date": parsed_date.strftime("%Y-%m-%d"),
                 })
+                if len(new_docs) >= MAX_DOCS_PER_REGULATOR:
+                    break
                 continue
 
             try:
@@ -660,13 +763,17 @@ def _scrape_rbi_playwright(hash_db: dict) -> list[dict]:
                     "summary":   "",
                     "source":    "real_scrape",
                     "circular_no":    _extract_circular_no_from_title(title),
-                    "published_date": _extract_date_from_title(title, href),
+                    "published_date": parsed_date.strftime("%Y-%m-%d"),
                 })
+                if len(new_docs) >= MAX_DOCS_PER_REGULATOR:
+                    break
 
             except Exception as e:
                 print(f"    Download failed for {filename}: {e}")
 
             time.sleep(1)
+            if len(new_docs) >= MAX_DOCS_PER_REGULATOR:
+                break
 
         browser.close()
 
@@ -788,7 +895,7 @@ def _scrape_rbi_circulars_playwright(hash_db: dict) -> list[dict]:
 
         print(f"    Found {len(links)} notification link(s)")
 
-        for link in links[:20]:
+        for link in links[:40]:
             href  = link.get("href", "").strip()
             title = link.get("text", "").strip()
             title = re.sub(r'\s*\d+\s*kb\s*$', '', title, flags=re.IGNORECASE).strip()
@@ -797,6 +904,10 @@ def _scrape_rbi_circulars_playwright(hash_db: dict) -> list[dict]:
             if not href or not _is_valid_circular_title(title):
                 continue
             if "draft directions" in title.lower():
+                continue
+            published_date = _extract_date_from_title(title, href)
+            parsed_date = _parse_any_date(published_date or title or href)
+            if not _is_latest_window(parsed_date):
                 continue
 
             if not _is_new_document(href, href.encode(), hash_db):
@@ -858,8 +969,10 @@ def _scrape_rbi_circulars_playwright(hash_db: dict) -> list[dict]:
                 "summary":   "",
                 "source":    "real_scrape",
                 "circular_no":    _extract_circular_no_from_title(title),
-                "published_date": _extract_date_from_title(title, href),
+                "published_date": parsed_date.strftime("%Y-%m-%d"),
             })
+            if len(new_docs) >= MAX_DOCS_PER_REGULATOR:
+                break
 
             time.sleep(1)
 
@@ -869,9 +982,146 @@ def _scrape_rbi_circulars_playwright(hash_db: dict) -> list[dict]:
     return new_docs
 
 
+def _scrape_gst_http(hash_db: dict) -> list[dict]:
+    """
+    CBIC CGST Circulars via static HTTP parsing.
+    This path avoids Playwright so live scraping still works when browser
+    binaries are missing.
+    """
+    print("\n  Scraping [GST] CBIC CGST Circulars via HTTP ...")
+    new_docs: list[dict] = []
+
+    rows: list[dict] = []
+    for url in [
+        "https://cbic-gst.gov.in/hindi/circulars.html",
+        "https://cbec-gst.gov.in/hindi/circulars.html",
+    ]:
+        try:
+            html = _http_get_html(url)
+            soup = BeautifulSoup(html, "html.parser")
+            extracted = []
+
+            for tr in soup.select("table tr"):
+                cells = tr.select("td")
+                if len(cells) < 5:
+                    continue
+
+                english_link = ""
+                for anchor in cells[1].select("a[href]"):
+                    href = _normalize_download_url(
+                        _absolute_url("https://cbic-gst.gov.in", anchor.get("href", ""))
+                    )
+                    href_l = href.lower()
+                    if ".pdf" in href_l or "cbic-gst" in href_l or "cbec-gst" in href_l:
+                        english_link = href
+                        break
+
+                circular_no = re.sub(r"\s+", " ", cells[0].get_text(" ", strip=True)).strip()
+                issue_date = re.sub(r"\s+", " ", cells[3].get_text(" ", strip=True)).strip()
+                subject = re.sub(r"\s+", " ", cells[4].get_text(" ", strip=True)).strip()
+                if english_link and circular_no and subject:
+                    extracted.append(
+                        {
+                            "href": english_link,
+                            "circular_no": circular_no,
+                            "date": issue_date,
+                            "subject": subject,
+                        }
+                    )
+
+            if extracted:
+                rows = extracted
+                print(f"    Found {len(rows)} row(s) from {url}")
+                break
+        except Exception as e:
+            print(f"    GST HTTP parse failed for {url}: {e}")
+
+    if not rows:
+        print("    No GST circular rows found via HTTP")
+        return []
+
+    recent_rows = []
+    for row in rows:
+        href = _normalize_download_url(row.get("href", "").strip())
+        circular_no = re.sub(r"\s+", " ", row.get("circular_no", "")).strip()
+        subject = re.sub(r"\s+", " ", row.get("subject", "")).strip()
+        issue_date = re.sub(r"\s+", " ", row.get("date", "")).strip()
+        title = f"{circular_no} | {subject}".strip(" |")[:160]
+
+        if _contains_any(title, _GST_SKIP) or not circular_no or not subject:
+            continue
+
+        parsed_date = _parse_any_date(issue_date) or _parse_any_date(_extract_date_from_title(title, href))
+        if not _is_latest_window(parsed_date):
+            continue
+
+        recent_rows.append(
+            {
+                "href": href,
+                "title": title,
+                "date": parsed_date.strftime("%Y-%m-%d"),
+                "circular_no": circular_no,
+                "parsed_date": parsed_date,
+            }
+        )
+
+    recent_rows.sort(key=lambda row: row["parsed_date"], reverse=True)
+    print(f"    Eligible latest GST circulars: {len(recent_rows)}")
+
+    for row in recent_rows[:MAX_DOCS_PER_REGULATOR]:
+        href = row["href"]
+        title = row["title"]
+        if not href:
+            continue
+        if not _is_new_document(href, href.encode(), hash_db):
+            print(f"    Already seen: {row.get('circular_no', '')}")
+            continue
+
+        stem = Path(href.split("?")[0]).stem[:60]
+        filename = f"gst_{stem}.pdf"
+        dest = PDF_DIR / filename
+        print(f"    New circular: {title[:70]}")
+
+        if dest.exists():
+            print(f"    Already on disk: {filename}")
+        else:
+            try:
+                resp = requests.get(href, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+                resp.raise_for_status()
+                pdf_bytes = resp.content
+                if not pdf_bytes.startswith(b"%PDF") or _is_html(pdf_bytes):
+                    print(f"    Not a valid PDF — skipping {filename}")
+                    continue
+                PDF_DIR.mkdir(parents=True, exist_ok=True)
+                dest.write_bytes(pdf_bytes)
+                print(f"    Saved: {filename} ({len(pdf_bytes) // 1024} KB)")
+            except Exception as e:
+                print(f"    Download failed for {filename}: {e}")
+                continue
+
+        new_docs.append(
+            {
+                "regulator": "GST",
+                "title": title,
+                "url": href,
+                "filename": filename,
+                "priority": _infer_priority(title),
+                "summary": "",
+                "source": "real_scrape",
+                "circular_no": row.get("circular_no", ""),
+                "published_date": row.get("date", ""),
+            }
+        )
+
+        time.sleep(1)
+
+    print(f"    GST HTTP: {len(new_docs)} new document(s) found")
+    return new_docs
+
+
 def _scrape_gst_playwright(hash_db: dict) -> list[dict]:
     """
-    CBIC CGST Circulars — https://cbic-gst.gov.in/gst-circulars.html
+    CBIC CGST Circulars — https://cbic-gst.gov.in/hindi/circulars.html
     Table structure: Circular No | English (PDF) | Hindi (PDF) | Date of issue | Subject
     Column 1 holds the English PDF "View" link.
     """
@@ -891,7 +1141,7 @@ def _scrape_gst_playwright(hash_db: dict) -> list[dict]:
         page = context.new_page()
         try:
             print("    Loading CBIC GST circulars page ...")
-            page.goto("https://cbic-gst.gov.in/gst-circulars.html", wait_until="networkidle", timeout=60000)
+            page.goto("https://cbic-gst.gov.in/hindi/circulars.html", wait_until="networkidle", timeout=60000)
             page.wait_for_timeout(3000)
         except Exception as e:
             print(f"    Page load failed: {e}"); browser.close(); return []
@@ -921,8 +1171,8 @@ def _scrape_gst_playwright(hash_db: dict) -> list[dict]:
 
         if not rows:
             for url in [
-                "https://cbic-gst.gov.in/gst-circulars.html",
                 "https://cbic-gst.gov.in/hindi/circulars.html",
+                "https://cbec-gst.gov.in/hindi/circulars.html",
             ]:
                 try:
                     html = _http_get_html(url)
@@ -957,7 +1207,6 @@ def _scrape_gst_playwright(hash_db: dict) -> list[dict]:
         print(f"    Found {len(rows)} circular(s)")
 
         recent_rows = []
-        current_year = datetime.now().year
         for row in rows:
             href  = _normalize_download_url(row.get("href", "").strip())
             circular_no = re.sub(r"\s+", " ", row.get("circular_no", "")).strip()
@@ -966,19 +1215,19 @@ def _scrape_gst_playwright(hash_db: dict) -> list[dict]:
             title = f"{circular_no} | {subject}".strip(" |")[:160]
             if _contains_any(title, _GST_SKIP) or not circular_no or not subject:
                 continue
-            parsed_date = _parse_indian_date(issue_date)
-            if parsed_date and parsed_date.year < current_year - 1:
-                continue
-            if not parsed_date and not _looks_recent(title, href):
+            parsed_date = _parse_any_date(issue_date) or _parse_any_date(_extract_date_from_title(title, href))
+            if not _is_latest_window(parsed_date):
                 continue
             recent_rows.append({
                 "href": href,
                 "title": title,
-                "date": issue_date,
+                "date": parsed_date.strftime("%Y-%m-%d"),
                 "circular_no": circular_no,
+                "parsed_date": parsed_date,
             })
 
-        for row in recent_rows[:15]:
+        recent_rows.sort(key=lambda row: row["parsed_date"], reverse=True)
+        for row in recent_rows[:MAX_DOCS_PER_REGULATOR]:
             href = row["href"]
             title = row["title"]
             if not href or not _is_new_document(href, href.encode(), hash_db):
@@ -1217,7 +1466,7 @@ def _scrape_incometax_playwright(hash_db: dict) -> list[dict]:
             _dump_debug_snapshot(page, "IncomeTax", "zero_links")
         print(f"    Found {len(links)} link(s)")
 
-        for link in links[:15]:
+        for link in links[:40]:
             href  = link.get("href", "").strip()
             title = re.sub(r'\s+', ' ', link.get("text", "")).strip()[:120]
             if href and ".pdf" not in href.lower() and "/latest-news/" in href.lower():
@@ -1243,7 +1492,9 @@ def _scrape_incometax_playwright(hash_db: dict) -> list[dict]:
             combined = f"{title} {link.get('link_text', '')}".lower()
             if not any(term in combined for term in ["circular", "notification", "cbdt", "order", "refer circular"]):
                 continue
-            if not _looks_recent(title, href):
+            published_date = _extract_date_from_title(title, href)
+            parsed_date = _parse_any_date(published_date or title or href)
+            if not _is_latest_window(parsed_date):
                 continue
             if not _is_new_document(href, href.encode(), hash_db):
                 print(f"    Already seen: {title[:60]}")
@@ -1267,8 +1518,10 @@ def _scrape_incometax_playwright(hash_db: dict) -> list[dict]:
                              "filename": filename, "priority": _infer_priority(title),
                              "summary": "", "source": "real_scrape",
                              "circular_no":    _extract_circular_no_from_title(title),
-                             "published_date": _extract_date_from_title(title, href)})
+                             "published_date": parsed_date.strftime("%Y-%m-%d")})
             time.sleep(1)
+            if len(new_docs) >= MAX_DOCS_PER_REGULATOR:
+                break
         browser.close()
 
     print(f"    IncomeTax: {len(new_docs)} new document(s) found")
@@ -1577,10 +1830,38 @@ def _simulate_new_documents(hash_db: dict, regulators: list[str] = None) -> list
     return new_docs
 
 
+def _run_scraper_safe(
+    label: str,
+    scraper,
+    hash_db: dict,
+    failures: list[str],
+    successful_runs: list[str],
+    progress_callback: Optional[Callable[[str], None]] = None,
+) -> list[dict]:
+    _emit_progress(progress_callback, f"{label} started...")
+    try:
+        docs = scraper(hash_db)
+        successful_runs.append(label)
+        _emit_progress(progress_callback, f"{label} complete: {len(docs)} new document(s)")
+        return docs
+    except Exception as exc:
+        message = f"{label} failed: {exc}"
+        print(f"  {message}")
+        failures.append(message)
+        _emit_progress(progress_callback, message)
+        log_event(
+            agent="MonitoringAgent",
+            action="scrape_failed",
+            details={"scraper": label, "error": str(exc)},
+        )
+        return []
+
+
 def run_monitoring_agent(
     simulate_mode: bool = False,
     regulators: list = None,
     auto_ingest: bool = True,
+    progress_callback: Optional[Callable[[str], None]] = None,
 ) -> list[dict]:
     print("\n" + "=" * 60)
     print("ComplianceGPT - Monitoring Agent")
@@ -1588,23 +1869,74 @@ def run_monitoring_agent(
     print(f"   Regulators: {regulators or 'ALL'}")
     print(f"   Time      : {datetime.now(timezone.utc).isoformat()}")
     print("=" * 60)
+    _emit_progress(
+        progress_callback,
+        f"Monitoring started ({'simulate' if simulate_mode else 'live'}) — regulators: {', '.join(regulators) if regulators else 'ALL'}",
+    )
 
     _clean_bad_downloads()
     hash_db  = _load_hash_db()
     new_docs = []
+    scrape_failures: list[str] = []
+    scrape_successes: list[str] = []
 
     if simulate_mode:
         print("\nRunning in SIMULATE mode")
+        _emit_progress(progress_callback, "Running in simulate mode")
         new_docs = _simulate_new_documents(hash_db, regulators)
     else:
         if not regulators or "RBI" in regulators:
-            new_docs.extend(_scrape_rbi_playwright(hash_db))
-            new_docs.extend(_scrape_rbi_circulars_playwright(hash_db))
+            new_docs.extend(
+                _run_scraper_safe(
+                    "RBI press releases",
+                    _scrape_rbi_playwright,
+                    hash_db,
+                    scrape_failures,
+                    scrape_successes,
+                    progress_callback,
+                )
+            )
+            new_docs.extend(
+                _run_scraper_safe(
+                    "RBI circular index",
+                    _scrape_rbi_circulars_playwright,
+                    hash_db,
+                    scrape_failures,
+                    scrape_successes,
+                    progress_callback,
+                )
+            )
 
         if not regulators or "GST" in regulators:
-            new_docs.extend(_scrape_gst_playwright(hash_db))
+            gst_docs = _run_scraper_safe(
+                "GST circulars (Playwright)",
+                _scrape_gst_playwright,
+                hash_db,
+                scrape_failures,
+                scrape_successes,
+                progress_callback,
+            )
+            if not gst_docs:
+                gst_docs = _run_scraper_safe(
+                    "GST circulars (HTTP fallback)",
+                    _scrape_gst_http,
+                    hash_db,
+                    scrape_failures,
+                    scrape_successes,
+                    progress_callback,
+                )
+            new_docs.extend(gst_docs)
         if not regulators or "IncomeTax" in regulators:
-            new_docs.extend(_scrape_incometax_playwright(hash_db))
+            new_docs.extend(
+                _run_scraper_safe(
+                    "IncomeTax circulars",
+                    _scrape_incometax_playwright,
+                    hash_db,
+                    scrape_failures,
+                    scrape_successes,
+                    progress_callback,
+                )
+            )
         # MCA scraper disabled — mca.gov.in is heavily JS-rendered and returns
         # 403/empty results consistently; causes long timeouts with no payoff.
         # if not regulators or "MCA" in regulators:
@@ -1616,24 +1948,14 @@ def run_monitoring_agent(
         # if not regulators or "EPFO" in regulators:
         #     new_docs.extend(_scrape_epfo_playwright(hash_db))
 
-        # Always merge simulated docs in every real-scrape run so all client types
-        # get coverage even when real scrapers return nothing new.
-        # Simulated docs bypass hash_db — they are demo fixtures, not real circulars,
-        # so they don't need deduplication tracking.
-        pool = SIMULATED_DOCUMENTS
-        if regulators:
-            pool = [d for d in pool if d["regulator"] in regulators]
-        sim_docs = [{**doc, "source": "simulated"} for doc in pool]
-        if sim_docs:
-            print(f"\n  +{len(sim_docs)} simulated document(s) added for demo coverage")
-            new_docs.extend(sim_docs)
-
-        if not new_docs:
-            print("\nNo new documents found (real or simulated).")
-            log_event(agent="MonitoringAgent", action="scrape_fallback", details={"reason": "no_new_docs"})
+        if scrape_failures and not new_docs and not scrape_successes:
+            failure_summary = "; ".join(scrape_failures[:3])
+            print(f"\nLive scrape failed: {failure_summary}")
+            raise RuntimeError(f"Live scrape failed: {failure_summary}")
 
     if not new_docs:
         print("\nNo new documents found.")
+        _emit_progress(progress_callback, "Monitoring complete: no new documents found")
         log_event(agent="MonitoringAgent", action="monitor_complete", details={"new_docs": 0})
         _save_hash_db(hash_db)
         return []
@@ -1646,7 +1968,8 @@ def run_monitoring_agent(
 
     if auto_ingest:
         print("\nDownloading & ingesting new documents...")
-        _ingest_new_docs(new_docs)
+        _emit_progress(progress_callback, f"Ingesting {len(new_docs)} document(s)...")
+        _ingest_new_docs(new_docs, progress_callback=progress_callback)
 
     _save_hash_db(hash_db)
     log_event(
@@ -1659,10 +1982,14 @@ def run_monitoring_agent(
         }
     )
     print(f"\nMonitoring complete - {len(new_docs)} new document(s) processed.")
+    _emit_progress(progress_callback, f"Monitoring complete: {len(new_docs)} new document(s) processed")
     return new_docs
 
 
-def _ingest_new_docs(new_docs: list) -> None:
+def _ingest_new_docs(
+    new_docs: list,
+    progress_callback: Optional[Callable[[str], None]] = None,
+) -> None:
     try:
         from core.ingest import ingest_pdf
     except ImportError:
@@ -1672,7 +1999,12 @@ def _ingest_new_docs(new_docs: list) -> None:
             print("  Could not import ingest_pdf — skipping")
             return
 
-    for doc in new_docs:
+    total_docs = len(new_docs)
+    for idx, doc in enumerate(new_docs, start=1):
+        _emit_progress(
+            progress_callback,
+            f"Ingesting {idx}/{total_docs}: [{doc.get('regulator', 'Unknown')}] {doc.get('title', 'Untitled')[:80]}",
+        )
         if not doc.get("filename"):
             print(f"\n  Skipping ingest (no PDF): {doc['title'][:70]}")
             continue
@@ -1683,6 +2015,8 @@ def _ingest_new_docs(new_docs: list) -> None:
             dest = PDF_DIR / doc["filename"].replace(".pdf", "_sim.txt")
             PDF_DIR.mkdir(parents=True, exist_ok=True)
             dest.write_text(_build_simulated_document_text(doc), encoding="utf-8")
+            # Persist the actual local artifact name so frontend can open it.
+            doc["filename"] = dest.name
             print(f"    Simulated document created: {dest.name}")
             try:
                 ingest_pdf(str(dest), force=True)

@@ -1,0 +1,961 @@
+{
+  "new_documents": [
+    {
+      "regulator": "RBI",
+      "title": "RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+      "url": "https://www.rbi.org.in/sample/fema_circular_march2026.pdf",
+      "filename": "rbi_fema_circular_march2026_sim.txt",
+      "circular_no": "RBI/2025-26/89",
+      "published_date": "2026-03-15",
+      "priority": "HIGH",
+      "summary": "FEMA reporting deadline for foreign transactions extended by 30 days.",
+      "source": "simulated"
+    },
+    {
+      "regulator": "GST",
+      "title": "GST Advisory: New Invoice Management System (IMS) - April 2026",
+      "url": "https://www.gst.gov.in/sample/ims_advisory_april2026.pdf",
+      "filename": "gst_ims_advisory_april2026_sim.txt",
+      "circular_no": "CBIC-20016/2/2024-GST",
+      "published_date": "2026-03-10",
+      "priority": "HIGH",
+      "summary": "Invoice Management System mandatory from April 1, 2026 for all GST filers.",
+      "source": "simulated"
+    },
+    {
+      "regulator": "IncomeTax",
+      "title": "CBDT Circular: TDS Rate Revision - FY 2026-27",
+      "url": "https://incometaxindia.gov.in/sample/tds_revision_2026.pdf",
+      "filename": "incometax_tds_revision_2026_sim.txt",
+      "circular_no": "Circular No. 5/2026",
+      "published_date": "2026-03-20",
+      "priority": "MEDIUM",
+      "summary": "TDS rates revised for Section 194C and 194J effective April 2026.",
+      "source": "simulated"
+    },
+    {
+      "regulator": "MCA",
+      "title": "MCA Notification: LLP Annual Filing Deadline - FY 2025-26",
+      "url": "https://www.mca.gov.in/sample/llp_filing_2025_26.pdf",
+      "filename": "mca_llp_filing_2025_26_sim.txt",
+      "circular_no": "G.S.R. 214(E)",
+      "published_date": "2026-03-01",
+      "priority": "MEDIUM",
+      "summary": "LLP Form 11 annual return due date extended to July 15, 2026.",
+      "source": "simulated"
+    },
+    {
+      "regulator": "SEBI",
+      "title": "SEBI Circular: ESG Disclosure Norms for Listed Companies",
+      "url": "https://www.sebi.gov.in/sample/esg_disclosure_2026.pdf",
+      "filename": "sebi_esg_disclosure_2026_sim.txt",
+      "circular_no": "SEBI/HO/CFD/CMD/CIR/2026/42",
+      "published_date": "2026-03-18",
+      "priority": "LOW",
+      "summary": "Enhanced ESG disclosures mandatory for top 1000 listed companies.",
+      "source": "simulated"
+    },
+    {
+      "regulator": "RBI",
+      "title": "RBI Directions: NBFC Governance and KYC Compliance - 2026",
+      "url": "https://www.rbi.org.in/sample/nbfc_governance_2026.pdf",
+      "filename": "rbi_nbfc_governance_2026_sim.txt",
+      "circular_no": "RBI/2025-26/94",
+      "published_date": "2026-03-12",
+      "priority": "HIGH",
+      "summary": "RBI issues updated directions on NBFC internal governance, KYC norms, and monthly return filing.",
+      "source": "simulated"
+    },
+    {
+      "regulator": "IncomeTax",
+      "title": "CBDT Circular: Presumptive Taxation under Section 44ADA for Professionals - FY 2026-27",
+      "url": "https://incometaxindia.gov.in/sample/presumptive_44ada_2026.pdf",
+      "filename": "incometax_presumptive_44ada_2026_sim.txt",
+      "circular_no": "Circular No. 3/2026",
+      "published_date": "2026-02-28",
+      "priority": "MEDIUM",
+      "summary": "CBDT clarifies applicability of presumptive taxation scheme under Section 44ADA for freelancers and professionals.",
+      "source": "simulated"
+    },
+    {
+      "regulator": "IncomeTax",
+      "title": "CBDT Circular: DTAA Relief for NRI Rental Income and TDS Refund Claims - FY 2026-27",
+      "url": "https://incometaxindia.gov.in/sample/nri_dtaa_rental_2026.pdf",
+      "filename": "incometax_nri_dtaa_rental_2026_sim.txt",
+      "circular_no": "Circular No. 4/2026",
+      "published_date": "2026-03-05",
+      "priority": "MEDIUM",
+      "summary": "CBDT guidance on DTAA benefit claims for NRI rental income and excess TDS deducted by tenants under Section 195.",
+      "source": "simulated"
+    },
+    {
+      "regulator": "IncomeTax",
+      "title": "CBDT Circular: Capital Gains on Debt Mutual Fund Redemptions - AY 2026-27",
+      "url": "https://incometaxindia.gov.in/sample/capital_gains_mf_2026.pdf",
+      "filename": "incometax_capital_gains_mf_2026_sim.txt",
+      "circular_no": "Circular No. 6/2026",
+      "published_date": "2026-03-22",
+      "priority": "MEDIUM",
+      "summary": "CBDT clarifies capital gains computation for debt mutual fund redemptions and STT applicability for AY 2026-27.",
+      "source": "simulated"
+    },
+    {
+      "regulator": "EPFO",
+      "title": "EPFO Circular: ECR Filing Mandate and Wage Ceiling Update - 2026",
+      "url": "https://www.epfindia.gov.in/sample/ecr_wage_ceiling_2026.pdf",
+      "filename": "epfo_ecr_wage_ceiling_2026_sim.txt",
+      "circular_no": "WSU/11(1)2019/ECR/14898",
+      "published_date": "2026-03-08",
+      "priority": "HIGH",
+      "summary": "EPFO mandates monthly ECR filing and updates PF wage ceiling for covered establishments with 20 or more employees.",
+      "source": "simulated"
+    }
+  ],
+  "match_results": [
+    {
+      "circular_title": "RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+      "regulator": "RBI",
+      "priority": "HIGH",
+      "summary": "FEMA reporting deadline for foreign transactions extended by 30 days.",
+      "url": "https://www.rbi.org.in/sample/fema_circular_march2026.pdf",
+      "circular_no": "RBI/2025-26/89",
+      "published_date": "2026-03-15",
+      "affected_clients": [
+        {
+          "client_id": "CLT-001",
+          "name": "Arvind Textiles Pvt. Ltd.",
+          "business_type": "Manufacturing & Export",
+          "contact_email": "arvind.shah@arvindtextiles.com",
+          "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+          "urgent": true
+        },
+        {
+          "client_id": "CLT-003",
+          "name": "Kapoor Tech Solutions Pvt. Ltd.",
+          "business_type": "IT & Software Export",
+          "contact_email": "ishandesale2004@gmail.com",
+          "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+          "urgent": true
+        },
+        {
+          "client_id": "CLT-004",
+          "name": "Sunrise Finserv NBFC Ltd.",
+          "business_type": "NBFC",
+          "contact_email": "sunita.rao@sunrisefinserv.com",
+          "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+          "urgent": true
+        },
+        {
+          "client_id": "CLT-009",
+          "name": "Priya Nair",
+          "business_type": "Unknown",
+          "contact_email": "priya.nair.dubai@gmail.com",
+          "reason": "FEMA/foreign exchange circular — applicable to entities with foreign transactions",
+          "urgent": true
+        }
+      ],
+      "match_count": 4,
+      "abstained": false,
+      "abstain_reason": null
+    },
+    {
+      "circular_title": "GST Advisory: New Invoice Management System (IMS) - April 2026",
+      "regulator": "GST",
+      "priority": "HIGH",
+      "summary": "Invoice Management System mandatory from April 1, 2026 for all GST filers.",
+      "url": "https://www.gst.gov.in/sample/ims_advisory_april2026.pdf",
+      "circular_no": "CBIC-20016/2/2024-GST",
+      "published_date": "2026-03-10",
+      "affected_clients": [
+        {
+          "client_id": "CLT-001",
+          "name": "Arvind Textiles Pvt. Ltd.",
+          "business_type": "Manufacturing & Export",
+          "contact_email": "arvind.shah@arvindtextiles.com",
+          "reason": "1 overdue/critical GST obligation(s): LUT_RENEWAL",
+          "urgent": true
+        },
+        {
+          "client_id": "CLT-002",
+          "name": "Spice Garden Restaurant",
+          "business_type": "Food & Beverage",
+          "contact_email": "suresh@spicegarden.in",
+          "reason": "Has GST_GSTR3B obligation (pending) under GST",
+          "urgent": true
+        },
+        {
+          "client_id": "CLT-003",
+          "name": "Kapoor Tech Solutions Pvt. Ltd.",
+          "business_type": "IT & Software Export",
+          "contact_email": "ishandesale2004@gmail.com",
+          "reason": "Has LUT_RENEWAL obligation (critical) under GST",
+          "urgent": true
+        },
+        {
+          "client_id": "CLT-004",
+          "name": "Sunrise Finserv NBFC Ltd.",
+          "business_type": "NBFC",
+          "contact_email": "sunita.rao@sunrisefinserv.com",
+          "reason": "GST registered entity",
+          "urgent": true
+        },
+        {
+          "client_id": "CLT-006",
+          "name": "Mehta & Associates LLP",
+          "business_type": "Professional Services",
+          "contact_email": "partners@mehtaassociates.co.in",
+          "reason": "Has GST_GSTR3B obligation (pending) under GST",
+          "urgent": true
+        },
+        {
+          "client_id": "CLT-007",
+          "name": "NovaPharma Distributors Pvt. Ltd.",
+          "business_type": "Pharmaceutical Distribution",
+          "contact_email": "accounts@novapharma.co.in",
+          "reason": "Has GST_GSTR3B obligation (pending) under GST",
+          "urgent": true
+        }
+      ],
+      "match_count": 6,
+      "abstained": false,
+      "abstain_reason": null
+    },
+    {
+      "circular_title": "CBDT Circular: TDS Rate Revision - FY 2026-27",
+      "regulator": "IncomeTax",
+      "priority": "MEDIUM",
+      "summary": "TDS rates revised for Section 194C and 194J effective April 2026.",
+      "url": "https://incometaxindia.gov.in/sample/tds_revision_2026.pdf",
+      "circular_no": "Circular No. 5/2026",
+      "published_date": "2026-03-20",
+      "affected_clients": [
+        {
+          "client_id": "CLT-001",
+          "name": "Arvind Textiles Pvt. Ltd.",
+          "business_type": "Manufacturing & Export",
+          "contact_email": "arvind.shah@arvindtextiles.com",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-003",
+          "name": "Kapoor Tech Solutions Pvt. Ltd.",
+          "business_type": "IT & Software Export",
+          "contact_email": "ishandesale2004@gmail.com",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-004",
+          "name": "Sunrise Finserv NBFC Ltd.",
+          "business_type": "NBFC",
+          "contact_email": "sunita.rao@sunrisefinserv.com",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-007",
+          "name": "NovaPharma Distributors Pvt. Ltd.",
+          "business_type": "Pharmaceutical Distribution",
+          "contact_email": "accounts@novapharma.co.in",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-008",
+          "name": "Rajesh Kumar",
+          "business_type": "Unknown",
+          "contact_email": "rajesh.kumar@gmail.com",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-009",
+          "name": "Priya Nair",
+          "business_type": "Unknown",
+          "contact_email": "priya.nair.dubai@gmail.com",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-010",
+          "name": "Vikram Desai",
+          "business_type": "Unknown",
+          "contact_email": "vikram.desai.ca@gmail.com",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        }
+      ],
+      "match_count": 7,
+      "abstained": false,
+      "abstain_reason": null
+    },
+    {
+      "circular_title": "MCA Notification: LLP Annual Filing Deadline - FY 2025-26",
+      "regulator": "MCA",
+      "priority": "MEDIUM",
+      "summary": "LLP Form 11 annual return due date extended to July 15, 2026.",
+      "url": "https://www.mca.gov.in/sample/llp_filing_2025_26.pdf",
+      "circular_no": "G.S.R. 214(E)",
+      "published_date": "2026-03-01",
+      "affected_clients": [],
+      "match_count": 0,
+      "abstained": true,
+      "abstain_reason": "No clients in this portfolio are affected by this MCA circular. Either no client has the required regulatory tags/obligations, or the circular is out of scope for the current client set."
+    },
+    {
+      "circular_title": "SEBI Circular: ESG Disclosure Norms for Listed Companies",
+      "regulator": "SEBI",
+      "priority": "LOW",
+      "summary": "Enhanced ESG disclosures mandatory for top 1000 listed companies.",
+      "url": "https://www.sebi.gov.in/sample/esg_disclosure_2026.pdf",
+      "circular_no": "SEBI/HO/CFD/CMD/CIR/2026/42",
+      "published_date": "2026-03-18",
+      "affected_clients": [],
+      "match_count": 0,
+      "abstained": true,
+      "abstain_reason": "No clients in this portfolio are affected by this SEBI circular. Either no client has the required regulatory tags/obligations, or the circular is out of scope for the current client set."
+    },
+    {
+      "circular_title": "RBI Directions: NBFC Governance and KYC Compliance - 2026",
+      "regulator": "RBI",
+      "priority": "HIGH",
+      "summary": "RBI issues updated directions on NBFC internal governance, KYC norms, and monthly return filing.",
+      "url": "https://www.rbi.org.in/sample/nbfc_governance_2026.pdf",
+      "circular_no": "RBI/2025-26/94",
+      "published_date": "2026-03-12",
+      "affected_clients": [
+        {
+          "client_id": "CLT-004",
+          "name": "Sunrise Finserv NBFC Ltd.",
+          "business_type": "NBFC",
+          "contact_email": "sunita.rao@sunrisefinserv.com",
+          "reason": "NBFC/microfinance circular — applicable to NBFC-type clients",
+          "urgent": true
+        }
+      ],
+      "match_count": 1,
+      "abstained": false,
+      "abstain_reason": null
+    },
+    {
+      "circular_title": "CBDT Circular: Presumptive Taxation under Section 44ADA for Professionals - FY 2026-27",
+      "regulator": "IncomeTax",
+      "priority": "MEDIUM",
+      "summary": "CBDT clarifies applicability of presumptive taxation scheme under Section 44ADA for freelancers and professionals.",
+      "url": "https://incometaxindia.gov.in/sample/presumptive_44ada_2026.pdf",
+      "circular_no": "Circular No. 3/2026",
+      "published_date": "2026-02-28",
+      "affected_clients": [
+        {
+          "client_id": "CLT-001",
+          "name": "Arvind Textiles Pvt. Ltd.",
+          "business_type": "Manufacturing & Export",
+          "contact_email": "arvind.shah@arvindtextiles.com",
+          "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-003",
+          "name": "Kapoor Tech Solutions Pvt. Ltd.",
+          "business_type": "IT & Software Export",
+          "contact_email": "ishandesale2004@gmail.com",
+          "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-004",
+          "name": "Sunrise Finserv NBFC Ltd.",
+          "business_type": "NBFC",
+          "contact_email": "sunita.rao@sunrisefinserv.com",
+          "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-007",
+          "name": "NovaPharma Distributors Pvt. Ltd.",
+          "business_type": "Pharmaceutical Distribution",
+          "contact_email": "accounts@novapharma.co.in",
+          "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-008",
+          "name": "Rajesh Kumar",
+          "business_type": "Unknown",
+          "contact_email": "rajesh.kumar@gmail.com",
+          "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-009",
+          "name": "Priya Nair",
+          "business_type": "Unknown",
+          "contact_email": "priya.nair.dubai@gmail.com",
+          "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-010",
+          "name": "Vikram Desai",
+          "business_type": "Unknown",
+          "contact_email": "vikram.desai.ca@gmail.com",
+          "reason": "Presumptive taxation circular — applicable to freelancers/small business under 44ADA/44AD",
+          "urgent": false
+        }
+      ],
+      "match_count": 7,
+      "abstained": false,
+      "abstain_reason": null
+    },
+    {
+      "circular_title": "CBDT Circular: DTAA Relief for NRI Rental Income and TDS Refund Claims - FY 2026-27",
+      "regulator": "IncomeTax",
+      "priority": "MEDIUM",
+      "summary": "CBDT guidance on DTAA benefit claims for NRI rental income and excess TDS deducted by tenants under Section 195.",
+      "url": "https://incometaxindia.gov.in/sample/nri_dtaa_rental_2026.pdf",
+      "circular_no": "Circular No. 4/2026",
+      "published_date": "2026-03-05",
+      "affected_clients": [
+        {
+          "client_id": "CLT-001",
+          "name": "Arvind Textiles Pvt. Ltd.",
+          "business_type": "Manufacturing & Export",
+          "contact_email": "arvind.shah@arvindtextiles.com",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-003",
+          "name": "Kapoor Tech Solutions Pvt. Ltd.",
+          "business_type": "IT & Software Export",
+          "contact_email": "ishandesale2004@gmail.com",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-004",
+          "name": "Sunrise Finserv NBFC Ltd.",
+          "business_type": "NBFC",
+          "contact_email": "sunita.rao@sunrisefinserv.com",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-007",
+          "name": "NovaPharma Distributors Pvt. Ltd.",
+          "business_type": "Pharmaceutical Distribution",
+          "contact_email": "accounts@novapharma.co.in",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-008",
+          "name": "Rajesh Kumar",
+          "business_type": "Unknown",
+          "contact_email": "rajesh.kumar@gmail.com",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-009",
+          "name": "Priya Nair",
+          "business_type": "Unknown",
+          "contact_email": "priya.nair.dubai@gmail.com",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-010",
+          "name": "Vikram Desai",
+          "business_type": "Unknown",
+          "contact_email": "vikram.desai.ca@gmail.com",
+          "reason": "TDS/TCS circular — applicable to TAN holders who are deductors (companies, LLPs, firms)",
+          "urgent": false
+        }
+      ],
+      "match_count": 7,
+      "abstained": false,
+      "abstain_reason": null
+    },
+    {
+      "circular_title": "CBDT Circular: Capital Gains on Debt Mutual Fund Redemptions - AY 2026-27",
+      "regulator": "IncomeTax",
+      "priority": "MEDIUM",
+      "summary": "CBDT clarifies capital gains computation for debt mutual fund redemptions and STT applicability for AY 2026-27.",
+      "url": "https://incometaxindia.gov.in/sample/capital_gains_mf_2026.pdf",
+      "circular_no": "Circular No. 6/2026",
+      "published_date": "2026-03-22",
+      "affected_clients": [
+        {
+          "client_id": "CLT-001",
+          "name": "Arvind Textiles Pvt. Ltd.",
+          "business_type": "Manufacturing & Export",
+          "contact_email": "arvind.shah@arvindtextiles.com",
+          "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-003",
+          "name": "Kapoor Tech Solutions Pvt. Ltd.",
+          "business_type": "IT & Software Export",
+          "contact_email": "ishandesale2004@gmail.com",
+          "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-004",
+          "name": "Sunrise Finserv NBFC Ltd.",
+          "business_type": "NBFC",
+          "contact_email": "sunita.rao@sunrisefinserv.com",
+          "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-007",
+          "name": "NovaPharma Distributors Pvt. Ltd.",
+          "business_type": "Pharmaceutical Distribution",
+          "contact_email": "accounts@novapharma.co.in",
+          "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-008",
+          "name": "Rajesh Kumar",
+          "business_type": "Unknown",
+          "contact_email": "rajesh.kumar@gmail.com",
+          "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-009",
+          "name": "Priya Nair",
+          "business_type": "Unknown",
+          "contact_email": "priya.nair.dubai@gmail.com",
+          "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+          "urgent": false
+        },
+        {
+          "client_id": "CLT-010",
+          "name": "Vikram Desai",
+          "business_type": "Unknown",
+          "contact_email": "vikram.desai.ca@gmail.com",
+          "reason": "Capital gains circular — applicable to clients with capital gain transactions",
+          "urgent": false
+        }
+      ],
+      "match_count": 7,
+      "abstained": false,
+      "abstain_reason": null
+    },
+    {
+      "circular_title": "EPFO Circular: ECR Filing Mandate and Wage Ceiling Update - 2026",
+      "regulator": "EPFO",
+      "priority": "HIGH",
+      "summary": "EPFO mandates monthly ECR filing and updates PF wage ceiling for covered establishments with 20 or more employees.",
+      "url": "https://www.epfindia.gov.in/sample/ecr_wage_ceiling_2026.pdf",
+      "circular_no": "WSU/11(1)2019/ECR/14898",
+      "published_date": "2026-03-08",
+      "affected_clients": [
+        {
+          "client_id": "CLT-002",
+          "name": "Spice Garden Restaurant",
+          "business_type": "Food & Beverage",
+          "contact_email": "suresh@spicegarden.in",
+          "reason": "EPFO/PF circular — applicable to EPFO-registered employers",
+          "urgent": true
+        },
+        {
+          "client_id": "CLT-007",
+          "name": "NovaPharma Distributors Pvt. Ltd.",
+          "business_type": "Pharmaceutical Distribution",
+          "contact_email": "accounts@novapharma.co.in",
+          "reason": "EPFO/PF circular — applicable to EPFO-registered employers",
+          "urgent": true
+        }
+      ],
+      "match_count": 2,
+      "abstained": false,
+      "abstain_reason": null
+    }
+  ],
+  "drafts": [
+    {
+      "draft_id": "CLT-003_RBI_RBI_CIRCULAR_FEMA_COMPLIANCE_DEADLINE_0821",
+      "client_id": "CLT-003",
+      "client_name": "Kapoor Tech Solutions Pvt. Ltd.",
+      "client_email": "ishandesale2004@gmail.com",
+      "client_contact": "Kapoor Tech Solutions Pvt. Ltd.",
+      "circular_id": "RBI_RBI_CIRCULAR_FEMA_COMPLIANCE_DEADLINE_0821",
+      "circular_title": "RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+      "circular_no": "",
+      "circular_url": "https://www.rbi.org.in/sample/fema_circular_march2026.pdf",
+      "circular_published": "",
+      "regulator": "RBI",
+      "priority": "HIGH",
+      "circular_summary": "FEMA reporting deadline for foreign transactions extended by 30 days.",
+      "actions": [
+        "Submit SOFTEX form for each export invoice to the bank within 30 days — required as Kapoor Tech Solutions Pvt. Ltd. is a software exporter under FEMA",
+        "Reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before closure of the reporting cycle",
+        "Obtain corrected declarations where transaction values, invoice references, or remittance details do not match prior submissions"
+      ],
+      "deadline": "2026-04-28",
+      "risk_level": "MEDIUM",
+      "penalty_if_missed": "Not specified in circular",
+      "applicable_sections": [
+        "Section 7 of FEMA Act, 1999"
+      ],
+      "email_subject": "Compliance Advisory: RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+      "email_body": "{\n  \"subject\": \"FEMA Compliance Advisory for Kapoor Tech Solutions Pvt. Ltd.\",\n  \"body\": \"Dear Mr. Kapoor,\n\nAs a software exporter under the Foreign Exchange Management Act (FEMA), Kapoor Tech Solutions Pvt. Ltd. is required to comply with the RBI Circular: FEMA Compliance Deadline Extended - March 2026. This circular mandates specific actions to ensure accurate reporting and compliance with FEMA regulations.\n\nTo ensure compliance, we recommend the following actions:\n\n1. Submit SOFTEX form for each export invoice to the bank within 30 days of the invoice date.\n2. Reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before the closure of the reporting cycle.\n3. Obtain corrected declarations where transaction values, invoice references, or remittance details do not match prior submissions.\n\nThe deadline for completing these actions is **28th April 2026**. Please note that failure to comply may result in penalties, although the specific penalty is not specified in the circular.\n\nIf you require any assistance or clarification on these requirements, please do not hesitate to contact us.\n\nBest regards,\nCompliance Advisory Team\n\nSource Reference:\nCircular Title : RBI Circular: FEMA Compliance Deadline Extended - March 2026\nRegulator      : RBI\nCircular No.   : Refer official portal\nPublished Date : Recent\nSource URL     : https://www.rbi.org.in/sample/fema_circular_march2026.pdf\n\"",
+      "internal_notes": "CA notes — deadline was estimated, cross-checks needed for related party transactions with Kapoor Tech Inc., Delaware USA",
+      "source_chunks": [
+        {
+          "source": "rbi_fema_circular_march2026_sim.txt",
+          "page": 0,
+          "score": 1.0
+        },
+        {
+          "source": "rbi_fema_circular_march2026_sim.txt",
+          "page": 0,
+          "score": 0.9997
+        },
+        {
+          "source": "rbi_fema_circular_march2026_sim.txt",
+          "page": 0,
+          "score": 0.8625
+        },
+        {
+          "source": "rbi_PR2334C6DF04B76F9C4C9A8ACD37595D481D53.pdf",
+          "page": 0,
+          "score": 0.3265
+        },
+        {
+          "source": "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf",
+          "page": 0,
+          "score": 0.2705
+        },
+        {
+          "source": "rbi_PR23359EA2697B25D341C0B9832F32339C2FC4.pdf",
+          "page": 0,
+          "score": 0.1512
+        },
+        {
+          "source": "rbi_PR23369981C252827845159985FD87AB81285A.pdf",
+          "page": 0,
+          "score": 0.0762
+        },
+        {
+          "source": "rbi_nbfc_governance_2026_sim.txt",
+          "page": 0,
+          "score": 0.0708
+        }
+      ],
+      "source_chunk_ids": [
+        "rbi_fema_circular_march2026_sim.txt_p0",
+        "rbi_fema_circular_march2026_sim.txt_p0",
+        "rbi_fema_circular_march2026_sim.txt_p0",
+        "rbi_PR2334C6DF04B76F9C4C9A8ACD37595D481D53.pdf_p0",
+        "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf_p0",
+        "rbi_PR23359EA2697B25D341C0B9832F32339C2FC4.pdf_p0",
+        "rbi_PR23369981C252827845159985FD87AB81285A.pdf_p0",
+        "rbi_nbfc_governance_2026_sim.txt_p0"
+      ],
+      "rag_confidence": "high",
+      "low_confidence_flag": false,
+      "rag_top_score": 9.9527,
+      "model_used": "llama-3.1-8b-instant",
+      "generated_at": "2026-03-29T09:29:48.193414+00:00",
+      "version": "v1",
+      "status": "pending_review",
+      "review_status": "pending",
+      "delivery_status": "not_sent"
+    },
+    {
+      "draft_id": "CLT-001_RBI_RBI_CIRCULAR_FEMA_COMPLIANCE_DEADLINE_0821",
+      "client_id": "CLT-001",
+      "client_name": "Arvind Textiles Pvt. Ltd.",
+      "client_email": "arvind.shah@arvindtextiles.com",
+      "client_contact": "Arvind Textiles Pvt. Ltd.",
+      "circular_id": "RBI_RBI_CIRCULAR_FEMA_COMPLIANCE_DEADLINE_0821",
+      "circular_title": "RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+      "circular_no": "",
+      "circular_url": "https://www.rbi.org.in/sample/fema_circular_march2026.pdf",
+      "circular_published": "",
+      "regulator": "RBI",
+      "priority": "HIGH",
+      "circular_summary": "FEMA reporting deadline for foreign transactions extended by 30 days.",
+      "actions": [
+        "Submit SOFTEX form for each export invoice to the bank within 30 days — required as Arvind Textiles is a goods exporter under FEMA",
+        "Reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before closure of the reporting cycle",
+        "Obtain corrected declarations where transaction values, invoice references, or remittance details do not match prior submissions"
+      ],
+      "deadline": "2026-04-28",
+      "risk_level": "MEDIUM",
+      "penalty_if_missed": "Not specified in circular",
+      "applicable_sections": [
+        "SOFTEX declaration",
+        "FEMA reporting"
+      ],
+      "email_subject": "Compliance Advisory: RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+      "email_body": "{\n  \"subject\": \"FEMA Compliance Advisory - Arvind Textiles Pvt. Ltd.\",\n  \"body\": \"Dear Arvind Textiles Pvt. Ltd.,\n\nAs a goods exporter under the Foreign Exchange Management Act (FEMA), Arvind Textiles Pvt. Ltd. is required to comply with the RBI's FEMA regulations. This advisory is to inform you of the recent extension of the compliance deadline.\n\nTo ensure compliance, we recommend the following actions:\n\n1. Submit SOFTEX form for each export invoice to the bank within 30 days of the export transaction.\n2. Reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before the closure of the reporting cycle.\n3. Obtain corrected declarations where transaction values, invoice references, or remittance details do not match prior submissions.\n\nThe deadline for completing these actions is **28th April 2026**. Please note that non-compliance may attract penalties, although the risk level is classified as medium.\n\nIf you require any assistance or clarification on the above, please do not hesitate to contact us.\n\nBest regards,\nCompliance Advisory Team\n\nSource Reference:\nCircular Title : RBI Circular: FEMA Compliance Deadline Extended - March 2026\nRegulator      : RBI\nCircular No.   : Refer official portal\nPublished Date : Recent\nSource URL     : https://www.rbi.org.in/sample/fema_circular_march2026.pdf\"\n}",
+      "internal_notes": "CA notes — deadline was estimated, cross-checks needed for related party transactions with Arvind Global FZE (UAE)",
+      "source_chunks": [
+        {
+          "source": "rbi_fema_circular_march2026_sim.txt",
+          "page": 0,
+          "score": 1.0
+        },
+        {
+          "source": "rbi_fema_circular_march2026_sim.txt",
+          "page": 0,
+          "score": 0.9997
+        },
+        {
+          "source": "rbi_fema_circular_march2026_sim.txt",
+          "page": 0,
+          "score": 0.8625
+        },
+        {
+          "source": "rbi_PR2334C6DF04B76F9C4C9A8ACD37595D481D53.pdf",
+          "page": 0,
+          "score": 0.3265
+        },
+        {
+          "source": "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf",
+          "page": 0,
+          "score": 0.2705
+        },
+        {
+          "source": "rbi_PR23359EA2697B25D341C0B9832F32339C2FC4.pdf",
+          "page": 0,
+          "score": 0.1512
+        },
+        {
+          "source": "rbi_PR23369981C252827845159985FD87AB81285A.pdf",
+          "page": 0,
+          "score": 0.0762
+        },
+        {
+          "source": "rbi_nbfc_governance_2026_sim.txt",
+          "page": 0,
+          "score": 0.0708
+        }
+      ],
+      "source_chunk_ids": [
+        "rbi_fema_circular_march2026_sim.txt_p0",
+        "rbi_fema_circular_march2026_sim.txt_p0",
+        "rbi_fema_circular_march2026_sim.txt_p0",
+        "rbi_PR2334C6DF04B76F9C4C9A8ACD37595D481D53.pdf_p0",
+        "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf_p0",
+        "rbi_PR23359EA2697B25D341C0B9832F32339C2FC4.pdf_p0",
+        "rbi_PR23369981C252827845159985FD87AB81285A.pdf_p0",
+        "rbi_nbfc_governance_2026_sim.txt_p0"
+      ],
+      "rag_confidence": "high",
+      "low_confidence_flag": false,
+      "rag_top_score": 9.9527,
+      "model_used": "llama-3.1-8b-instant",
+      "generated_at": "2026-03-29T09:30:13.553785+00:00",
+      "version": "v1",
+      "status": "pending_review",
+      "review_status": "pending",
+      "delivery_status": "not_sent"
+    },
+    {
+      "draft_id": "CLT-004_RBI_RBI_CIRCULAR_FEMA_COMPLIANCE_DEADLINE_0821",
+      "client_id": "CLT-004",
+      "client_name": "Sunrise Finserv NBFC Ltd.",
+      "client_email": "sunita.rao@sunrisefinserv.com",
+      "client_contact": "Sunrise Finserv NBFC Ltd.",
+      "circular_id": "RBI_RBI_CIRCULAR_FEMA_COMPLIANCE_DEADLINE_0821",
+      "circular_title": "RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+      "circular_no": "",
+      "circular_url": "https://www.rbi.org.in/sample/fema_circular_march2026.pdf",
+      "circular_published": "",
+      "regulator": "RBI",
+      "priority": "HIGH",
+      "circular_summary": "FEMA reporting deadline for foreign transactions extended by 30 days.",
+      "actions": [
+        "Submit SOFTEX form for each export invoice to the bank within 30 days — required as Sunrise Finserv NBFC Ltd. is a registered NBFC",
+        "File RBI monthly return (NBS-9) by the 7th of each month — Sunrise Finserv NBFC Ltd. is a Public Limited Company and RBI-registered NBFC",
+        "Update KYC records for all borrowers and depositors at the prescribed periodicity — Sunrise Finserv NBFC Ltd. is a Public Limited Company and RBI-registered NBFC"
+      ],
+      "deadline": "2026-04-28",
+      "risk_level": "MEDIUM",
+      "penalty_if_missed": "Not specified in circular",
+      "applicable_sections": [
+        "Section 271(1)(c)"
+      ],
+      "email_subject": "Compliance Advisory: RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+      "email_body": "{\n  \"subject\": \"FEMA Compliance Advisory for Sunrise Finserv NBFC Ltd.\",\n  \"body\": \"Dear Mr. [Last Name],\n\nAs a registered Non-Banking Financial Company (NBFC) and a Public Limited Company, Sunrise Finserv NBFC Ltd. is required to comply with the RBI's FEMA regulations. This advisory is to bring to your attention the necessary actions required to be taken by your organization.\n\nPlease find below the required actions to be taken by your organization:\n\n1. Submit SOFTEX form for each export invoice to the bank within 30 days.\n2. File RBI monthly return (NBS-9) by the 7th of each month.\n3. Update KYC records for all borrowers and depositors at the prescribed periodicity.\n\nThe deadline for completing these actions is **28th April 2026**. Please note that failure to comply may result in regulatory penalties.\n\nIf you require any assistance or clarification on these requirements, please do not hesitate to contact us.\n\nBest regards,\nCompliance Advisory Team\n\nSource Reference:\nCircular Title : RBI Circular: FEMA Compliance Deadline Extended - March 2026\nRegulator      : RBI\nCircular No.   : Refer official portal\nPublished Date : Recent\nSource URL     : https://www.rbi.org.in/sample/fema_circular_march2026.pdf\n\" }",
+      "internal_notes": "CA notes — deadline was estimated, cross-checks needed for RBI compliance action — license risk",
+      "source_chunks": [
+        {
+          "source": "rbi_fema_circular_march2026_sim.txt",
+          "page": 0,
+          "score": 0.9999
+        },
+        {
+          "source": "rbi_fema_circular_march2026_sim.txt",
+          "page": 0,
+          "score": 0.9998
+        },
+        {
+          "source": "rbi_nbfc_governance_2026_sim.txt",
+          "page": 0,
+          "score": 0.8204
+        },
+        {
+          "source": "rbi_nbfc_governance_2026_sim.txt",
+          "page": 0,
+          "score": 0.2477
+        },
+        {
+          "source": "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf",
+          "page": 0,
+          "score": 0.1747
+        },
+        {
+          "source": "rbi_PR23359EA2697B25D341C0B9832F32339C2FC4.pdf",
+          "page": 0,
+          "score": 0.1139
+        },
+        {
+          "source": "rbi_PR23369981C252827845159985FD87AB81285A.pdf",
+          "page": 0,
+          "score": 0.037
+        }
+      ],
+      "source_chunk_ids": [
+        "rbi_fema_circular_march2026_sim.txt_p0",
+        "rbi_fema_circular_march2026_sim.txt_p0",
+        "rbi_nbfc_governance_2026_sim.txt_p0",
+        "rbi_nbfc_governance_2026_sim.txt_p0",
+        "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf_p0",
+        "rbi_PR23359EA2697B25D341C0B9832F32339C2FC4.pdf_p0",
+        "rbi_PR23369981C252827845159985FD87AB81285A.pdf_p0"
+      ],
+      "rag_confidence": "high",
+      "low_confidence_flag": false,
+      "rag_top_score": 9.2517,
+      "model_used": "llama-3.1-8b-instant",
+      "generated_at": "2026-03-29T09:30:57.489520+00:00",
+      "version": "v1",
+      "status": "pending_review",
+      "review_status": "pending",
+      "delivery_status": "not_sent"
+    },
+    {
+      "draft_id": "CLT-009_RBI_RBI_CIRCULAR_FEMA_COMPLIANCE_DEADLINE_0821",
+      "client_id": "CLT-009",
+      "client_name": "Priya Nair",
+      "client_email": "priya.nair.dubai@gmail.com",
+      "client_contact": "Priya Nair",
+      "circular_id": "RBI_RBI_CIRCULAR_FEMA_COMPLIANCE_DEADLINE_0821",
+      "circular_title": "RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+      "circular_no": "",
+      "circular_url": "https://www.rbi.org.in/sample/fema_circular_march2026.pdf",
+      "circular_published": "",
+      "regulator": "RBI",
+      "priority": "HIGH",
+      "circular_summary": "FEMA reporting deadline for foreign transactions extended by 30 days.",
+      "actions": [
+        "Submit SOFTEX form for each export invoice to the bank within 30 days — required as Priya Nair is a NRI resident in Dubai since 2019 and has rental income ₹2.4L from Worli flat",
+        "Reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before closure of the reporting cycle"
+      ],
+      "deadline": "2026-04-28",
+      "risk_level": "MEDIUM",
+      "penalty_if_missed": "Not specified in circular",
+      "applicable_sections": [
+        "SOFTEX reporting timelines",
+        "FEMA reporting requirements"
+      ],
+      "email_subject": "Compliance Advisory: RBI Circular: FEMA Compliance Deadline Extended - March 2026",
+      "email_body": "{\n  \"subject\": \"FEMA Compliance Advisory: RBI Circular - Deadline Extension\",\n  \"body\": \"Dear Priya Nair,\n\nWe have been made aware that you are a Non-Resident Indian (NRI) resident in Dubai since 2019 and have rental income of ₹2.4L from a flat in Worli. As such, you are required to comply with the RBI's FEMA regulations.\n\nTo ensure compliance, we recommend the following actions:\n\n1. Submit SOFTEX form for each export invoice to the bank within 30 days of the export transaction.\n2. Reconcile shipping documents, invoices, bank realisation details, and SOFTEX declarations before the closure of the reporting cycle.\n\nThe deadline for completing these actions is **28th April 2026**. Please note that failure to comply may result in penalties, although the specific penalty amount is not specified in the circular.\n\nIf you require any assistance with these actions or have any questions, please do not hesitate to contact us.\n\nBest regards,\nCompliance Advisory Team\n\nSource Reference:\nCircular Title : RBI Circular: FEMA Compliance Deadline Extended - March 2026\nRegulator      : RBI\nSource URL     : https://www.rbi.org.in/sample/fema_circular_march2026.pdf\n\"",
+      "internal_notes": "CA notes — deadline was estimated, cross-checks needed for client-specific considerations",
+      "source_chunks": [
+        {
+          "source": "rbi_fema_circular_march2026_sim.txt",
+          "page": 0,
+          "score": 1.0
+        },
+        {
+          "source": "rbi_fema_circular_march2026_sim.txt",
+          "page": 0,
+          "score": 0.9999
+        },
+        {
+          "source": "rbi_PR2334C6DF04B76F9C4C9A8ACD37595D481D53.pdf",
+          "page": 0,
+          "score": 0.3562
+        },
+        {
+          "source": "rbi_PR2338129089C31EDF4712AF5AB69437F5BE64.pdf",
+          "page": 0,
+          "score": 0.3274
+        },
+        {
+          "source": "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf",
+          "page": 0,
+          "score": 0.3045
+        },
+        {
+          "source": "rbi_nbfc_governance_2026_sim.txt",
+          "page": 0,
+          "score": 0.2459
+        },
+        {
+          "source": "rbi_PR23359EA2697B25D341C0B9832F32339C2FC4.pdf",
+          "page": 0,
+          "score": 0.2055
+        },
+        {
+          "source": "rbi_PR2337E8FAC42DB6494A4D9C4F090E195252CF.pdf",
+          "page": 0,
+          "score": 0.1372
+        },
+        {
+          "source": "rbi_PR23369981C252827845159985FD87AB81285A.pdf",
+          "page": 0,
+          "score": 0.0606
+        },
+        {
+          "source": "rbi_nbfc_governance_2026_sim.txt",
+          "page": 0,
+          "score": 0.0357
+        }
+      ],
+      "source_chunk_ids": [
+        "rbi_fema_circular_march2026_sim.txt_p0",
+        "rbi_fema_circular_march2026_sim.txt_p0",
+        "rbi_PR2334C6DF04B76F9C4C9A8ACD37595D481D53.pdf_p0",
+        "rbi_PR2338129089C31EDF4712AF5AB69437F5BE64.pdf_p0",
+        "rbi_PR230531441F92E87A49F6B7C74E2DD7EF9D63.pdf_p0",
+        "rbi_nbfc_governance_2026_sim.txt_p0",
+        "rbi_PR23359EA2697B25D341C0B9832F32339C2FC4.pdf_p0",
+        "rbi_PR2337E8FAC42DB6494A4D9C4F090E195252CF.pdf_p0",
+        "rbi_PR23369981C252827845159985FD87AB81285A.pdf_p0",
+        "rbi_nbfc_governance_2026_sim.txt_p0"
+      ],
+      "rag_confidence": "high",
+      "low_confidence_flag": false,
+      "rag_top_score": 10.3399,
+      "model_used": "llama-3.1-8b-instant",
+      "generated_at": "2026-03-29T09:31:43.580630+00:00",
+      "version": "v1",
+      "status": "pending_review",
+      "review_status": "pending",
+      "delivery_status": "not_sent"
+    }
+  ],
+  "total_circulars": 10,
+  "total_matches": 41,
+  "total_drafts": 4,
+  "last_run": "2026-03-29T09:31:43.625917+00:00",
+  "run_mode": "simulate",
+  "status": "failed",
+  "stage": "failed",
+  "status_message": "Pipeline failed: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.1-8b-instant` in organization `org_01kmtnrzpyecrb0vfp589j3p3j` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Used 2456, Requested 4154. Please try again in 6.1s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+  "started_at": "2026-03-29T09:29:22.374094+00:00",
+  "updated_at": "2026-03-29T09:32:28.737906+00:00"
+}

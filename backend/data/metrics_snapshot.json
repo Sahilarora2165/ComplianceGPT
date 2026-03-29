@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-03-29T09:31:43.628372Z",
+  "total_circulars": 10,
+  "total_matches": 41,
+  "total_drafts": 4,
+  "pending_drafts": 8,
+  "deadline_alerts": 6,
+  "total_exposure": 6600000,
+  "last_run": "2026-03-29T09:31:43.628372Z",
+  "run_mode": "simulate",
+  "message": null
+}
