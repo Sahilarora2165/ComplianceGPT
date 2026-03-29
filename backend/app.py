@@ -27,7 +27,7 @@ from config import PDF_DIR, LOGS_DIR
 from core.ingest    import ingest_pdf
 from core.retriever import query_rag, invalidate_collection_cache
 from core.audit     import read_audit_log, log_event
-from agents.monitoring_agent import run_monitoring_agent, HASH_DB_PATH, SIMULATED_DOCUMENTS
+from agents.monitoring_agent import run_monitoring_agent, HASH_DB_PATH
 from agents.client_matcher   import match_clients
 from agents.drafter_agent    import draft_single, DRAFTS_DIR
 from metrics import update_metrics as update_metrics_store
@@ -129,6 +129,11 @@ def _update_pipeline_result(**updates) -> None:
     _latest_result.update(updates)
     _latest_result["updated_at"] = _now()
     _save_pipeline_status(_latest_result)
+    # Keep dashboard cards in sync while pipeline is in progress.
+    try:
+        update_metrics_store(_latest_result)
+    except Exception as exc:
+        logger.warning(f"Failed to update metrics snapshot: {exc}")
 
 
 def _load_uploaded_documents() -> dict:
@@ -286,13 +291,20 @@ class ReopenDraftRequest(BaseModel):
     ca_name: str = "CA"
 
 class PipelineRequest(BaseModel):
-    simulate_mode: bool = True
+    simulate_mode: bool = False
     regulators:    Optional[list[str]] = None
     reset:         bool = False
 
 
 class DocumentPipelineRequest(BaseModel):
     ca_name: str = "CA"
+
+
+class SchedulerTriggerRequest(BaseModel):
+    simulate_mode: bool = False
+    regulators: Optional[list[str]] = None
+    auto_ingest: bool = True
+    reset: bool = False
 
 
 # ─────────────────────────────────────────────
@@ -422,8 +434,11 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             )
             processed_targets  = 0
             drafts_per_client: dict[str, int] = {}   # client_id → draft count this run
+            stop_drafting = False
 
             for item in actionable:
+                if stop_drafting:
+                    break
                 if processed_targets >= MAX_DRAFTS_PER_RUN:
                     logger.info(f"Draft cap ({MAX_DRAFTS_PER_RUN}) reached — deferring remaining circulars to next run")
                     break
@@ -442,6 +457,8 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
                         .get("compliance_score", 100)
                 )
                 for affected in affected_sorted:
+                    if stop_drafting:
+                        break
                     if processed_targets >= MAX_DRAFTS_PER_RUN:
                         break
                     client_id = affected["client_id"]
@@ -450,7 +467,37 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
                     client = clients_map.get(client_id)
                     if not client:
                         continue
-                    draft = draft_single(circular, client)
+                    try:
+                        draft = draft_single(circular, client)
+                    except Exception as draft_exc:
+                        error_text = str(draft_exc)
+                        logger.error(
+                            "❌ Draft generation failed for client %s (%s): %s",
+                            client_id,
+                            circular.get("title", "")[:80],
+                            error_text,
+                        )
+                        log_event(
+                            agent="Pipeline",
+                            action="draft_failed",
+                            details={
+                                "client_id": client_id,
+                                "client_name": client.get("profile", {}).get("name", client.get("name", "")),
+                                "regulator": circular.get("regulator", ""),
+                                "circular_title": circular.get("title", ""),
+                                "error": error_text,
+                            },
+                        )
+                        if "429" in error_text or "rate limit" in error_text.lower():
+                            stop_drafting = True
+                            _update_pipeline_result(
+                                stage="drafting",
+                                status_message=(
+                                    "Drafting paused due to LLM rate limit. "
+                                    "Generated drafts were kept."
+                                ),
+                            )
+                        continue
                     drafts.append(draft)
                     processed_targets += 1
                     drafts_per_client[client_id] = drafts_per_client.get(client_id, 0) + 1
@@ -467,6 +514,15 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
                     if processed_targets < total_targets:
                         time.sleep(2)
 
+        # Stage 4 — deadline watch scan so dashboard exposure/alerts stay current.
+        _update_pipeline_result(
+            stage="deadlines",
+            status_message="Deadline watch scan in progress",
+        )
+        alerts = scan_deadlines()
+        deadline_count = len(alerts)
+        deadline_stats = deadline_summary(alerts)
+
         _latest_result = {
             "new_documents":   new_docs,
             "match_results":   match_results,
@@ -478,13 +534,16 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             "run_mode":        "simulate" if simulate_mode else "real",
             "status":          "completed",
             "stage":           "completed",
-            "status_message":  f"Pipeline completed: {len(new_docs)} circular(s), {total_matches} match(es), {len(drafts)} draft(s)",
+            "status_message":  (
+                f"Pipeline completed: {len(new_docs)} circular(s), {total_matches} match(es), "
+                f"{len(drafts)} draft(s), {deadline_count} deadline alert(s)"
+            ),
+            "deadline_alerts": deadline_count,
+            "deadline_summary": deadline_stats,
             "started_at":      started_at,
             "updated_at":      _now(),
         }
         _save_pipeline_status(_latest_result)
-        
-        # Update metrics store
         update_metrics_store(_latest_result)
         
         logger.info(f"✅ Pipeline complete — {len(new_docs)} circulars, {total_matches} matches, {len(drafts)} drafts")
@@ -1702,13 +1761,31 @@ def scheduler_status():
     return {"scheduler_running": scheduler.running, "jobs": jobs}
 
 @app.post("/scheduler/trigger")
-def trigger_now():
-    """Manually trigger monitoring agent (simulate mode, no ingest)."""
+def trigger_now(req: SchedulerTriggerRequest = SchedulerTriggerRequest()):
+    """Manually trigger monitoring agent in live or demo mode."""
     try:
-        new_docs = run_monitoring_agent(simulate_mode=True, auto_ingest=False)
+        if req.reset and HASH_DB_PATH.exists():
+            HASH_DB_PATH.unlink()
+            logger.info("🔄 Hash DB reset via /scheduler/trigger")
+
+        new_docs = run_monitoring_agent(
+            simulate_mode=req.simulate_mode,
+            regulators=req.regulators,
+            auto_ingest=req.auto_ingest,
+        )
+        mode = "simulate" if req.simulate_mode else "live"
         return {
-            "message":   f"Triggered — {len(new_docs)} new document(s) found",
-            "documents": [{"title":d["title"],"regulator":d["regulator"],"priority":d["priority"]} for d in new_docs]
+            "message":   f"Triggered ({mode}) — {len(new_docs)} new document(s) found",
+            "simulate_mode": req.simulate_mode,
+            "documents": [
+                {
+                    "title": d["title"],
+                    "regulator": d["regulator"],
+                    "priority": d["priority"],
+                    "source": d.get("source", "unknown"),
+                }
+                for d in new_docs
+            ],
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,0 +1,15 @@
+{
+  "new_documents": [],
+  "match_results": [],
+  "drafts": [],
+  "total_circulars": 0,
+  "total_matches": 0,
+  "total_drafts": 0,
+  "last_run": null,
+  "run_mode": "real",
+  "status": "completed",
+  "stage": "completed",
+  "status_message": "Waiting for next run",
+  "started_at": null,
+  "updated_at": "2026-03-29T07:22:50.266395+00:00"
+}

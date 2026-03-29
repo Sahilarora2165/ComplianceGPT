@@ -1,0 +1,40 @@
+{
+  "DOC_B91A4F1FB32E": {
+    "document_id": "DOC_B91A4F1FB32E",
+    "title": "Manual Flow Smoke Test",
+    "regulator": "GST",
+    "priority": "MEDIUM",
+    "summary": "Manual upload smoke test for GST compliance workflow.",
+    "source": "manual_upload",
+    "stored_filename": "DOC_B91A4F1FB32E_manual_flow_smoke.txt",
+    "original_filename": "manual_flow_smoke.txt",
+    "uploaded_by": "CA",
+    "uploaded_at": "2026-03-29T07:06:33.190542+00:00",
+    "ingest": {
+      "pages": 1,
+      "chunks": 2,
+      "used_ocr": false,
+      "first_chunk_preview": "Manual upload smoke test for GST compliance workflow.",
+      "status": "ingested"
+    }
+  },
+  "DOC_7159FCE4C18E": {
+    "document_id": "DOC_7159FCE4C18E",
+    "title": "Manual Flow Smoke Test",
+    "regulator": "GST",
+    "priority": "MEDIUM",
+    "summary": "Manual upload smoke test for GST compliance workflow.",
+    "source": "manual_upload",
+    "stored_filename": "DOC_7159FCE4C18E_manual_flow_smoke.txt",
+    "original_filename": "manual_flow_smoke.txt",
+    "uploaded_by": "CA",
+    "uploaded_at": "2026-03-29T07:08:45.588448+00:00",
+    "ingest": {
+      "pages": 1,
+      "chunks": 2,
+      "used_ocr": false,
+      "first_chunk_preview": "Manual upload smoke test for GST compliance workflow.",
+      "status": "ingested"
+    }
+  }
+}

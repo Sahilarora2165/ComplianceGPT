@@ -14,7 +14,33 @@ from datetime import datetime
 from pathlib import Path
 
 
-METRICS_FILE = Path("data/metrics_snapshot.json")
+_BACKEND_DIR = Path(__file__).resolve().parent
+DATA_DIR = _BACKEND_DIR / "data"
+METRICS_FILE = DATA_DIR / "metrics_snapshot.json"
+
+
+def _alert_files():
+    return (DATA_DIR / "deadline_alerts").glob("*.json")
+
+
+def _load_alert_list(path: Path) -> list[dict]:
+    """
+    Support both legacy list payload and current wrapped payload:
+      - [ ...alerts... ]
+      - {"date": "...", "alerts": [ ...alerts... ]}
+    """
+    try:
+        payload = json.loads(path.read_text())
+    except Exception:
+        return []
+
+    if isinstance(payload, list):
+        return payload
+    if isinstance(payload, dict):
+        alerts = payload.get("alerts", [])
+        if isinstance(alerts, list):
+            return alerts
+    return []
 
 
 def _get_empty_metrics():
@@ -52,7 +78,7 @@ def _get_demo_metrics():
 
 def _count_pending_drafts():
     """Count drafts with pending review status."""
-    drafts_dir = Path("data/drafts")
+    drafts_dir = DATA_DIR / "drafts"
     if not drafts_dir.exists():
         return 0
     
@@ -70,44 +96,31 @@ def _count_pending_drafts():
 
 def _count_deadline_alerts():
     """Count total deadline alerts across all date files."""
-    alerts_dir = Path("data/deadline_alerts")
+    alerts_dir = DATA_DIR / "deadline_alerts"
     if not alerts_dir.exists():
         return 0
-    
-    count = 0
-    for alert_file in alerts_dir.glob("*.json"):
-        try:
-            alerts = json.loads(alert_file.read_text())
-            if isinstance(alerts, list):
-                count += len(alerts)
-        except:
-            pass
-    return count
+
+    return sum(len(_load_alert_list(alert_file)) for alert_file in _alert_files())
 
 
 def _calculate_total_exposure():
     """Calculate total financial exposure from deadline alerts."""
-    alerts_dir = Path("data/deadline_alerts")
+    alerts_dir = DATA_DIR / "deadline_alerts"
     if not alerts_dir.exists():
         return 0
-    
+
     total = 0
-    for alert_file in alerts_dir.glob("*.json"):
-        try:
-            alerts = json.loads(alert_file.read_text())
-            if isinstance(alerts, list):
-                for alert in alerts:
-                    exposure = alert.get("exposure", {}).get("exposure_rupees", 0)
-                    if isinstance(exposure, (int, float)):
-                        total += exposure
-        except:
-            pass
+    for alert_file in _alert_files():
+        for alert in _load_alert_list(alert_file):
+            exposure = alert.get("exposure", {}).get("exposure_rupees", 0)
+            if isinstance(exposure, (int, float)):
+                total += exposure
     return total
 
 
 def _count_circulars():
     """Count circulars from pipeline status file."""
-    status_file = Path("data/latest_pipeline_status.json")
+    status_file = DATA_DIR / "latest_pipeline_status.json"
     if not status_file.exists():
         return 0
     
@@ -120,7 +133,7 @@ def _count_circulars():
 
 def _count_matches():
     """Count total matches from pipeline status file."""
-    status_file = Path("data/latest_pipeline_status.json")
+    status_file = DATA_DIR / "latest_pipeline_status.json"
     if not status_file.exists():
         return 0
     
@@ -133,7 +146,7 @@ def _count_matches():
 
 def _count_total_drafts():
     """Count total drafts from drafts directory."""
-    drafts_dir = Path("data/drafts")
+    drafts_dir = DATA_DIR / "drafts"
     if not drafts_dir.exists():
         return 0
     
@@ -167,7 +180,7 @@ def get_metrics():
 
 def save_metrics(metrics):
     """Save metrics to JSON file."""
-    METRICS_FILE.parent.mkdir(exist_ok=True)
+    METRICS_FILE.parent.mkdir(parents=True, exist_ok=True)
     METRICS_FILE.write_text(json.dumps(metrics, indent=2))
 
 
