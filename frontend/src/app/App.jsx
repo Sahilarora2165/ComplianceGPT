@@ -257,12 +257,6 @@ export default function App() {
         metrics.total_exposure ?? 0,
         data.deadlines?.summary?.total_exposure ?? 0,
       ),
-      circulars: data.circulars?.total ?? metrics.total_circulars ?? data.pipeline?.total_circulars ?? allCirculars.length,
-      affectedClients: metrics.total_matches ?? data.pipeline?.total_matches ?? 0,
-      pendingDrafts:
-        metrics.pending_drafts ?? allDrafts.filter((draft) => isDraftPendingReview(draft)).length,
-      deadlineAlerts: metrics.deadline_alerts ?? data.deadlines?.total ?? allDeadlines.length,
-      totalExposure: metrics.total_exposure ?? data.deadlines?.summary?.total_exposure ?? 0,
       timestamp: metrics.timestamp,
       last_run: metrics.last_run,
       run_mode: metrics.run_mode,
@@ -336,6 +330,14 @@ export default function App() {
     } catch {
       setActionMessage(`${label} failed to start`);
     }
+  }
+
+  function handleRunUnifiedMonitoring({ reset = false, label = "Monitoring run (hybrid)" } = {}) {
+    return handleRunPipeline({
+      simulateMode: false,
+      reset,
+      label,
+    });
   }
 
   async function handleDocumentUpload({ file, regulator, title, uploadedBy }) {
@@ -559,16 +561,7 @@ export default function App() {
               allDrafts={allDrafts}
               loading={loading}
               pipeline={data.pipeline}
-              onRunDemo={() =>
-                handleRunPipeline({ simulateMode: true, reset: true, label: "Demo monitoring run" })
-              }
-              onRunReal={() =>
-                handleRunPipeline({
-                  simulateMode: false,
-                  reset: false,
-                  label: "Live monitoring (all regulators)",
-                })
-              }
+              onRunMonitoring={() => handleRunUnifiedMonitoring({ reset: false })}
             />
           ) : page === "drafts" ? (
             <DraftReviewView
@@ -631,28 +624,15 @@ export default function App() {
               loading={loading}
               pipeline={data.pipeline}
               scheduler={scheduler}
-              onRunLiveMonitoring={() =>
-                handleRunPipeline({
-                  simulateMode: false,
-                  reset: false,
-                  label: "Live monitoring (all regulators)",
-                })
-              }
-              onRunDemoMonitoring={() =>
-                handleRunPipeline({
-                  simulateMode: true,
-                  reset: true,
-                  label: "Demo monitoring run",
-                })
-              }
+              onRunMonitoring={() => handleRunUnifiedMonitoring({ reset: false })}
               onResetPipeline={() =>
                 refresh(resetPipelineState, "Monitoring state reset", "Monitoring state reset")
               }
               onTriggerScheduler={() =>
                 refresh(
-                  () => triggerSchedulerMonitoring({ simulateMode: false }),
-                  "Scheduler trigger (live)",
-                  "Scheduler triggered (live)",
+                  () => triggerSchedulerMonitoring({ simulateMode: false, includeSimulated: true }),
+                  "Scheduler trigger (hybrid)",
+                  "Scheduler triggered (hybrid)",
                 )
               }
               onOpenDocumentIntake={openDocumentIntakeWorkspace}
@@ -670,28 +650,10 @@ export default function App() {
                 </div>
                 <div className="flex flex-wrap gap-3 xl:justify-end xl:pt-4">
                   <button
-                    onClick={() =>
-                      handleRunPipeline({
-                        simulateMode: false,
-                        reset: false,
-                        label: "Live monitoring (all regulators)",
-                      })
-                    }
+                    onClick={() => handleRunUnifiedMonitoring({ reset: false })}
                     className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
                   >
-                    Run Live Monitoring
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleRunPipeline({
-                        simulateMode: true,
-                        reset: true,
-                        label: "Demo monitoring run",
-                      })
-                    }
-                    className="rounded-xl bg-shell px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-shellSoft"
-                  >
-                    Run Demo Monitoring
+                    Run Monitoring
                   </button>
                 </div>
               </div>

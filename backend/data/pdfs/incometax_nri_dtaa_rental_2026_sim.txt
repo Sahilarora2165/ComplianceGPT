@@ -3,7 +3,7 @@ Regulator : IncomeTax
 Title     : CBDT Circular: DTAA Relief for NRI Rental Income and TDS Refund Claims - FY 2026-27
 Summary   : CBDT guidance on DTAA benefit claims for NRI rental income and excess TDS deducted by tenants under Section 195.
 URL       : https://incometaxindia.gov.in/sample/nri_dtaa_rental_2026.pdf
-Generated : 2026-03-29T09:29:35.616092+00:00
+Generated : 2026-03-29T11:16:51.903897+00:00
 
 Central Board of Direct Taxes guidance circular addressing DTAA benefit claims for non-resident Indians earning rental income from properties in India and the correct procedure for claiming refund of excess TDS deducted by tenants under Section 195. NRIs should file ITR-2 for assessment year 2026-27 declaring Indian-source rental income and claiming DTAA relief under the applicable article of the relevant double taxation avoidance agreement.
 
