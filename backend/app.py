@@ -7,7 +7,6 @@ import os
 import json
 import hashlib
 import logging
-import mimetypes
 import re
 import shutil
 import sys
@@ -19,17 +18,16 @@ from datetime import datetime, timezone, date
 from agents.deadline_agent import scan_deadlines, get_latest_alerts, deadline_summary
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 sys.path.append(str(Path(__file__).parent))
 
 _BACKEND_DIR = Path(__file__).parent
-from config import PDF_DIR, LOGS_DIR
+from config import PDF_DIR, LOGS_DIR, VECTORSTORE_DIR, CHROMA_COLLECTION
 from core.ingest    import ingest_pdf
 from core.retriever import query_rag, invalidate_collection_cache
 from core.audit     import read_audit_log, log_event
-from agents.monitoring_agent import run_monitoring_agent, HASH_DB_PATH
+from agents.monitoring_agent import run_monitoring_agent, HASH_DB_PATH, SIMULATED_DOCUMENTS
 from agents.client_matcher   import match_clients
 from agents.drafter_agent    import draft_single, DRAFTS_DIR
 from metrics import update_metrics as update_metrics_store
@@ -131,11 +129,6 @@ def _update_pipeline_result(**updates) -> None:
     _latest_result.update(updates)
     _latest_result["updated_at"] = _now()
     _save_pipeline_status(_latest_result)
-    # Keep dashboard cards in sync while pipeline is in progress.
-    try:
-        update_metrics_store(_latest_result)
-    except Exception as exc:
-        logger.warning(f"Failed to update metrics snapshot: {exc}")
 
 
 def _load_uploaded_documents() -> dict:
@@ -173,31 +166,39 @@ def _infer_priority_from_title(title: str) -> str:
 
 
 def _summary_from_preview(preview_text: str) -> str:
+    """Short summary from first chunk — used as display text."""
     compact = re.sub(r"\s+", " ", preview_text or "").strip()
     if not compact:
         return "Manual upload document for compliance processing."
     return compact[:220]
 
 
-def _resolve_safe_document_path(filename: str) -> Path:
-    clean_name = (filename or "").strip()
-    if not clean_name:
-        raise HTTPException(status_code=400, detail="File name is required")
-    if Path(clean_name).name != clean_name:
-        raise HTTPException(status_code=400, detail="Invalid file name")
-    if Path(clean_name).suffix.lower() not in SUPPORTED_UPLOAD_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="Only PDF and TXT files are supported")
-
-    base_dir = PDF_DIR.resolve()
-    candidate = (PDF_DIR / clean_name).resolve()
+def _extract_keyword_summary(ingest_result: dict) -> str:
+    """
+    Build a richer summary by scanning ALL ingested chunks for section-level
+    keywords.  This lets the client matcher's content rules detect topics like
+    presumptive taxation (44ADA), NRI provisions, capital gains, etc. that
+    appear deep in the document body — not just the header.
+    """
+    file_name = (ingest_result or {}).get("file", "")
+    if not file_name:
+        return ""
     try:
-        candidate.relative_to(base_dir)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid file path")
-
-    if not candidate.exists() or not candidate.is_file():
-        raise HTTPException(status_code=404, detail=f"Document file not found: {clean_name}")
-    return candidate
+        from core.chroma_client import get_persistent_client
+        client = get_persistent_client(VECTORSTORE_DIR)
+        collection = client.get_or_create_collection(name=CHROMA_COLLECTION)
+        stem = Path(file_name).stem
+        # Fetch first 30 chunk IDs for this document
+        ids = [f"{stem}_chunk_{i}" for i in range(30)]
+        result = collection.get(ids=ids, include=["documents"])
+        docs = result.get("documents", [])
+        if not docs:
+            return ""
+        full_text = " ".join(d for d in docs if d).lower()
+        # Return first 2000 chars — enough for keyword matching
+        return re.sub(r"\s+", " ", full_text).strip()[:2000]
+    except Exception:
+        return ""
 
 
 # ── Scheduler ─────────────────────────────────────────────────────────────────
@@ -314,20 +315,13 @@ class ReopenDraftRequest(BaseModel):
     ca_name: str = "CA"
 
 class PipelineRequest(BaseModel):
-    simulate_mode: bool = False
+    simulate_mode: bool = True
     regulators:    Optional[list[str]] = None
     reset:         bool = False
 
 
 class DocumentPipelineRequest(BaseModel):
     ca_name: str = "CA"
-
-
-class SchedulerTriggerRequest(BaseModel):
-    simulate_mode: bool = False
-    regulators: Optional[list[str]] = None
-    auto_ingest: bool = True
-    reset: bool = False
 
 
 # ─────────────────────────────────────────────
@@ -383,18 +377,11 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             logger.info("🔄 Hash DB reset")
             _update_pipeline_result(status_message="Pipeline state reset. Monitoring stage started")
 
-        def _monitoring_progress(message: str) -> None:
-            _update_pipeline_result(
-                stage="monitoring",
-                status_message=message,
-            )
-
         # Stage 1 — scrape + save PDFs + ingest into ChromaDB
         new_docs = run_monitoring_agent(
             simulate_mode=simulate_mode,
             regulators=regulators,
-            auto_ingest=True,
-            progress_callback=_monitoring_progress,
+            auto_ingest=True
         )
         _update_pipeline_result(
             new_documents=new_docs,
@@ -425,6 +412,8 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             stage="matching",
             status_message=f"Matching complete: {total_matches} client match(es) found",
         )
+        # Live metric update after matching
+        update_metrics_store({"total_circulars": len(new_docs), "total_matches": total_matches, "total_drafts": 0, "run_mode": "simulate" if simulate_mode else "real"})
 
         # Stage 3
         # Deduplicate match_results: same circular can appear twice when scraped from
@@ -464,11 +453,8 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             )
             processed_targets  = 0
             drafts_per_client: dict[str, int] = {}   # client_id → draft count this run
-            stop_drafting = False
 
             for item in actionable:
-                if stop_drafting:
-                    break
                 if processed_targets >= MAX_DRAFTS_PER_RUN:
                     logger.info(f"Draft cap ({MAX_DRAFTS_PER_RUN}) reached — deferring remaining circulars to next run")
                     break
@@ -487,8 +473,6 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
                         .get("compliance_score", 100)
                 )
                 for affected in affected_sorted:
-                    if stop_drafting:
-                        break
                     if processed_targets >= MAX_DRAFTS_PER_RUN:
                         break
                     client_id = affected["client_id"]
@@ -497,37 +481,7 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
                     client = clients_map.get(client_id)
                     if not client:
                         continue
-                    try:
-                        draft = draft_single(circular, client)
-                    except Exception as draft_exc:
-                        error_text = str(draft_exc)
-                        logger.error(
-                            "❌ Draft generation failed for client %s (%s): %s",
-                            client_id,
-                            circular.get("title", "")[:80],
-                            error_text,
-                        )
-                        log_event(
-                            agent="Pipeline",
-                            action="draft_failed",
-                            details={
-                                "client_id": client_id,
-                                "client_name": client.get("profile", {}).get("name", client.get("name", "")),
-                                "regulator": circular.get("regulator", ""),
-                                "circular_title": circular.get("title", ""),
-                                "error": error_text,
-                            },
-                        )
-                        if "429" in error_text or "rate limit" in error_text.lower():
-                            stop_drafting = True
-                            _update_pipeline_result(
-                                stage="drafting",
-                                status_message=(
-                                    "Drafting paused due to LLM rate limit. "
-                                    "Generated drafts were kept."
-                                ),
-                            )
-                        continue
+                    draft = draft_single(circular, client)
                     drafts.append(draft)
                     processed_targets += 1
                     drafts_per_client[client_id] = drafts_per_client.get(client_id, 0) + 1
@@ -539,19 +493,12 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
                             f"Drafting in progress: {processed_targets}/{total_targets} draft(s) generated"
                         ),
                     )
+                    # Live metric update after each draft
+                    update_metrics_store({"total_circulars": len(new_docs), "total_matches": total_matches, "total_drafts": len(drafts), "run_mode": "simulate" if simulate_mode else "real"})
                     # Pace LLM calls to stay under Groq free-tier rate limit (~30 req/min).
                     # 2s gap = max 30 drafts/min; reduces 429 retries from hammering the API.
                     if processed_targets < total_targets:
                         time.sleep(2)
-
-        # Stage 4 — deadline watch scan so dashboard exposure/alerts stay current.
-        _update_pipeline_result(
-            stage="deadlines",
-            status_message="Deadline watch scan in progress",
-        )
-        alerts = scan_deadlines()
-        deadline_count = len(alerts)
-        deadline_stats = deadline_summary(alerts)
 
         _latest_result = {
             "new_documents":   new_docs,
@@ -564,18 +511,15 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             "run_mode":        "simulate" if simulate_mode else "real",
             "status":          "completed",
             "stage":           "completed",
-            "status_message":  (
-                f"Pipeline completed: {len(new_docs)} circular(s), {total_matches} match(es), "
-                f"{len(drafts)} draft(s), {deadline_count} deadline alert(s)"
-            ),
-            "deadline_alerts": deadline_count,
-            "deadline_summary": deadline_stats,
+            "status_message":  f"Pipeline completed: {len(new_docs)} circular(s), {total_matches} match(es), {len(drafts)} draft(s)",
             "started_at":      started_at,
             "updated_at":      _now(),
         }
         _save_pipeline_status(_latest_result)
+
+        # Update metrics store
         update_metrics_store(_latest_result)
-        
+
         logger.info(f"✅ Pipeline complete — {len(new_docs)} circulars, {total_matches} matches, {len(drafts)} drafts")
     except Exception as e:
         _update_pipeline_result(
@@ -632,6 +576,8 @@ def _execute_uploaded_document_pipeline(document_id: str, ca_name: str):
             stage="matching",
             status_message=f"Matching complete: {total_matches} client match(es)",
         )
+        # Live metric update after matching
+        update_metrics_store({"total_circulars": 1, "total_matches": total_matches, "total_drafts": 0, "run_mode": "manual_upload"})
 
         _update_pipeline_result(
             stage="drafting",
@@ -670,6 +616,8 @@ def _execute_uploaded_document_pipeline(document_id: str, ca_name: str):
                             f"Drafting in progress: {processed_targets}/{total_targets} draft(s) generated"
                         ),
                     )
+                    # Live metric update after each draft
+                    update_metrics_store({"total_circulars": 1, "total_matches": total_matches, "total_drafts": len(drafts), "run_mode": "manual_upload"})
 
         _update_pipeline_result(
             stage="deadlines",
@@ -697,6 +645,7 @@ def _execute_uploaded_document_pipeline(document_id: str, ca_name: str):
             "updated_at": _now(),
         }
         _save_pipeline_status(_latest_result)
+        update_metrics_store(_latest_result)
 
         uploaded["last_pipeline_run"] = _now()
         uploaded["last_pipeline_summary"] = {
@@ -749,6 +698,18 @@ def get_metrics():
     """
     from metrics import get_metrics as _get_metrics
     return _get_metrics()
+
+
+@app.get("/guardrail-metrics")
+def get_guardrail_metrics():
+    """
+    Aggregated guardrail effectiveness metrics.
+
+    Returns abstention rates, confidence distributions, citation stats,
+    and recent guardrail events — derived from audit log and draft files.
+    """
+    from metrics import get_guardrail_metrics as _get_guardrail_metrics
+    return _get_guardrail_metrics()
 
 
 @app.post("/pipeline/reset")
@@ -1666,7 +1627,11 @@ async def upload_document(
     invalidate_collection_cache()
 
     preview = (ingest_result or {}).get("first_chunk_preview", "")
-    summary = _summary_from_preview(preview)
+    display_summary = _summary_from_preview(preview)
+    # Build a keyword-rich summary from ALL chunks so the client matcher's
+    # content rules can detect deep topics (44ADA, NRI, capital gains, etc.)
+    keyword_summary = _extract_keyword_summary(ingest_result)
+    summary = keyword_summary if keyword_summary else display_summary
     priority = _infer_priority_from_title(title)
     uploaded_at = _now()
     uploaded_record = {
@@ -1743,20 +1708,6 @@ def run_uploaded_document_pipeline(
     }
 
 
-@app.get("/documents/file/{filename}")
-def open_document_file(filename: str):
-    """
-    Serve an ingested local document from backend/data/pdfs for in-browser viewing.
-    """
-    path = _resolve_safe_document_path(filename)
-    media_type, _ = mimetypes.guess_type(path.name)
-    return FileResponse(
-        str(path),
-        media_type=media_type or "application/octet-stream",
-        headers={"Content-Disposition": f'inline; filename="{path.name}"'},
-    )
-
-
 @app.post("/ingest")
 def ingest(file: UploadFile = File(...)):
     """Legacy ingest endpoint (supports PDF and TXT)."""
@@ -1805,31 +1756,13 @@ def scheduler_status():
     return {"scheduler_running": scheduler.running, "jobs": jobs}
 
 @app.post("/scheduler/trigger")
-def trigger_now(req: SchedulerTriggerRequest = SchedulerTriggerRequest()):
-    """Manually trigger monitoring agent in live or demo mode."""
+def trigger_now():
+    """Manually trigger monitoring agent (simulate mode, no ingest)."""
     try:
-        if req.reset and HASH_DB_PATH.exists():
-            HASH_DB_PATH.unlink()
-            logger.info("🔄 Hash DB reset via /scheduler/trigger")
-
-        new_docs = run_monitoring_agent(
-            simulate_mode=req.simulate_mode,
-            regulators=req.regulators,
-            auto_ingest=req.auto_ingest,
-        )
-        mode = "simulate" if req.simulate_mode else "live"
+        new_docs = run_monitoring_agent(simulate_mode=True, auto_ingest=False)
         return {
-            "message":   f"Triggered ({mode}) — {len(new_docs)} new document(s) found",
-            "simulate_mode": req.simulate_mode,
-            "documents": [
-                {
-                    "title": d["title"],
-                    "regulator": d["regulator"],
-                    "priority": d["priority"],
-                    "source": d.get("source", "unknown"),
-                }
-                for d in new_docs
-            ],
+            "message":   f"Triggered — {len(new_docs)} new document(s) found",
+            "documents": [{"title":d["title"],"regulator":d["regulator"],"priority":d["priority"]} for d in new_docs]
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

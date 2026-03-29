@@ -1,0 +1,12 @@
+SIMULATED REGULATORY DOCUMENT
+Regulator : EPFO
+Title     : EPFO Circular: ECR Filing Mandate and Wage Ceiling Update - 2026
+Summary   : EPFO mandates monthly ECR filing and updates PF wage ceiling for covered establishments with 20 or more employees.
+URL       : https://www.epfindia.gov.in/sample/ecr_wage_ceiling_2026.pdf
+Generated : 2026-03-29T09:29:38.844230+00:00
+
+Employees Provident Fund Organisation circular mandating timely monthly Electronic Challan cum Return filing for all covered establishments and notifying the updated wage ceiling for EPF contribution computation. Every establishment with 20 or more employees must file the ECR by the 15th of each succeeding month and deposit PF contributions by the same date. Delayed ECR filings attract interest at 12 percent per annum under Section 7Q of the EPF and MP Act, and establishments with persistent delays may be subject to damages assessment under Section 14B.
+
+The circular updates the wage ceiling for EPF applicability and requires establishments to ensure that employee and employer contribution rates are applied on the correct wage components. Establishments must reconcile ECR data with payroll registers, employee headcount, and bank debit confirmations before submission. ESIC challan filing should similarly be completed by the 15th of each month for establishments under ESIC coverage.
+
+This circular applies only to EPFO-covered establishments — those employing 20 or more persons in notified industries or voluntarily covered. It does not apply to individual taxpayers, sole proprietors below the threshold, or businesses without employees on the EPF payroll.

@@ -13,34 +13,9 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-
 _BACKEND_DIR = Path(__file__).resolve().parent
-DATA_DIR = _BACKEND_DIR / "data"
-METRICS_FILE = DATA_DIR / "metrics_snapshot.json"
 
-
-def _alert_files():
-    return (DATA_DIR / "deadline_alerts").glob("*.json")
-
-
-def _load_alert_list(path: Path) -> list[dict]:
-    """
-    Support both legacy list payload and current wrapped payload:
-      - [ ...alerts... ]
-      - {"date": "...", "alerts": [ ...alerts... ]}
-    """
-    try:
-        payload = json.loads(path.read_text())
-    except Exception:
-        return []
-
-    if isinstance(payload, list):
-        return payload
-    if isinstance(payload, dict):
-        alerts = payload.get("alerts", [])
-        if isinstance(alerts, list):
-            return alerts
-    return []
+METRICS_FILE = _BACKEND_DIR / "data" / "metrics_snapshot.json"
 
 
 def _get_empty_metrics():
@@ -78,7 +53,7 @@ def _get_demo_metrics():
 
 def _count_pending_drafts():
     """Count drafts with pending review status."""
-    drafts_dir = DATA_DIR / "drafts"
+    drafts_dir = _BACKEND_DIR / "data" / "drafts"
     if not drafts_dir.exists():
         return 0
     
@@ -94,33 +69,55 @@ def _count_pending_drafts():
     return count
 
 
+def _extract_alerts(raw) -> list:
+    """Extract alert list from a deadline file (supports both formats)."""
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, dict):
+        inner = raw.get("alerts", [])
+        if isinstance(inner, list):
+            return inner
+    return []
+
+
 def _count_deadline_alerts():
     """Count total deadline alerts across all date files."""
-    alerts_dir = DATA_DIR / "deadline_alerts"
+    alerts_dir = _BACKEND_DIR / "data" / "deadline_alerts"
     if not alerts_dir.exists():
         return 0
 
-    return sum(len(_load_alert_list(alert_file)) for alert_file in _alert_files())
+    count = 0
+    for alert_file in alerts_dir.glob("*.json"):
+        try:
+            raw = json.loads(alert_file.read_text())
+            count += len(_extract_alerts(raw))
+        except:
+            pass
+    return count
 
 
 def _calculate_total_exposure():
     """Calculate total financial exposure from deadline alerts."""
-    alerts_dir = DATA_DIR / "deadline_alerts"
+    alerts_dir = _BACKEND_DIR / "data" / "deadline_alerts"
     if not alerts_dir.exists():
         return 0
 
     total = 0
-    for alert_file in _alert_files():
-        for alert in _load_alert_list(alert_file):
-            exposure = alert.get("exposure", {}).get("exposure_rupees", 0)
-            if isinstance(exposure, (int, float)):
-                total += exposure
+    for alert_file in alerts_dir.glob("*.json"):
+        try:
+            raw = json.loads(alert_file.read_text())
+            for alert in _extract_alerts(raw):
+                exposure = alert.get("exposure", {}).get("exposure_rupees", 0)
+                if isinstance(exposure, (int, float)):
+                    total += exposure
+        except:
+            pass
     return total
 
 
 def _count_circulars():
     """Count circulars from pipeline status file."""
-    status_file = DATA_DIR / "latest_pipeline_status.json"
+    status_file = _BACKEND_DIR / "data" / "latest_pipeline_status.json"
     if not status_file.exists():
         return 0
     
@@ -133,7 +130,7 @@ def _count_circulars():
 
 def _count_matches():
     """Count total matches from pipeline status file."""
-    status_file = DATA_DIR / "latest_pipeline_status.json"
+    status_file = _BACKEND_DIR / "data" / "latest_pipeline_status.json"
     if not status_file.exists():
         return 0
     
@@ -146,7 +143,7 @@ def _count_matches():
 
 def _count_total_drafts():
     """Count total drafts from drafts directory."""
-    drafts_dir = DATA_DIR / "drafts"
+    drafts_dir = _BACKEND_DIR / "data" / "drafts"
     if not drafts_dir.exists():
         return 0
     
@@ -180,7 +177,7 @@ def get_metrics():
 
 def save_metrics(metrics):
     """Save metrics to JSON file."""
-    METRICS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    METRICS_FILE.parent.mkdir(exist_ok=True)
     METRICS_FILE.write_text(json.dumps(metrics, indent=2))
 
 
@@ -233,9 +230,144 @@ def update_metrics(pipeline_result=None):
 def reset_metrics():
     """
     Reset metrics to empty state.
-    
+
     Call this when user resets the pipeline.
     """
     if METRICS_FILE.exists():
         METRICS_FILE.unlink()
     print("🗑️ Metrics reset - will reseed on next fetch")
+
+
+def get_guardrail_metrics():
+    """
+    Aggregate guardrail metrics from audit log and draft files.
+
+    Returns counts for abstentions (by reason), query answers,
+    draft confidence breakdown, citation stats, and recent guardrail events.
+    """
+    from core.audit import read_audit_log
+
+    events = read_audit_log()  # newest-first
+
+    # --- Query-level metrics ---
+    total_queries = 0
+    total_answered = 0
+    total_abstained = 0
+    abstain_reasons = {}          # reason -> count
+    confidence_scores = []        # list of floats from answered queries
+    citation_verified_count = 0   # answered queries with sources
+
+    for ev in events:
+        action = ev.get("action", "")
+        details = ev.get("details", {})
+
+        if action == "query_answered":
+            total_queries += 1
+            total_answered += 1
+            score = details.get("score") or details.get("confidence")
+            if isinstance(score, (int, float)):
+                confidence_scores.append(score)
+            sources = details.get("sources") or details.get("source_chunks")
+            if sources:
+                citation_verified_count += 1
+
+        elif action == "query_abstained":
+            total_queries += 1
+            total_abstained += 1
+            reason = details.get("reason", "unknown")
+            # Normalize LLM-generated reasons into bucketed labels
+            reason_lower = reason.lower()
+            if "embedding_model" in reason_lower or "model_unavailable" in reason_lower:
+                reason = "model_unavailable"
+            elif "no_documents" in reason_lower or "empty" in reason_lower or "collection" in reason_lower:
+                reason = "no_documents_ingested"
+            elif reason_lower in ("low_relevance", "no_matching_chunks", "reranking_empty"):
+                reason = "low_relevance"
+            elif "validation" in reason_lower or "answer_validation" in reason_lower:
+                reason = "answer_validation_failed"
+            elif any(kw in reason_lower for kw in ("no information", "no specific", "no relevant",
+                     "no explicit", "not found", "not specified", "no exclusion", "no mention")):
+                reason = "insufficient_evidence"
+            elif len(reason) > 40:
+                reason = "insufficient_evidence"
+            abstain_reasons[reason] = abstain_reasons.get(reason, 0) + 1
+
+    abstain_rate = (total_abstained / total_queries * 100) if total_queries > 0 else 0
+    avg_confidence = (sum(confidence_scores) / len(confidence_scores)) if confidence_scores else None
+
+    # --- Draft-level metrics ---
+    drafts_dir = _BACKEND_DIR / "data" / "drafts"
+    total_drafts = 0
+    high_confidence_drafts = 0
+    low_confidence_drafts = 0
+    no_confidence_drafts = 0
+    drafts_with_sources = 0
+    total_source_chunks = 0
+
+    if drafts_dir.exists():
+        for draft_file in drafts_dir.glob("*.json"):
+            try:
+                draft = json.loads(draft_file.read_text())
+                total_drafts += 1
+
+                rag_conf = draft.get("rag_confidence", "unknown")
+                if rag_conf == "high":
+                    high_confidence_drafts += 1
+                elif rag_conf == "low":
+                    low_confidence_drafts += 1
+                elif rag_conf == "none":
+                    no_confidence_drafts += 1
+                else:
+                    # Older drafts without rag_confidence field — infer from source_chunks
+                    chunks = draft.get("source_chunks", [])
+                    top_score = max((c.get("score", 0) for c in chunks), default=0)
+                    if top_score >= 0.5:
+                        high_confidence_drafts += 1
+                    elif top_score > 0:
+                        low_confidence_drafts += 1
+                    else:
+                        no_confidence_drafts += 1
+
+                chunks = draft.get("source_chunks", [])
+                if chunks:
+                    drafts_with_sources += 1
+                    total_source_chunks += len(chunks)
+            except Exception:
+                pass
+
+    # --- Recent guardrail events (last 20) ---
+    guardrail_actions = {"query_abstained", "query_answered"}
+    recent_events = []
+    for ev in events:
+        if ev.get("action") in guardrail_actions:
+            recent_events.append({
+                "timestamp": ev.get("timestamp"),
+                "action":    ev.get("action"),
+                "question":  ev.get("details", {}).get("question", ""),
+                "reason":    ev.get("details", {}).get("reason"),
+                "score":     ev.get("details", {}).get("score")
+                             or ev.get("details", {}).get("confidence"),
+            })
+            if len(recent_events) >= 20:
+                break
+
+    return {
+        "query_metrics": {
+            "total_queries":          total_queries,
+            "total_answered":         total_answered,
+            "total_abstained":        total_abstained,
+            "abstain_rate_pct":       round(abstain_rate, 1),
+            "avg_confidence":         round(avg_confidence, 3) if avg_confidence is not None else None,
+            "citation_verified":      citation_verified_count,
+            "abstain_reasons":        abstain_reasons,
+        },
+        "draft_metrics": {
+            "total_drafts":           total_drafts,
+            "high_confidence":        high_confidence_drafts,
+            "low_confidence":         low_confidence_drafts,
+            "no_confidence":          no_confidence_drafts,
+            "drafts_with_sources":    drafts_with_sources,
+            "avg_sources_per_draft":  round(total_source_chunks / total_drafts, 1) if total_drafts > 0 else 0,
+        },
+        "recent_guardrail_events":    recent_events,
+    }

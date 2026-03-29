@@ -1,0 +1,12 @@
+SIMULATED REGULATORY DOCUMENT
+Regulator : IncomeTax
+Title     : CBDT Circular: Capital Gains on Debt Mutual Fund Redemptions - AY 2026-27
+Summary   : CBDT clarifies capital gains computation for debt mutual fund redemptions and STT applicability for AY 2026-27.
+URL       : https://incometaxindia.gov.in/sample/capital_gains_mf_2026.pdf
+Generated : 2026-03-29T09:29:37.023202+00:00
+
+Central Board of Direct Taxes circular clarifying capital gains taxation on debt mutual fund redemptions for assessment year 2026-27 following the amendment removing the indexation benefit for debt fund units purchased after April 1, 2023. Investors redeeming debt mutual fund units should compute capital gains as the difference between redemption value and purchase cost without indexation adjustment, and the applicable tax rate is the slab rate for short-term capital gains regardless of holding period.
+
+Investors holding equity mutual funds for more than 12 months should compute long-term capital gains under Section 112A, and gains exceeding Rs 1 lakh in a financial year are taxable at 10 percent. STT paid on redemption of equity funds should be documented. The circular reiterates that capital gains from mutual fund redemptions should be reported in ITR-2 under the appropriate schedule, and advance tax should have been deposited in proportion to gains realised during each quarter.
+
+This circular applies to individual taxpayers with capital gain income from mutual fund redemptions. It is not relevant to salaried-only individuals without investment income, businesses or firms, or entities assessed as companies or LLPs.
