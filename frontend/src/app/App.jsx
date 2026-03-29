@@ -20,6 +20,7 @@ import AnalystQueryView from "@/features/analyst-query";
 import ClientProfilesView from "@/features/client-profiles";
 import CircularsView from "@/features/circulars";
 import DeadlineWatchView from "@/features/deadline-watch";
+import DocumentIntakeWorkspace from "@/features/document-intake";
 import DraftReviewView from "@/features/draft-review";
 import PipelineControlView from "@/features/pipeline-control";
 
@@ -30,6 +31,7 @@ const NAV = [
   { key: "deadlines", label: "Deadline Watch", icon: "alarm" },
   { key: "calendar", label: "Compliance Calendar", icon: "calendar_month" },
   { key: "clients", label: "Clients", icon: "group" },
+  { key: "intake", label: "Document Intake", icon: "upload_file" },
   { key: "analyst", label: "Analyst Query", icon: "psychology" },
   { key: "audit", label: "Audit Trail", icon: "history_edu" },
   { key: "operations", label: "Operations Center", icon: "account_tree" },
@@ -387,8 +389,7 @@ export default function App() {
   }
 
   function openDocumentIntakeWorkspace() {
-    setPage("analyst");
-    setOpenIntakeSignal((current) => current + 1);
+    setPage("intake");
   }
 
   async function handleDraftReject(draftId) {
@@ -472,6 +473,10 @@ export default function App() {
         eyebrow: "Client Intelligence",
         subtitle: "Review compliance footprint and risk context",
       },
+      intake: {
+        eyebrow: "Document Intake",
+        subtitle: "Upload and process circulars directly for matching and drafting",
+      },
       audit: {
         eyebrow: "Workflow Traceability",
         subtitle: "Immutable log of every system and agent action",
@@ -542,8 +547,7 @@ export default function App() {
                 handleRunPipeline({
                   simulateMode: false,
                   reset: false,
-                  label: "Live monitoring (GST)",
-                  regulators: ["GST"],
+                  label: "Live monitoring (all regulators)",
                 })
               }
             />
@@ -587,6 +591,13 @@ export default function App() {
             />
           ) : page === "audit" ? (
             <AuditTrailView events={auditEvents} loading={loading} />
+          ) : page === "intake" ? (
+            <DocumentIntakeWorkspace
+              onUploadDocument={handleDocumentUpload}
+              onRunUploadedDocumentPipeline={handleRunDocumentPipeline}
+              uploadHistory={auditEvents}
+              compact={false}
+            />
           ) : page === "analyst" ? (
             <AnalystQueryView
               actionMessage={actionMessage}
@@ -605,8 +616,7 @@ export default function App() {
                 handleRunPipeline({
                   simulateMode: false,
                   reset: false,
-                  label: "Live monitoring (GST)",
-                  regulators: ["GST"],
+                  label: "Live monitoring (all regulators)",
                 })
               }
               onRunDemoMonitoring={() =>
@@ -621,7 +631,7 @@ export default function App() {
               }
               onTriggerScheduler={() =>
                 refresh(
-                  () => triggerSchedulerMonitoring({ simulateMode: false, regulators: ["GST"] }),
+                  () => triggerSchedulerMonitoring({ simulateMode: false }),
                   "Scheduler trigger (live)",
                   "Scheduler triggered (live)",
                 )
@@ -645,8 +655,7 @@ export default function App() {
                       handleRunPipeline({
                         simulateMode: false,
                         reset: false,
-                        label: "Live monitoring (GST)",
-                        regulators: ["GST"],
+                        label: "Live monitoring (all regulators)",
                       })
                     }
                     className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"

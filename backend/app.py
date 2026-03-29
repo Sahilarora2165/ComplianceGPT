@@ -7,6 +7,7 @@ import os
 import json
 import hashlib
 import logging
+import mimetypes
 import re
 import shutil
 import sys
@@ -18,6 +19,7 @@ from datetime import datetime, timezone, date
 from agents.deadline_agent import scan_deadlines, get_latest_alerts, deadline_summary
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 sys.path.append(str(Path(__file__).parent))
@@ -175,6 +177,27 @@ def _summary_from_preview(preview_text: str) -> str:
     if not compact:
         return "Manual upload document for compliance processing."
     return compact[:220]
+
+
+def _resolve_safe_document_path(filename: str) -> Path:
+    clean_name = (filename or "").strip()
+    if not clean_name:
+        raise HTTPException(status_code=400, detail="File name is required")
+    if Path(clean_name).name != clean_name:
+        raise HTTPException(status_code=400, detail="Invalid file name")
+    if Path(clean_name).suffix.lower() not in SUPPORTED_UPLOAD_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Only PDF and TXT files are supported")
+
+    base_dir = PDF_DIR.resolve()
+    candidate = (PDF_DIR / clean_name).resolve()
+    try:
+        candidate.relative_to(base_dir)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid file path")
+
+    if not candidate.exists() or not candidate.is_file():
+        raise HTTPException(status_code=404, detail=f"Document file not found: {clean_name}")
+    return candidate
 
 
 # ── Scheduler ─────────────────────────────────────────────────────────────────
@@ -360,11 +383,18 @@ def _execute_pipeline(simulate_mode: bool, regulators, reset: bool):
             logger.info("🔄 Hash DB reset")
             _update_pipeline_result(status_message="Pipeline state reset. Monitoring stage started")
 
+        def _monitoring_progress(message: str) -> None:
+            _update_pipeline_result(
+                stage="monitoring",
+                status_message=message,
+            )
+
         # Stage 1 — scrape + save PDFs + ingest into ChromaDB
         new_docs = run_monitoring_agent(
             simulate_mode=simulate_mode,
             regulators=regulators,
-            auto_ingest=True
+            auto_ingest=True,
+            progress_callback=_monitoring_progress,
         )
         _update_pipeline_result(
             new_documents=new_docs,
@@ -1711,6 +1741,20 @@ def run_uploaded_document_pipeline(
         "regulator": uploaded["regulator"],
         "triggered_by": ca_name,
     }
+
+
+@app.get("/documents/file/{filename}")
+def open_document_file(filename: str):
+    """
+    Serve an ingested local document from backend/data/pdfs for in-browser viewing.
+    """
+    path = _resolve_safe_document_path(filename)
+    media_type, _ = mimetypes.guess_type(path.name)
+    return FileResponse(
+        str(path),
+        media_type=media_type or "application/octet-stream",
+        headers={"Content-Disposition": f'inline; filename="{path.name}"'},
+    )
 
 
 @app.post("/ingest")

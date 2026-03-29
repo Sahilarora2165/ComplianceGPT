@@ -5,6 +5,9 @@ import {
   regulatorTone,
 } from "@/shared/ui";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:8000";
+
 function statusTone(status) {
   if (status === "drafted") return "bg-emerald-100 text-emerald-800";
   if (status === "matched") return "bg-sky-100 text-sky-800";
@@ -24,6 +27,16 @@ function sourceLabel(source) {
   return "Unknown";
 }
 
+function normalizeText(value) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function localDocumentUrl(filename) {
+  const clean = normalizeText(filename);
+  if (!clean) return "";
+  return `${API_BASE_URL}/documents/file/${encodeURIComponent(clean)}`;
+}
+
 export default function CircularsView({
   allCirculars,
   allDrafts,
@@ -36,19 +49,33 @@ export default function CircularsView({
 
   const sourceMap = useMemo(() => {
     const docs = pipeline?.new_documents || [];
-    return new Map(docs.map((d) => [d.title, d.source || "unknown"]));
+    return new Map(
+      docs.map((d) => [
+        d.title,
+        {
+          source: d.source || "unknown",
+          url: d.url || "",
+          filename: d.filename || "",
+          document_id: d.document_id || "",
+        },
+      ]),
+    );
   }, [pipeline]);
 
   const circulars = useMemo(
     () =>
       allCirculars.map((item) => {
+        const sourceMeta = sourceMap.get(item.circular_title) || {};
         const draftCount = allDrafts.filter(
           (d) => d.circular_title === item.circular_title,
         ).length;
         return {
           ...item,
           draftCount,
-          source: sourceMap.get(item.circular_title) || "unknown",
+          source: item.source || sourceMeta.source || "unknown",
+          url: item.url || sourceMeta.url || "",
+          filename: item.filename || sourceMeta.filename || "",
+          document_id: item.document_id || sourceMeta.document_id || "",
           status: statusFromItem(item, draftCount),
         };
       }),
@@ -67,6 +94,9 @@ export default function CircularsView({
 
   const selected =
     circulars.find((i) => i.circular_title === selectedTitle) || circulars[0] || null;
+  const selectedLocalUrl = selected ? localDocumentUrl(selected.filename) : "";
+  const selectedExternalUrl = normalizeText(selected?.url);
+  const hasSourceLink = Boolean(selectedLocalUrl || selectedExternalUrl);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
@@ -224,6 +254,46 @@ export default function CircularsView({
                       </p>
                     </div>
                   ))}
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted">
+                    Source document
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {selectedLocalUrl ? (
+                      <a
+                        href={selectedLocalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800"
+                      >
+                        <span className="material-symbols-outlined text-sm">description</span>
+                        Open Ingested File
+                      </a>
+                    ) : null}
+                    {selectedExternalUrl ? (
+                      <a
+                        href={selectedExternalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                      >
+                        <span className="material-symbols-outlined text-sm">open_in_new</span>
+                        Open Official Link
+                      </a>
+                    ) : null}
+                    {!hasSourceLink ? (
+                      <span className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+                        Source not available for this circular
+                      </span>
+                    ) : null}
+                  </div>
+                  {selected.filename ? (
+                    <p className="mt-2 truncate text-xs text-muted">
+                      File: {selected.filename}
+                    </p>
+                  ) : null}
                 </div>
 
                 {selected.affected_clients?.length > 0 ? (
