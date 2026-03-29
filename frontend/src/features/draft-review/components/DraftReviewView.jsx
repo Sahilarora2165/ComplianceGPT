@@ -297,6 +297,12 @@ export default function DraftReviewView({
                         <span className={`text-[11px] font-semibold ${riskTone(draft.risk_level)}`}>
                           {draft.risk_level}
                         </span>
+                        {draft.low_confidence_flag && (
+                          <span className="flex items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                            <span className="material-symbols-outlined text-[12px]">warning</span>
+                            Verify
+                          </span>
+                        )}
                       </div>
                     </button>
                   );
@@ -373,6 +379,26 @@ export default function DraftReviewView({
               <div className="min-h-0 flex-1 overflow-y-auto p-0">
                 {tab === "email" ? (
                   <div className="flex h-full flex-col">
+                    {selected.low_confidence_flag && (
+                      <div className="mx-6 mt-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                        <span className="material-symbols-outlined mt-0.5 shrink-0 text-base text-amber-600">
+                          warning
+                        </span>
+                        <div>
+                          <p className="text-xs font-bold text-amber-800">
+                            CA Verification Required — Low Source Confidence
+                          </p>
+                          <p className="mt-0.5 text-xs text-amber-700">
+                            This advisory was generated without verified source documents
+                            {selected.rag_confidence === "none"
+                              ? " (no matching circular found in knowledge base)"
+                              : " (retrieved chunks were below relevance threshold)"}
+                            . Cross-check all actions, deadlines and penalty amounts against the original circular before approving.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
                     {selectedStatus === "send_failed" && selected.send_error ? (
                       <div className="mx-6 mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-800">
                         Last send error: {selected.send_error}
@@ -476,7 +502,66 @@ export default function DraftReviewView({
                       <DetailRow label="Model used" value={selected.model_used} />
                       <DetailRow label="Generated" value={formatDate(selected.generated_at)} />
                       <DetailRow label="Version" value={selected.version} />
+                      <DetailRow
+                        label="RAG confidence"
+                        value={
+                          selected.rag_confidence === "high"
+                            ? `High (score: ${selected.rag_top_score ?? "—"})`
+                            : selected.rag_confidence === "low"
+                            ? `Low (score: ${selected.rag_top_score ?? "—"}) — LLM knowledge used`
+                            : "None — LLM knowledge only"
+                        }
+                      />
                     </div>
+
+                    {(selected.circular_url || selected.circular_no) && (
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted">
+                          Source citation
+                        </p>
+                        {selected.circular_no && (
+                          <DetailRow label="Circular no." value={selected.circular_no} />
+                        )}
+                        {selected.circular_published && (
+                          <DetailRow label="Published" value={formatDate(selected.circular_published)} />
+                        )}
+                        {selected.circular_url ? (
+                          <div className="mt-2 flex items-start justify-between gap-2 py-1.5">
+                            <span className="text-xs font-medium text-slate-500">Source URL</span>
+                            <a
+                              href={selected.circular_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="max-w-[60%] truncate text-right text-xs font-semibold text-blue-600 underline underline-offset-2 hover:text-blue-800"
+                            >
+                              {selected.circular_url}
+                            </a>
+                          </div>
+                        ) : (
+                          <DetailRow label="Source URL" value="Refer official regulatory portal" />
+                        )}
+                        {selected.source_chunks?.length > 0 && (
+                          <div className="mt-3 border-t border-slate-200 pt-3">
+                            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted">
+                              RAG source chunks ({selected.source_chunks.length})
+                            </p>
+                            <div className="space-y-1">
+                              {selected.source_chunks.map((chunk, i) => (
+                                <p key={i} className="text-xs text-slate-600">
+                                  <span className="font-semibold">{chunk.source}</span>
+                                  {chunk.page != null && ` · p.${chunk.page}`}
+                                  {chunk.score != null && (
+                                    <span className="ml-1 text-slate-400">
+                                      (score: {chunk.score})
+                                    </span>
+                                  )}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {selected.internal_notes ? (
                       <div>

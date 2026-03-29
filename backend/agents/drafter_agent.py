@@ -640,11 +640,13 @@ def _extract_obligations(
 
     has_context = bool(context.strip())
     context_section = f"""
-REGULATORY DOCUMENT EXCERPTS (from ingested PDFs):
+REGULATORY DOCUMENT EXCERPTS (from ingested PDFs — these are the ONLY permitted source for specific facts):
 {context}
 """ if has_context else """
-NOTE: No matching regulatory documents found in the knowledge base.
-Use your knowledge of Indian compliance regulations to generate obligations.
+NOTE: No matching regulatory documents were found in the knowledge base for this circular.
+You may suggest general procedural actions based on the circular's regulator and title,
+but you MUST NOT state any specific penalty amounts, exact deadlines, or section numbers
+that are not confirmed by the client profile above. Mark any such unverifiable field as [VERIFY].
 """
 
     prompt = f"""You are a senior compliance officer at an Indian CA firm.
@@ -664,6 +666,7 @@ TASK:
 Based on the circular and client profile above, extract SPECIFIC EXECUTABLE obligations for THIS client only.
 
 RULES:
+0. HALLUCINATION GUARD — CRITICAL: Every penalty amount, section number, and specific deadline you state MUST come directly from either (a) the REGULATORY DOCUMENT EXCERPTS above, or (b) the client's PRE-COMPUTED FLAGS in the CLIENT PROFILE. If you cannot find a specific figure in either source, write [VERIFY] instead of inventing a number. Never fabricate rupee amounts, percentage rates, or dates.
 1. Actions must be SPECIFIC to THIS client — include form names, section numbers, deadlines where available
 2. Bad: "Comply with RBI guidelines" / "Review the circular" / "File appeals if applicable"
    Good: "Submit SOFTEX form for each export invoice to the bank within 30 days — required as Arvind Textiles is a goods exporter under FEMA"
@@ -722,9 +725,9 @@ RISK LEVEL:
 - LOW: Advisory/awareness only, no immediate penalty
 
 PENALTY:
-- State exact penalty from circular if available
-- If not stated, use "Not specified in circular"
-- Do NOT make up penalty amounts
+- State exact penalty ONLY if it appears verbatim in the REGULATORY DOCUMENT EXCERPTS above
+- If not found in the excerpts, write exactly: "Not specified in circular — verify at source"
+- NEVER invent or estimate rupee amounts, percentages, or compounding rates
 
 APPLICABLE SECTIONS:
 - List specific sections/rules from circular
@@ -833,6 +836,13 @@ DEADLINE: {obligations['deadline']}
 RISK LEVEL: {obligations['risk_level']}
 PENALTY IF MISSED: {obligations['penalty_if_missed']}
 
+SOURCE CIRCULAR REFERENCE (include verbatim at the end of the email):
+Circular Title : {circular['title']}
+Regulator      : {circular['regulator']}
+Circular No.   : {circular.get('circular_no', 'Refer official portal')}
+Published Date : {circular.get('published_date', 'Recent')}
+Source URL     : {circular.get('url', 'Refer official regulatory portal')}
+
 Write a formal advisory email. Rules:
 1. Address by name — not "Dear Client"
 2. Explain WHY this applies to them specifically (1-2 sentences max)
@@ -842,11 +852,12 @@ Write a formal advisory email. Rules:
 6. Professional closing — offer to assist
 7. Sign as: "Compliance Advisory Team"
 8. Keep it under 300 words — CAs are busy
+9. End the email with a "Source Reference" block containing the circular title, regulator, and source URL from the SOURCE CIRCULAR REFERENCE above — this is mandatory for citation compliance
 
 Return ONLY valid JSON, no explanation:
 {{
   "subject": "email subject line here",
-  "body": "full email body here"
+  "body": "full email body here (must end with Source Reference block)"
 }}"""
 
     response = groq.chat.completions.create(
@@ -931,12 +942,18 @@ def draft_single(circular: dict, client: dict) -> dict:
 
     if sources and top_ce_score >= _RAG_RELEVANCE_THRESHOLD:
         print(f"     📚 RAG: {len(sources)} chunk(s) retrieved from {sources[0]['source']} (score={top_ce_score:.2f})")
+        rag_confidence = "high"
+        low_confidence_flag = False
     elif sources:
         print(f"     ⚠️  RAG: low relevance (score={top_ce_score:.2f}) — context cleared, using LLM knowledge only")
         context = ""
         sources = []
+        rag_confidence = "low"
+        low_confidence_flag = True
     else:
         print(f"     ⚠️  RAG: no matching chunks — using LLM knowledge only")
+        rag_confidence = "none"
+        low_confidence_flag = True
 
     # Step 2: extract obligations
     obligations = _extract_obligations(circular, client, context)
@@ -968,6 +985,17 @@ def draft_single(circular: dict, client: dict) -> dict:
 
     # Step 4: assemble full draft
     _p = client.get("profile", {})
+
+    # If low confidence, prepend a CA-facing warning to internal_notes
+    internal_notes = obligations["internal_notes"]
+    if low_confidence_flag:
+        internal_notes = (
+            "[GUARDRAIL] This advisory was generated WITHOUT verified source documents "
+            f"(RAG confidence: {rag_confidence}). CA must cross-verify all actions and "
+            "deadlines against the original circular before approving. "
+            + internal_notes
+        )
+
     draft = {
         "draft_id":            draft_id,
         "client_id":           client_id,
@@ -976,6 +1004,9 @@ def draft_single(circular: dict, client: dict) -> dict:
         "client_contact":      _p.get("name", "Unknown"),
         "circular_id":         circular_id,
         "circular_title":      circular["title"],
+        "circular_no":         circular.get("circular_no", ""),
+        "circular_url":        circular.get("url", ""),
+        "circular_published":  circular.get("published_date", ""),
         "regulator":           circular["regulator"],
         "priority":            circular["priority"],
         "circular_summary":    circular["summary"] or f"{circular['regulator']} regulatory update — {circular['title']}.",
@@ -986,8 +1017,12 @@ def draft_single(circular: dict, client: dict) -> dict:
         "applicable_sections": obligations["applicable_sections"],
         "email_subject":       subject,
         "email_body":          body,
-        "internal_notes":      obligations["internal_notes"],
+        "internal_notes":      internal_notes,
         "source_chunks":       sources,
+        "source_chunk_ids":    [s.get("source", "") + "_p" + str(s.get("page", "")) for s in sources],
+        "rag_confidence":      rag_confidence,
+        "low_confidence_flag": low_confidence_flag,
+        "rag_top_score":       round(top_ce_score, 4),
         "model_used":          model,
         "generated_at":        datetime.now(timezone.utc).isoformat(),
         "version":             "v1",
@@ -1005,15 +1040,20 @@ def draft_single(circular: dict, client: dict) -> dict:
         agent="DrafterAgent",
         action="draft_generated",
         details={
-            "draft_id":    draft_id,
-            "client_id":   client_id,
-            "client_name": client.get("profile", {}).get("name", client.get("name", "")),
-            "circular_id": circular_id,
-            "regulator":   circular["regulator"],
-            "risk_level":  obligations["risk_level"],
-            "actions":     len(obligations["actions"]),
-            "rag_chunks":  len(sources),
-            "status":      "pending_review"
+            "draft_id":            draft_id,
+            "client_id":           client_id,
+            "client_name":         client.get("profile", {}).get("name", client.get("name", "")),
+            "circular_id":         circular_id,
+            "regulator":           circular["regulator"],
+            "risk_level":          obligations["risk_level"],
+            "actions":             len(obligations["actions"]),
+            "rag_chunks":          len(sources),
+            "rag_confidence":      rag_confidence,
+            "low_confidence_flag": low_confidence_flag,
+            "rag_top_score":       round(top_ce_score, 4),
+            "source_chunk_ids":    [s.get("source", "") + "_p" + str(s.get("page", "")) for s in sources],
+            "circular_url":        circular.get("url", ""),
+            "status":              "pending_review"
         },
         citation=sources[0]["source"] if sources else None,
         user_approval=None   # None until CA approves
@@ -1076,7 +1116,10 @@ def draft_advisories(match_results: list[dict]) -> list[dict]:
             "title":     match["circular_title"],
             "regulator": match["regulator"],
             "priority":  match["priority"],
-            "summary":   match["circular_summary"] if "circular_summary" in match else match.get("summary", "")
+            "summary":   match["circular_summary"] if "circular_summary" in match else match.get("summary", ""),
+            "url":       match.get("url", ""),
+            "circular_no": match.get("circular_no", ""),
+            "published_date": match.get("published_date", ""),
         }
 
         # Sort affected clients: lowest compliance_score (highest risk) first

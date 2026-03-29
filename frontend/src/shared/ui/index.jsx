@@ -38,14 +38,30 @@ export function extractEmailBody(emailBody) {
   try {
     const parsed = JSON.parse(emailBody);
     // Handle case where entire email JSON (with subject+body) is stored in email_body
-    const body = parsed.body || parsed.email_body || parsed.message || emailBody;
-    // Fix escaped characters from LLM/JSON output and ensure body is a string
-    return typeof body === "string"
-      ? body.replace(/\\n/g, "\n").replace(/\\t/g, "  ").replace(/\\\\/g, "\\").trim()
-      : String(body);
+    let body = parsed.body || parsed.email_body || parsed.message || emailBody;
+    if (typeof body === "string") {
+      // The body is a JSON-escaped string - unescape it properly
+      // IMPORTANT: Handle backslashes FIRST to avoid creating new escape sequences
+      return body
+        .replace(/\\\\/g, '\x00\x00')  // Temporarily replace \\ with placeholder
+        .replace(/\\n/g, '\n')         // Newline
+        .replace(/\\r/g, '')           // Carriage return
+        .replace(/\\t/g, '\t')         // Tab
+        .replace(/\\"/g, '"')          // Double quote
+        .replace(/\x00\x00/g, '\\')    // Restore backslashes
+        .trim();
+    }
+    return String(body);
   } catch {
     // Handle raw strings with escaped characters
-    return emailBody.replace(/\\n/g, "\n").replace(/\\t/g, "  ").replace(/\\\\/g, "\\").trim();
+    return emailBody
+      .replace(/\\\\/g, '\x00\x00')
+      .replace(/\\n/g, '\n')
+      .replace(/\\r/g, '')
+      .replace(/\\t/g, '\t')
+      .replace(/\\"/g, '"')
+      .replace(/\x00\x00/g, '\\')
+      .trim();
   }
 }
 
